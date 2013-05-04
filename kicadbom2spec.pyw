@@ -230,9 +230,9 @@ class Specification():
         bomArray.sort()
 
         # Split elements into groups
-        tempName = ''
-        lineArray = None
+        tempName = bomArray[0][0]
         tempArray = None
+        lineArray = None
         for array in bomArray:
             if tempName == array[0]:
                 if tempArray == None:
@@ -259,6 +259,7 @@ class Specification():
             prev = []
             firstIndex = 0
             lastIndex = 0
+
             group[1].sort(key=self.compareRef)
             for element in group[1]:
                 if group[1].index(element) == 0:
