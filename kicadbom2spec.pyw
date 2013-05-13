@@ -27,6 +27,7 @@ from odf.text import P
 from odf.table import *
 from odf.style import Style, ParagraphProperties, TextProperties
 from Tkinter import *
+from operator import itemgetter
 import tkFileDialog as fileDialog
 import tkMessageBox as message
 
@@ -149,7 +150,7 @@ class Specification():
             self.curTable.setAttribute('name', u'стр. %d' % self.curPage)
             self.specification.spreadsheet.addElement(self.curTable)
 
-            self.curTable = self.otherPagesPattern
+            self.curTable = deepcopy(self.otherPagesPattern)
             self.curPage += 1
             self.curLine = 1
 
@@ -195,8 +196,8 @@ class Specification():
         matches = re.search(r'^([A-Z]+)\d+', ref[0] + ref[1])
         if matches != None:
             for ch in range(len(matches.group(1))):
-                # Ref begins maximum of two letters, the first is multiplied by 10, the second by 1
-                refVal += ord(matches.group(1)[ch]) * 10 / (10 ** ch)
+                # Ref begins maximum of two letters, the first is multiplied by 10^5, the second by 10^4
+                refVal += ord(matches.group(1)[ch]) * 10**5 / (10 ** ch)
         matches = re.search(r'^[A-Z]+(\d+)', ref[0] + ref[1])
         if matches != None:
             refVal += int(matches.group(1))
@@ -227,9 +228,10 @@ class Specification():
                              line[6],                                       # GOST
                              line[7],                                       # comment
                              '1'])                                          # count of elements (default 1)
-        bomArray.sort()
+        bomArray = sorted(bomArray, key=itemgetter(0))
 
         # Split elements into groups
+        # output - ['group',[refType, refNumber, mark, value, accuracy, type, GOST, comment, couut]]
         tempName = bomArray[0][0]
         tempArray = None
         lineArray = None
@@ -252,6 +254,7 @@ class Specification():
                 else:
                     lineArray.append([tempName, tempArray])
 
+        tempArray = []
         # Combining the identical elements in one line
         for group in lineArray:
             first = ''
@@ -259,6 +262,7 @@ class Specification():
             prev = []
             firstIndex = 0
             lastIndex = 0
+            tempGroup = [group[0], []]
 
             group[1].sort(key=self.compareRef)
             for element in group[1]:
@@ -267,7 +271,6 @@ class Specification():
                     first = last = element[1]
                     prev = element[:]
                     continue
-
                 if element[0] == prev[0] and int(element[1]) - 1 == int(prev[1]) and element[2:] == prev[2:]:
                     # equal elements
                     last = element[1]
@@ -277,35 +280,36 @@ class Specification():
                     if int(last) - int(first) > 0:
                         # several identical elements
                         count = int(last) - int(first) + 1
-                        separator = ''
+                        separator = ', '
                         if count > 2:
                             separator = '...'
-                        else:
-                            separator = ', '
-                        group[1][lastIndex][1] = first + separator + last
-                        group[1][lastIndex][8] = str(count)
-                        del group[1][firstIndex:lastIndex]
-                        first = last = element[1]
-                        firstIndex = lastIndex = group[1].index(element)
+                        tempElement = group[1][lastIndex]
+                        tempElement[1] = first + separator + last
+                        tempElement[8] = str(count)
+                        tempGroup[1].append(tempElement)
                     else:
                         # next different element
-                        first = last = element[1]
-                        firstIndex = lastIndex = group[1].index(element)
+                        tempGroup[1].append(prev)
+                    first = last = element[1]
+                    firstIndex = lastIndex = group[1].index(element)
 
                 if group[1].index(element) == len(group[1]) - 1:
-                    # last element
+                    # last element in the group
                     if int(last) - int(first) > 0:
                         # several identical elements
                         count = int(last) - int(first) + 1
-                        separator = ''
+                        separator = ', '
                         if count > 2:
                             separator = '...'
-                        else:
-                            separator = ', '
-                        group[1][lastIndex][1] = first + separator + last
-                        group[1][lastIndex][8] = str(count)
-                        del group[1][firstIndex:lastIndex]
+                        tempElement = group[1][lastIndex]
+                        tempElement[1] = first + separator + last
+                        tempElement[8] = str(count)
+                        tempGroup[1].append(tempElement)
+                    else:
+                        tempGroup[1].append(element)
+                    tempArray.append(tempGroup)
                 prev = element[:]
+        lineArray = tempArray
 
         # Fill the specification
         for group in lineArray:
