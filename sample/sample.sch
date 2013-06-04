@@ -1,13 +1,12 @@
-EESchema Schematic File Version 2  date Суб 04 Май 2013 17:36:57
+EESchema Schematic File Version 2  date Пнд 13 Май 2013 20:22:25
 LIBS:sample
-LIBS:sample-cache
 EELAYER 24 0
 EELAYER END
 $Descr A4 8268 11693 portrait
 encoding utf-8
 Sheet 1 1
 Title "Однокаскадный транзисторный усилитель"
-Date "4 may 2013"
+Date "13 may 2013"
 Rev ""
 Comp "\"kicadbom2spec\""
 Comment1 "АБВГ.0000.0001 Э3"
@@ -130,7 +129,7 @@ Text GLabel 2000 4850 0    138  Input ~ 0
 Text GLabel 2000 1950 0    138  Input ~ 0
 +9 В
 Text GLabel 6800 4000 2    138  Output ~ 0
-Общ.
+Выход
 Wire Wire Line
 	6800 4000 5950 4000
 Wire Wire Line
