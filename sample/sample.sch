@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Пнд 13 Май 2013 20:22:25
+EESchema Schematic File Version 2
 LIBS:sample
 EELAYER 24 0
 EELAYER END

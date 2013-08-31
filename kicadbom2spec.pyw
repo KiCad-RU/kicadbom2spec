@@ -16,636 +16,1116 @@
 ### END LICENSE
 
 import os
-import re
+from os import path
 import sys
+import subprocess
+import re
 import codecs
 import locale
 import argparse
-import odf.opendocument
-from copy import deepcopy
-from odf.text import P
-from odf.table import *
-from odf.style import Style, ParagraphProperties, TextProperties
-from Tkinter import *
 from operator import itemgetter
-import tkFileDialog as fileDialog
-import tkMessageBox as message
+
+import wx
+import wx.grid
+
+import gui
+from kicadsch import *
+from spec import *
 
 # Set default encoding
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-class Specification():
-    '''
-        Generating specification from BOM, fill stamp using
-        KiCAD Schematic and save it to *.ods file.
-    '''
 
-    def __init__(self):
+class Window(gui.MainFrame):
+    """
+    Graphical user interface for kicdbom2spec.
 
-        # Load the pattern
-        self.pattern = odf.opendocument.load(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pattern.ods'))
-        self.firstPagePattern = None
-        self.otherPagesPattern = None
-        for sheet in self.pattern.spreadsheet.getElementsByType(Table):
-            # Pattern for first page
-            if sheet.getAttribute('name') == 'First':
-                self.firstPagePattern = sheet
-            # Pattern for other pages
-            elif sheet.getAttribute('name') == 'Other':
-                self.otherPagesPattern = sheet
+    """
 
-        # Create specification file object
-        self.specification = odf.opendocument.OpenDocumentSpreadsheet()
+    def __init__(self, parent):
+        """
+        Initialize main window.
 
-        # Copy all parameters from pattern to the specification
-        for meta in self.pattern.meta.childNodes[:]:
-            self.specification.meta.addElement(meta)
+        """
+        gui.MainFrame.__init__(self,parent)
 
-        for font in self.pattern.fontfacedecls.childNodes[:]:
-            self.specification.fontfacedecls.addElement(font)
-
-        for style in self.pattern.styles.childNodes[:]:
-            self.specification.styles.addElement(style)
-
-        for masterstyle in self.pattern.masterstyles.childNodes[:]:
-            self.specification.masterstyles.addElement(masterstyle)
-
-        for autostyle in self.pattern.automaticstyles.childNodes[:]:
-            self.specification.automaticstyles.addElement(autostyle)
-
-        for setting in self.pattern.settings.childNodes[:]:
-            self.specification.settings.addElement(setting)
-
-        # Current state of filling the specification
-        self.curGroup   = ''
-        self.curLine    = 1
-        self.curPage    = 1
-        self.curTable   = self.firstPagePattern
-
-        # Some variables for stamp filling
-        self.devel  = ''
-        self.check  = ''
-        self.approv = ''
-        self.decNum = ''
-        self.title  = ''
-        self.comp   = ''
-
-    def replaceText(self, table, label, text, group=False):
-        '''
-            Replace 'label' (like #1:1) to 'text' in 'table'.
-            If 'group' is set to 'True' will be used special formatting.
-        '''
-
-        rows = table.getElementsByType(TableRow)
-        for row in rows:
-            cells = row.getElementsByType(TableCell)
-            for cell in cells:
-                for p in cell.getElementsByType(P):
-                    for p_data in p.childNodes:
-                        if p_data.tagName == 'Text':
-                            if p_data.data == label:
-                                p_data.data = text.decode('string_escape')
-                                if group == True:
-                                    # Set center align and underline for ghoup name
-                                    curStyleName = cell.getAttribute('stylename')
-                                    groupStyle = self.specification.getStyleByName(curStyleName +'g')
-                                    if groupStyle == None:
-                                        groupStyle = deepcopy(self.specification.getStyleByName(curStyleName))
-                                        groupStyle.setAttribute('name', curStyleName +'g')
-                                        groupStyle.addElement(ParagraphProperties(textalign='center'))
-                                        groupStyle.addElement(TextProperties(textunderlinetype='single',
-                                                                              textunderlinestyle='solid',))
-                                        self.specification.styles.addElement(groupStyle)
-                                    cell.setAttribute('stylename', curStyleName +'g')
-                                return
-
-    def clearTable(self, table):
-        '''
-            Clear 'table' of labels
-        '''
-
-        rows = table.getElementsByType(TableRow)
-        for row in rows:
-            cells = row.getElementsByType(TableCell)
-            for cell in cells:
-                for p in cell.getElementsByType(P):
-                    for p_data in p.childNodes:
-                        if p_data.tagName == 'Text':
-                            if re.search(r'#\d+:\d+', p_data.data) != None:
-                                p_data.data = ''
-
-    def nextLine(self):
-        '''
-            Moving to next line.
-            If table is full, save it in specification and create a new one
-        '''
-
-        # Increment line counter
-        self.curLine += 1
-
-        # First page of specification has 29 lines, other pages has 32 lines
-        if (self.curPage == 1 and self.curLine > 29) or (self.curPage > 1 and self.curLine > 32):
-            # Table is full
-            self.curTable.setAttribute('name', u'стр. %d' % self.curPage)
-            self.specification.spreadsheet.addElement(self.curTable)
-
-            self.curTable = deepcopy(self.otherPagesPattern)
-            self.curPage += 1
-            self.curLine = 1
-
-    def setLine(self, element):
-        '''
-            Fill the specification's line using element's fields.
-        '''
-
-        # Reference
-        ref = ''
-        if int(element[8]) > 1:
-            # Reference number: '5, 6'; '25...28' etc.
-            ref = re.search(r'(\d+)(\.*|,\s?)(\d+)', element[1]).groups()
-            # Reference: 'VD1, 2'; 'C8...C11' etc.
-            ref = (element[0] + '%s%s' + element[0] + '%s') % ref
+        if sys.platform == 'win32':
+            icon_bundle = wx.IconBundle()
+            for size in [16, 32, 48]:
+                icon = wx.Icon('bitmaps/icon.ico', wx.BITMAP_TYPE_ICO, size, size)
+                icon_bundle.AddIcon(icon)
+            self.SetIcons(icon_bundle)
         else:
-            # Reference: 'R5'; 'VT13' etc.
-            ref = element[0] + element[1]
-        self.replaceText(self.curTable, '#1:%d' % self.curLine, ref)
-        # Value
-        val = element[2] + element[3]
-        if element[0] == 'C' and element[3][-1:] != u'Ф':
-            if element[3].isdigit():
-                val += u'п'
-            val += u'Ф'
-        elif element[0] == 'L' and element[3][-2:] != u'Гн':
-            val += u'Гн'
-        elif element[0] == 'R' and element[3][-2:] != u'Ом':
-            val += u'Ом'
-        val += element[4] + element[5] + element[6]
-        self.replaceText(self.curTable, '#2:%d' % self.curLine, val)
-        # Count
-        self.replaceText(self.curTable, '#3:%d' % self.curLine, element[8])
-        # Coment
-        self.replaceText(self.curTable, '#4:%d' % self.curLine, element[7])
+            icon = wx.Icon('bitmaps/icon.xpm', wx.BITMAP_TYPE_XPM)
+            self.SetIcon(icon)
 
-    def compareRef(self, ref):
-        '''
-            Get integer value of reference (type & number) fo comparison in sort() function
-        '''
+        self.Bind(wx.EVT_UPDATE_UI, self.on_menu)
+        self.schematic_file = ''
+        self.library_file = ''
+        self.specification_file = ''
+        self.sheets = []
+        self.library = None
+        self.saved = True
+        self.not_found = False
+        self.undo_buffer = []
+        self.redo_buffer = []
+        self.add_units = False
+        self.all_components = False
+        self.init_grid()
 
-        refVal = 0
-        matches = re.search(r'^([A-Z]+)\d+', ref[0] + ref[1])
-        if matches != None:
-            for ch in range(len(matches.group(1))):
-                # Ref begins maximum of two letters, the first is multiplied by 10^5, the second by 10^4
-                refVal += ord(matches.group(1)[ch]) * 10**5 / (10 ** ch)
-        matches = re.search(r'^[A-Z]+(\d+)', ref[0] + ref[1])
-        if matches != None:
-            refVal += int(matches.group(1))
-        return refVal
+    def init_grid(self):
+        """
+        Initialize the grid for the components.
 
-    def loadBOM(self, bomFileName):
-        '''
-            Open BOM file and load all elements to specification.
-        '''
+        """
+        self.last_sorted_col = -1
+        self.reversed_sorting = False
 
-        # Open BOM file
-        bomFile = codecs.open(bomFileName, encoding='utf-8')
+        if hasattr(self, 'grid_components'):
+            self.GetSizer().Remove(self.panel_components.GetSizer())
+            self.grid_components.Destroy()
 
-        # First line not needed
-        bomFile.readline()
+        self.grid_components = wx.grid.Grid(
+            self.panel_components,
+            wx.ID_ANY, wx.DefaultPosition,
+            wx.DefaultSize,
+            0
+            )
 
-        # Handle all lines
-        bomArray = []
-        for bomLine in bomFile:
-            line = bomLine[0:-1].split('\t')
-            bomArray.append([line[2],                                       # group
-                             re.search(r'[A-Z]+', line[0]).group(),         # reference type
-                             re.search(r'[0-9]+', line[0]).group(),         # reference number
-                             line[3],                                       # mark
-                             line[1],                                       # value
-                             line[4],                                       # accuracy
-                             line[5],                                       # type
-                             line[6],                                       # GOST
-                             line[7],                                       # comment
-                             '1'])                                          # count of elements (default 1)
-        bomArray = sorted(bomArray, key=itemgetter(0))
+        # Grid
+        self.grid_components.CreateGrid(0, 9)
+        self.grid_components.EnableEditing(True)
+        self.grid_components.SetSelectionMode(wx.grid.Grid.SelectRows)
 
-        # Split elements into groups
-        # output - ['group',[refType, refNumber, mark, value, accuracy, type, GOST, comment, couut]]
-        tempName = bomArray[0][0]
-        tempArray = None
-        lineArray = None
-        for array in bomArray:
-            if tempName == array[0]:
-                if tempArray == None:
-                    tempArray = [array[1:],]
-                else:
-                    tempArray.append(array[1:])
+        attr = wx.grid.GridCellAttr()
+        attr.SetReadOnly()
+        attr.SetRenderer(wx.grid.GridCellBoolRenderer())
+        self.grid_components.SetColAttr(0, attr)
+        attr = wx.grid.GridCellAttr()
+        attr.SetReadOnly()
+        attr.SetAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+        self.grid_components.SetColAttr(2, attr)
+        if self.library:
+            self.grid_components.SetColAttr(4, attr.Clone())
+        else:
+            attr = self.grid_components.GetOrCreateCellAttr(0, 1)
+            self.grid_components.SetColAttr(4, attr)
+
+        # Events
+        self.grid_components.Bind(
+            wx.grid.EVT_GRID_CELL_LEFT_CLICK,
+            self.on_grid_left_click
+            )
+        self.grid_components.Bind(
+            wx.EVT_KEY_DOWN,
+            self.on_grid_key_down
+            )
+        if self.library:
+            self.grid_components.Unbind(
+                wx.grid.EVT_GRID_CELL_LEFT_CLICK,
+                handler=self.on_grid_left_click
+                )
+            self.grid_components.Unbind(
+                wx.EVT_KEY_DOWN,
+                handler=self.on_grid_key_down
+                )
+        self.grid_components.Bind(
+            wx.grid.EVT_GRID_LABEL_LEFT_CLICK,
+            self.on_grid_sort
+            )
+        self.grid_components.Bind(
+            wx.grid.EVT_GRID_CELL_CHANGE,
+            self.on_grid_change
+            )
+        self.grid_components.Bind(
+            wx.grid.EVT_GRID_RANGE_SELECT,
+            self.on_select
+            )
+
+        # Columns
+        self.grid_components.SetDefaultColSize(150)
+        self.grid_components.SetColSize(0, 20)
+        self.grid_components.EnableDragColSize(True)
+        self.grid_components.SetColLabelSize(30)
+        self.grid_components.SetColLabelValue(0, u' ')
+        self.grid_components.SetColLabelValue(1, u'Группа')
+        self.grid_components.SetColLabelValue(2, u'Обозначение')
+        self.grid_components.SetColLabelValue(3, u'Марка')
+        self.grid_components.SetColLabelValue(4, u'Значение')
+        self.grid_components.SetColLabelValue(5, u'Класс точности')
+        self.grid_components.SetColLabelValue(6, u'Тип')
+        self.grid_components.SetColLabelValue(7, u'Стандарт')
+        self.grid_components.SetColLabelValue(8, u'Примечание')
+        self.grid_components.SetColLabelAlignment(
+            wx.ALIGN_CENTRE,
+            wx.ALIGN_CENTRE
+            )
+
+        # Rows
+        self.grid_components.EnableDragRowSize(False)
+        self.grid_components.SetRowLabelSize(1)
+        self.grid_components.SetRowLabelAlignment(
+            wx.ALIGN_CENTRE,
+            wx.ALIGN_CENTRE
+            )
+
+        # Cell Defaults
+        self.grid_components.SetDefaultCellAlignment(
+            wx.ALIGN_LEFT,
+            wx.ALIGN_CENTRE
+            )
+
+        # Layout
+        sizer_components = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_components.Add(self.grid_components, 1, wx.EXPAND|wx.ALL, 5)
+        self.panel_components.SetSizer(sizer_components)
+        self.panel_components.Layout()
+        sizer_components.Fit(self.panel_components)
+        self.Layout()
+
+    def on_grid_key_down(self, event):
+        """
+        Switch state of the checkbox in 0 column by pressing space key.
+
+        """
+        cur_col = self.grid_components.GetGridCursorCol()
+        cur_row = self.grid_components.GetGridCursorRow()
+        if event.GetKeyCode() == wx.WXK_SPACE and cur_col == 0:
+            cell_value = self.grid_components.GetCellValue(cur_row, cur_col)
+            if cell_value == '1':
+                self.grid_components.SetCellValue(cur_row, cur_col, '0')
             else:
-                if lineArray == None:
-                    lineArray = [[tempName, tempArray],]
-                else:
-                    lineArray.append([tempName, tempArray])
-                tempArray = [array[1:],]
-                tempName = array[0]
-            if bomArray.index(array) == len(bomArray) - 1:
-                if lineArray == None:
-                    lineArray = [[tempName, tempArray],]
-                else:
-                    lineArray.append([tempName, tempArray])
+                self.grid_components.SetCellValue(cur_row, cur_col, '1')
+            self.on_grid_change()
+        else:
+            event.Skip()
 
-        tempArray = []
-        # Combining the identical elements in one line
-        for group in lineArray:
-            first = ''
-            last = ''
-            prev = []
-            firstIndex = 0
-            lastIndex = 0
-            tempGroup = [group[0], []]
+    def on_grid_left_click(self, event):
+        """
+        Switch state of the checkbox in 0 column
+        by clicking left button of the mouse.
 
-            group[1].sort(key=self.compareRef)
-            for element in group[1]:
-                if group[1].index(element) == 0:
-                    # first element
-                    first = last = element[1]
-                    prev = element[:]
+        """
+        if event.GetCol() == 0:
+            cell_value = self.grid_components.GetCellValue(
+                event.GetRow(),
+                event.GetCol()
+                )
+            if cell_value == '1':
+                self.grid_components.SetCellValue(
+                    event.GetRow(),
+                    event.GetCol(),
+                    '0'
+                    )
+            else:
+                self.grid_components.SetCellValue(
+                    event.GetRow(),
+                    event.GetCol(),
+                    '1'
+                    )
+            self.on_grid_change()
+        else:
+            event.Skip()
+
+    def on_grid_sort(self, event):
+        """
+        Sort table rows by selected column values.
+
+        """
+
+        def compare_ref(ref):
+            """
+            Returns integer equivalent value of reference
+            fo comparison in sort() function.
+
+            """
+            ref_val = 0
+            matches = re.search(r'^([A-Z]+)\d+', ref[2])
+            if matches != None:
+                for ch in range(len(matches.group(1))):
+                    #  Ref begins maximum of two letters, the first
+                    #  is multiplied by 10^5, the second by 10^4
+                    ref_val += ord(matches.group(1)[ch]) * 10 ** 5 / (10 ** ch)
+            matches = re.search(r'^[A-Z]+(\d+)', ref[2])
+            if matches != None:
+                ref_val += int(matches.group(1))
+            return ref_val
+
+        sort_col = event.GetCol()
+        grid_data = self.get_grid_values()
+        if sort_col == 2 and not self.library:
+            sorted_data = sorted(grid_data, key=compare_ref)
+        else:
+            sorted_data = sorted(grid_data, key=itemgetter(sort_col))
+        if sort_col == self.last_sorted_col:
+            self.reversed_sorting = not self.reversed_sorting
+            if self.reversed_sorting:
+                sorted_data.reverse()
+        else:
+            self.reversed_sorting = False
+        self.set_grid_values(sorted_data, False)
+        self.last_sorted_col = sort_col
+        event.Skip()
+
+    def on_menu(self, event):
+        """
+        Change enable/disable future of the toolbar as same as menuitem.
+
+        """
+        menuitem = event.GetId()
+        if menuitem > gui.ID_OPEN_SCH:
+            self.toolbar.EnableTool(menuitem, self.menubar.IsEnabled(menuitem))
+        event.Skip()
+
+    def on_undo(self, event):
+        """
+        Undo last change in the grid.
+
+        """
+        self.redo_buffer.append(self.undo_buffer[-1])
+        del self.undo_buffer[-1]
+        self.set_grid_values(self.undo_buffer[-1])
+        if len(self.undo_buffer) == 1:
+            self.menuitem_undo.Enable(False)
+            self.saved = True
+            if self.library:
+                self.menuitem_save_lib.Enable(False)
+            else:
+                self.menuitem_save_sch.Enable(False)
+        self.menuitem_redo.Enable(True)
+
+    def on_redo(self, event):
+        """
+        Redo previos change to the grid.
+
+        """
+        self.undo_buffer.append(self.redo_buffer[-1])
+        self.set_grid_values(self.redo_buffer[-1])
+        del self.redo_buffer[-1]
+        if len(self.redo_buffer) == 0:
+            self.menuitem_redo.Enable(False)
+        self.menuitem_undo.Enable(True)
+        self.saved = False
+        if self.library:
+            self.menuitem_save_lib.Enable(True)
+        else:
+            self.menuitem_save_sch.Enable(True)
+
+    def on_tool(self, event):
+        """
+        Switch visible of the toolbar.
+
+        """
+        if event.IsChecked():
+            self.toolbar.Show()
+        else:
+            self.toolbar.Hide()
+        self.SendSizeEvent()
+
+    def on_grid_change(self, event=None):
+        """
+        Put the grid data into undo buffer if changes made.
+
+        """
+        self.undo_buffer.append(self.get_grid_values())
+        self.redo_buffer = []
+        self.menuitem_redo.Enable(False)
+        if len(self.undo_buffer) > 1:
+            self.menuitem_undo.Enable(True)
+        else:
+            self.menuitem_undo.Enable(False)
+        self.saved = False
+        if self.library:
+            self.menuitem_save_lib.Enable(True)
+        else:
+            self.menuitem_save_sch.Enable(True)
+
+
+    def on_copy(self, event=None):
+        """
+        Copy values of the fields.
+
+        """
+        if len(self.get_selected_rows()) > 1:
+            if wx.MessageBox(
+                u'В таблице выделено несколько элементов!\n' \
+                u'Будут скопированы поля только из первого выделеного элемента.\n' \
+                u'Продолжить?',
+                u'Внимание!',
+                wx.ICON_QUESTION|wx.YES_NO, self
+                ) == wx.NO:
+
+                return
+        self.buffer = []
+        row = self.get_selected_rows()[0]
+        for col in range(1, 9):
+            if col == 2:
+                self.buffer.append(u'')
+                continue
+            self.buffer.append(self.grid_components.GetCellValue(row, col))
+        self.menuitem_paste.Enable(True)
+
+    def on_cut(self, event):
+        """
+        Cut values of the fields.
+
+        """
+        if len(self.get_selected_rows()) > 1:
+            if wx.MessageBox(
+                u'В таблице выделено несколько элементов!\n' \
+                u'Будут вырезаны поля только из первого выделеного элемента.\n' \
+                u'Продолжить?',
+                u'Внимание!',
+                wx.ICON_QUESTION|wx.YES_NO, self
+                ) == wx.NO:
+
+                return
+        self.buffer = []
+        selected_cols = self.get_selected_cols()
+        row = self.get_selected_rows()[0]
+        for col in range(1, 9):
+            if col == 2:
+                self.buffer.append(u'')
+                continue
+            self.buffer.append(self.grid_components.GetCellValue(row, col))
+            if col in selected_cols:
+                self.grid_components.SetCellValue(row, col, u'')
+        self.menuitem_paste.Enable(True)
+        if self.is_grid_chaged():
+            self.on_grid_change()
+
+    def on_paste(self, event):
+        """
+        Paste values to the fields of the selected components from buffer.
+
+        """
+        rows = self.get_selected_rows()
+        cols = self.get_selected_cols()
+        for row in rows:
+            for col in cols:
+                if col == 2:
                     continue
-                if element[0] == prev[0] and int(element[1]) - 1 == int(prev[1]) and element[2:] == prev[2:]:
-                    # equal elements
-                    last = element[1]
-                    lastIndex = group[1].index(element)
-                else:
-                    # different elements
-                    if int(last) - int(first) > 0:
-                        # several identical elements
-                        count = int(last) - int(first) + 1
-                        separator = ', '
-                        if count > 2:
-                            separator = '...'
-                        tempElement = group[1][lastIndex]
-                        tempElement[1] = first + separator + last
-                        tempElement[8] = str(count)
-                        tempGroup[1].append(tempElement)
-                    else:
-                        # next different element
-                        tempGroup[1].append(prev)
-                    first = last = element[1]
-                    firstIndex = lastIndex = group[1].index(element)
+                self.grid_components.SetCellValue(
+                    row,
+                    col,
+                    self.buffer[col - 1]
+                    )
+        if self.is_grid_chaged():
+            self.on_grid_change()
 
-                if group[1].index(element) == len(group[1]) - 1:
-                    # last element in the group
-                    if int(last) - int(first) > 0:
-                        # several identical elements
-                        count = int(last) - int(first) + 1
-                        separator = ', '
-                        if count > 2:
-                            separator = '...'
-                        tempElement = group[1][lastIndex]
-                        tempElement[1] = first + separator + last
-                        tempElement[8] = str(count)
-                        tempGroup[1].append(tempElement)
-                    else:
-                        tempGroup[1].append(element)
-                    tempArray.append(tempGroup)
-                prev = element[:]
-        lineArray = tempArray
+    def on_select(self, event):
+        """
+        Process selection event.
 
-        # Fill the specification
-        for group in lineArray:
-            if self.curGroup != group[0]:
-                # New group title
-                self.curGroup = group[0]
+        """
+        if self.get_selected_rows():
+            self.menuitem_copy.Enable(True)
+            self.menuitem_cut.Enable(True)
+            self.menuitem_edit.Enable(True)
+            self.menuitem_clear.Enable(True)
+        else:
+            self.menuitem_copy.Enable(False)
+            self.menuitem_cut.Enable(False)
+            self.menuitem_edit.Enable(False)
+            self.menuitem_clear.Enable(False)
+        event.Skip()
 
-                if (self.curPage == 1 and self.curLine > 26) or (self.curPage > 1 and self.curLine > 29):
-                    # If name of group at bottom of table without elements, go to beginning of a new
-                    while self.curLine != 1:
-                        self.nextLine()
-                else:
-                    self.nextLine() # Skip one line
+    def on_open_sch(self, event=None, sch_file_name=''):
+        """
+        Load all components from selected schematic
+        (include hierarchical sheets) to the table for editing.
 
-                self.replaceText(self.curTable, '#2:%d' % self.curLine, group[0], group=True)
-                self.nextLine() # Skip one line
-                self.nextLine() # Moving to next line
+        """
 
-            # Put all group lines to the table
-            if group[0] == '':
-                # Elements without group
-                prev = None
-                for element in group[1]:
-                    if prev == None:
-                        prev = element[0]
-                        self.setLine(element)
-                        self.nextLine()
-                        continue
-                    if element[0] != prev:
-                        # Elements with different types separated by one empty line
-                        self.nextLine()
-                        prev = element[0]
-                    self.setLine(element)
-                    self.nextLine()
+        if sch_file_name:
+            self.schematic_file = sch_file_name
+        else:
+            if not self.saved:
+                if wx.MessageBox(
+                    u'Последние изменения в полях компонентов не были сохранены!\n' \
+                    u'Продолжить?',
+                    u'Внимание!',
+                    wx.ICON_QUESTION|wx.YES_NO, self
+                    ) == wx.NO:
 
-            else:
-                # Elements with group
-                for element in group[1]:
-                    self.setLine(element)
-                    self.nextLine()
+                    return
+            open_sch_dialog = wx.FileDialog(
+                self,
+                u'Выбор файла схемы',
+                u'',
+                u'',
+                u'Схема (*.sch)|*.sch|Все файлы (*.*)|*.*',
+                wx.FD_OPEN|wx.FD_FILE_MUST_EXIST
+                )
+            if open_sch_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            self.schematic_file = open_sch_dialog.GetPath()
 
-        if self.curLine != 1:
-            # Current table not empty - save it
-            self.curTable.setAttribute('name', u'стр. %d' % self.curPage)
-            self.specification.spreadsheet.addElement(self.curTable)
-
-    def loadSchematic(self, schFileName):
-        '''
-            Open KiCAD Schematic file and load all fields
-            for specification's stamp.
-        '''
-
-        # Open schematic file
-        schFile = codecs.open(schFileName, encoding='utf-8')
-
-        # Get stamp field's data from schematic file
-        for line in schFile:
-            if line.startswith('$EndDescr'):
-                break
-
-            elif line.startswith('Title'):
-                self.title = re.search(r'\"(.*)\"', line).group(1)
-
-            elif line.startswith('Comp'):
-                self.comp = re.search(r'\"(.*)\"', line).group(1)
-
-            elif line.startswith('Comment1'):
-                self.decNum = re.search(r'\"(.*)\"', line).group(1)
-                if self.decNum[-2:-1] == u'Э' and self.decNum[-1:].isdigit():
-                    self.decNum = self.decNum[:-2] + u'П' + self.decNum[-2:]
-
-            elif line.startswith('Comment2'):
-                self.devel = re.search(r'\"(.*)\"', line).group(1)
-
-            elif line.startswith('Comment3'):
-                self.check = re.search(r'\"(.*)\"', line).group(1)
-
-            elif line.startswith('Comment4'):
-                self.approv = re.search(r'\"(.*)\"', line).group(1)
-
-    def saveSpecification(self, specFileName):
-        '''
-            Save created specification to the file.
-        '''
-
-        # Fill stamp fields on each page
-        for table in self.specification.spreadsheet.getElementsByType(Table):
-            pgNum = re.search(r'\d+', table.getAttribute('name')).group()
-
-            # First page - big stamp
-            if pgNum == '1':
-                pgCnt = len(self.specification.spreadsheet.getElementsByType(Table))
-                if pgCnt == 1:
-                    pgCnt = ''
-                else:
-                    pgCnt = str(pgCnt)
-
-                self.replaceText(table, '#5:1', self.devel)
-                self.replaceText(table, '#5:2', self.check)
-                self.replaceText(table, '#5:3', self.approv)
-                self.replaceText(table, '#5:4', self.decNum)
-                self.replaceText(table, '#5:5', self.title)
-                self.replaceText(table, '#5:6', pgNum)
-                self.replaceText(table, '#5:7', pgCnt)
-                self.replaceText(table, '#5:8', self.comp)
-
-            # Other pages - smal stamp
-            else:
-                self.replaceText(table, '#5:1', self.decNum)
-                self.replaceText(table, '#5:2', pgNum)
-
-        # Clear tables from labels
-        for table in self.specification.spreadsheet.getElementsByType(Table):
-            self.clearTable(table)
-
-        # Save specification file
-        self.specification.save(specFileName)
-
-class Window(Frame):
-    '''
-        Graphical user interface for kicadbom2spes
-    '''
-
-    def __init__(self, parent, args):
-        Frame.__init__(self, parent)
-
-        self.mainWindow = parent
-        self.args = args
-
-        # title of main window
-        self.mainWindow.title('kicadbom2spes')
-
-        # vars for store text fields content
-        self.bomFileName = StringVar()
-        self.schFileName = StringVar()
-        self.specFileName = StringVar()
-
-        # labels
-        self.bomLabel = Label(self.mainWindow, text=u'Файл перечня элементов (BOM):')
-        self.bomLabel.grid(row=1, column=1, sticky='w')
-        self.schLabel = Label(self.mainWindow, text=u'Файл схемы (KiCAD Schematic):')
-        self.schLabel.grid(row=3, column=1, sticky='w')
-        self.specLabel = Label(self.mainWindow, text=u'Файл спецификации:')
-        self.specLabel.grid(row=5, column=1, sticky='w')
-
-        # text fields
-        self.bomEntry = Entry(self.mainWindow, textvariable=self.bomFileName, width=50)
-        self.bomEntry.grid(row=2, column=1, sticky='ew')
-        self.schEntry = Entry(self.mainWindow, textvariable=self.schFileName, width=50)
-        self.schEntry.grid(row=4, column=1, sticky='ew')
-        self.specEntry = Entry(self.mainWindow, textvariable=self.specFileName, width=50)
-        self.specEntry.grid(row=6, column=1, sticky='ew')
-
-        # buttons
-        self.bomButton = Button(self.mainWindow, text=u'Открыть...')
-        self.bomButton.grid(row=2, column=2, sticky='ew')
-        self.bomButton.bind('<ButtonRelease-1>', self.bomOpen)
-        self.schButton = Button(self.mainWindow, text=u'Открыть...')
-        self.schButton.bind('<ButtonRelease-1>', self.schOpen)
-        self.schButton.grid(row=4, column=2, sticky='ew')
-        self.specButton = Button(self.mainWindow, text=u'Сохранить как...')
-        self.specButton.bind('<ButtonRelease-1>', self.specSave)
-        self.specButton.grid(row=6, column=2, sticky='ew')
-        self.makeButton = Button(self.mainWindow, text=u'Создать спецификацию')
-        self.makeButton.bind('<ButtonRelease-1>', self.specMake)
-        self.makeButton.grid(row=7, column=1, columnspan=2, sticky='ew')
-
-        # Get default encoding
-        prefEncoding = locale.getpreferredencoding()
-
-        # BOM file name from args
-        if self.args.bom != None and os.path.exists(self.args.bom):
-            self.bomFileName.set(os.path.abspath(self.args.bom.decode(prefEncoding)))
-
-        # KiCAD Schematic file name from args
-        if self.args.schematic != None and os.path.exists(self.args.schematic):
-            self.schFileName.set(os.path.abspath(self.args.schematic.decode(prefEncoding)))
-
-        # Specification file name from args
-        if self.args.output != None:
-            if os.path.dirname(self.args.output) != '':
-                if os.path.exists(os.path.dirname(self.args.output)):
-                    self.specFileName.set(os.path.abspath(self.args.output.decode(prefEncoding)))
-            else:
-                self.specFileName.set(os.path.abspath(self.args.output.decode(prefEncoding)))
-
-
-    def bomOpen(self, event):
-        '''
-            Get name of BOM file from dialog
-        '''
-
-        fileTypes = [(u'BOM файлы', '*.csv'), (u'Все файлы', '*')]
-        fileName = fileDialog.askopenfilename(parent=self,
-                                              filetypes=fileTypes,
-                                              initialdir=os.path.dirname(self.bomFileName.get()),
-                                              initialfile=os.path.basename(self.bomFileName.get()))
-
-        if fileName != '' and fileName != ():
-            self.bomFileName.set(fileName)
-            sch = os.path.splitext(self.bomFileName.get())[0] + '.sch'
-            spec = os.path.splitext(self.bomFileName.get())[0] + '.ods'
-            if os.path.exists(sch) and self.schFileName.get() == '':
-                self.schFileName.set(sch)
-            if self.specFileName.get() == '':
-                self.specFileName.set(spec)
-
-    def schOpen(self, event):
-        '''
-            Get name of KiCAD Schematic file from dialog
-        '''
-
-        fileTypes = [('KiCAD Schematic', '*.sch'), (u'Все файлы', '*')]
-        fileName = fileDialog.askopenfilename(parent=self,
-                                              filetypes=fileTypes,
-                                              initialdir=os.path.dirname(self.schFileName.get()),
-                                              initialfile=os.path.basename(self.schFileName.get()))
-
-        if fileName != '' and fileName != ():
-            self.schFileName.set(fileName)
-
-    def specSave(self, event):
-        '''
-            Get name of specification file from dialog
-        '''
-
-        fileTypes = [(u'Файлы таблиц', '*.ods'), (u'Все файлы', '*')]
-        fileName = fileDialog.asksaveasfilename(parent=self,
-                                                filetypes=fileTypes,
-                                                initialdir=os.path.dirname(self.specFileName.get()),
-                                                initialfile=os.path.basename(self.specFileName.get()))
-
-        if str(fileName) != '':
-            self.specFileName.set(fileName)
-
-    def specMake(self, event):
-        '''
-            Generate specification and write to file
-        '''
-
-        if not os.path.exists(self.bomFileName.get()):
-            message.showerror(u'Ошибка!', u'Файл перечня элементов (BOM) не указан или отсутствует.')
-            return
-
-        if not os.path.exists(os.path.dirname(self.specFileName.get())):
-            message.showerror(u'Ошибка!', u'Неверно указан путь к файлу спецификации.')
-            return
-
-        if os.path.splitext(self.specFileName.get())[1] != '.ods':
-            message.showerror(u'Ошибка!', u'Неверно указано расширение файла спецификации.\nДолжно быть ".ods"')
-            return
-
+        self.library_file = ''
+        self.specification_file = path.splitext(self.schematic_file)[0] + '.ods'
+        self.sheets = []
+        self.library = None
         spec = Specification()
-        spec.loadBOM(self.bomFileName.get())
-        if os.path.exists(self.schFileName.get()):
-            spec.loadSchematic(self.schFileName.get())
-        elif self.schFileName.get() != '':
-            message.showwarning(u'Внимание!', u'Файл схемы указан, но не найден.\nВ штампы спецификации будут занесены только номера страниц.')
+        sheet_names = [self.schematic_file]
+        sheet_names.extend(spec.get_sheets(self.schematic_file))
+        sheet_names = sorted(sheet_names)
+        self.sheets = []
+        for sheet_name in sheet_names:
+            self.sheets.append(Schematic(sheet_name))
+        self.init_grid()
+        sch_values = self.get_schematic_values()
+        self.grid_components.AppendRows(len(sch_values))
+        self.set_grid_values(sch_values)
+        self.undo_buffer = []
+        self.redo_buffer = []
+        self.on_grid_change()
+        self.saved = True
 
-        spec.saveSpecification(self.specFileName.get())
+        # Menu & Toolbar
+        self.menuitem_spec.Enable(True)
+        self.menuitem_save_sch.Enable(False)
+        self.menuitem_find.Enable(True)
+        self.menuitem_replace.Enable(True)
 
-        message.showinfo(u'Готово!', u'Файл спецификации успешно создан.')
+    def on_save_sch(self, event):
+        """
+        Save changes in the fields of the components to the schematic file.
+
+        """
+        comp_values = self.get_grid_values()
+        self.set_schematic_values(comp_values)
+        for sheet in self.sheets:
+            sheet.save()
+        self.saved = True
+        self.menuitem_save_sch.Enable(False)
+
+    def on_open_lib(self, event):
+        """
+        Load all components from selected schematic
+        (include hierarchical sheets) to the table for editing.
+
+        """
+        if not self.saved:
+            if wx.MessageBox(
+                u'Последние изменения в полях компонентов не были сохранены!\n' \
+                u'Продолжить?',
+                u'Внимание!',
+                wx.ICON_QUESTION|wx.YES_NO, self
+                ) == wx.NO:
+
+                return
+        open_lib_dialog = wx.FileDialog(
+            self,
+            u'Выбор файла библиотеки',
+            u'',
+            u'',
+            u'Библиотека (*.lib)|*.lib|Все файлы (*.*)|*.*',
+            wx.FD_OPEN|wx.FD_FILE_MUST_EXIST
+            )
+        if open_lib_dialog.ShowModal() == wx.ID_CANCEL:
+            return
+        self.schematic_file = ''
+        self.specification_file = ''
+        self.library_file = open_lib_dialog.GetPath()
+        self.library = Library(self.library_file)
+        self.init_grid()
+        lib_values = self.get_library_values()
+        self.grid_components.AppendRows(len(lib_values))
+        self.set_grid_values(lib_values)
+        self.undo_buffer = []
+        self.redo_buffer = []
+        self.on_grid_change()
+        self.saved = True
+
+        # Menu & Toolbar
+        self.menuitem_spec.Enable(False)
+        self.menuitem_save_sch.Enable(False)
+        self.menuitem_save_lib.Enable(False)
+        self.menuitem_find.Enable(True)
+        self.menuitem_replace.Enable(True)
+
+    def on_save_lib(self, event):
+        """
+        Save changes in the fields of the components to the library file.
+
+        """
+        comp_values = self.get_grid_values()
+        self.set_library_values(comp_values)
+        self.library.save()
+        self.saved = True
+        self.menuitem_save_lib.Enable(False)
+
+    def on_spec(self, event):
+        """
+        Make specification.
+
+        """
+        spec_dialog = gui.SpecDialog(self)
+        spec_dialog.filepicker_spec.SetPath(self.specification_file)
+        spec_dialog.checkbox_add_units.SetValue(self.add_units)
+        spec_dialog.checkbox_all_components.SetValue(self.all_components)
+        result = spec_dialog.ShowModal()
+        if result == wx.ID_OK:
+            comp_fields = []
+            self.specification_file = spec_dialog.filepicker_spec.GetPath()
+            self.all_components = spec_dialog.checkbox_all_components.IsChecked()
+            grid_values = self.get_grid_values()
+            for row in grid_values:
+                if (row[0] == u'1') | self.all_components:
+                    fields = row[1:-1]
+                    fields.insert(1, re.search(r'[A-Z]+', fields[1]).group())
+                    fields[2] = re.search(r'[0-9]+', fields[2]).group()
+                    fields.append('1')
+                    comp_fields.append(fields)
+            spec = Specification()
+            self.add_units = spec_dialog.checkbox_add_units.IsChecked()
+            spec.add_units = self.add_units
+            spec.load(self.schematic_file, comp_fields)
+            spec.save(self.specification_file)
+            wx.MessageBox(
+                u'Перечень элементов успешно создан и сохранен!',
+                u'kicdbom2spec',
+                wx.ICON_INFORMATION | wx.OK,
+                self
+                )
+
+    def on_edit_fields(self, event):
+        """
+        Open specialized window for editing fields of selected components.
+
+        """
+        editor = gui.EditorDialog(self)
+        selected_rows = self.get_selected_rows()
+        col_num = self.grid_components.GetNumberCols()
+        all_choices = []
+        for col in range(1, col_num):
+            if col == 2:
+                all_choices.append([])
+                continue
+            field_choices = []
+            for row in selected_rows:
+                cell_value = self.grid_components.GetCellValue(row, col)
+                if cell_value and not cell_value in field_choices:
+                    field_choices.append(cell_value)
+            all_choices.append(field_choices)
+        for i in range(1, col_num):
+            if i == 2:
+                continue
+            for choice in all_choices[i - 1]:
+                getattr(editor, 'combobox_' + str(i)).Append(choice)
+        if self.library:
+            editor.checkbox.Hide()
+            editor.statictext_4.Hide()
+            editor.combobox_4.Hide()
+            editor.Layout()
+            editor.GetSizer().Fit(editor)
+        result = editor.ShowModal()
+        if result == wx.ID_OK:
+            for row in selected_rows:
+                if editor.checkbox.IsChecked():
+                    self.grid_components.SetCellValue(row, 0, '1')
+                else:
+                    self.grid_components.SetCellValue(row, 0, '0')
+                for col in range(1, 9):
+                    if col == 2:
+                        continue
+                    new_value = getattr(editor, 'combobox_' + str(col)).GetValue()
+                    if new_value == u'<не изменять>':
+                        continue
+                    else:
+                        self.grid_components.SetCellValue(row, col, new_value)
+            if self.is_grid_chaged():
+                self.on_grid_change()
+
+    def on_exit(self, event):
+        """
+        Close the program.
+
+        """
+        if not self.saved:
+            if wx.MessageBox(
+                u'Имеются не сохраненные изменения!\nПродолжить?',
+                u'Внимание!',
+                wx.ICON_QUESTION|wx.YES_NO, self
+                ) == wx.YES:
+
+                self.Destroy()
+
+    def on_clear_fields(self, event):
+        """
+        Clears user specified fields of selected components.
+
+        """
+        selected_rows = self.get_selected_rows()
+        selected_cols = self.get_selected_cols()
+        for row in selected_rows:
+            for col in selected_cols:
+                self.grid_components.SetCellValue(row, col, u'')
+        if self.is_grid_chaged():
+            self.on_grid_change()
+
+    def on_find_replace(self, event):
+        """
+        Find specified text in grid's cells.
+
+        """
+
+        def on_find_next(event):
+            """
+            Find next match.
+
+            """
+            find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
+            if not find_str:
+                return
+
+            rows = self.grid_components.GetNumberRows()
+            cols = self.grid_components.GetNumberCols()
+            cur_row = self.grid_components.GetGridCursorRow()
+            cur_col = self.grid_components.GetGridCursorCol()
+            for row in range(cur_row, rows):
+                for col in range(1, cols):
+                    if row == cur_row and col <= cur_col:
+                        continue
+                    cell_value = self.grid_components.GetCellValue(row, col)
+                    if find_str in cell_value:
+                        self.not_found = False
+                        self.grid_components.SetGridCursor(row, col)
+                        self.grid_components.SelectRow(row)
+                        self.grid_components.MakeCellVisible(row, col)
+                        self.grid_components.SetFocus()
+                        return
+            if not self.not_found and wx.MessageBox(
+                u'Достигнут конец таблицы.\nПродолжить сначала?',
+                u'Поиск',
+                wx.ICON_QUESTION | wx.YES_NO, self
+                ) == wx.YES:
+
+                self.not_found = True
+                self.grid_components.SetGridCursor(0, 0)
+                on_find_next(event)
+            elif self.not_found:
+                wx.MessageBox(
+                    u'Совпадения не найдены!',
+                    u'Поиск',
+                    wx.ICON_INFORMATION | wx.OK, self
+                    )
+
+        def on_find_prev(event):
+            """
+            Find previos match.
+
+            """
+            find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
+            if not find_str:
+                return
+            rows = self.grid_components.GetNumberRows()
+            cols = self.grid_components.GetNumberCols()
+            cur_row = self.grid_components.GetGridCursorRow()
+            cur_col = self.grid_components.GetGridCursorCol()
+            for row in reversed(range(0, cur_row)):
+                for col in reversed(range(1, cols)):
+                    if row == cur_row and col >= cur_col:
+                        continue
+                    cell_value = self.grid_components.GetCellValue(row, col)
+                    if find_str in cell_value:
+                        self.not_found = False
+                        self.grid_components.SetGridCursor(row, col)
+                        self.grid_components.SelectRow(row)
+                        self.grid_components.MakeCellVisible(row, col)
+                        self.grid_components.SetFocus()
+                        return
+            if not self.not_found and wx.MessageBox(
+                u'Достигнуто начало таблицы.\nПродолжить с конца?',
+                u'Поиск',
+                wx.ICON_QUESTION | wx.YES_NO,
+                self
+                ) == wx.YES:
+
+                self.not_found = True
+                self.grid_components.SetGridCursor(rows, cols)
+                on_find_prev(event)
+            elif self.not_found:
+                wx.MessageBox(
+                    u'Совпадения не найдены!',
+                    u'Поиск',
+                    wx.ICON_INFORMATION | wx.OK, self
+                    )
+
+        def on_replace(event):
+            """
+            Replace the text in selected cell.
+
+            """
+            replace_str = event.GetEventObject().GetGrandParent().textctrl_replace.GetValue()
+            if not replace_str:
+                return
+            cur_col = self.grid_components.GetGridCursorCol()
+            if cur_col == 2 or (cur_col == 4 and self.library):
+                return
+            cur_row = self.grid_components.GetGridCursorRow()
+            cell_value = self.grid_components.GetCellValue(cur_row, cur_col)
+            find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
+            replace_str = event.GetEventObject().GetGrandParent().textctrl_replace.GetValue()
+            if find_str not in cell_value:
+                wx.MessageBox(
+                    u'В выделеной ячейке не найдено совпадений для замены!',
+                    u'Замена',
+                    wx.ICON_ERROR | wx.OK, self
+                    )
+                return
+            new_cell_value = cell_value.replace(find_str, replace_str, 1)
+            self.grid_components.SetCellValue(cur_row, cur_col, new_cell_value)
+            self.on_grid_change()
+
+        def on_find_replace_close(event):
+            """
+            Enable menu items when find/replace dialog closed.
+
+            """
+            self.menuitem_find.Enable(True)
+            self.menuitem_replace.Enable(True)
+            event.Skip()
+
+        self.menuitem_find.Enable(False)
+        self.menuitem_replace.Enable(False)
+        find_dialog = gui.FindReplaceDialog(self)
+        find_dialog.Bind(wx.EVT_CLOSE, on_find_replace_close)
+        find_dialog.button_find_next.Bind(wx.EVT_BUTTON, on_find_next)
+        find_dialog.textctrl_find.Bind(wx.EVT_TEXT_ENTER, on_find_next)
+        find_dialog.button_find_prev.Bind(wx.EVT_BUTTON, on_find_prev)
+        if event.GetId() == gui.ID_FIND:
+            find_dialog.SetTitle(u'Поиск')
+            find_dialog.panel_replace.Hide()
+            find_dialog.GetSizer().Fit(find_dialog)
+        elif event.GetId() == gui.ID_REPLACE:
+            find_dialog.SetTitle(u'Замена')
+            find_dialog.button_replace.Bind(wx.EVT_BUTTON, on_replace)
+        find_dialog.textctrl_find.SetFocus()
+        find_dialog.Show()
+
+    def on_about(self, event):
+        """
+        Shows about dialog.
+
+        """
+        about_dialog = gui.AboutDialog(self)
+        about_dialog.ShowModal()
+
+    def on_help(self, event):
+        """
+        Shows help manual.
+
+        """
+        if sys.platform == 'linux2':
+            subprocess.call(["xdg-open", 'help_linux.pdf'])
+        else:
+            os.startfile('help_windows.pdf')
+
+    def get_grid_values(self):
+        """
+        Returns list of cell values of grid.
+
+        """
+        rows = self.grid_components.GetNumberRows()
+        cols = self.grid_components.GetNumberCols()
+        values_temp = []
+        for row in range(rows):
+            rows_temp = []
+            for col in range(cols):
+                value = self.grid_components.GetCellValue(row, col)
+                value = value.replace(u'"', u'\\"')
+                rows_temp.append(value)
+            rows_temp.append(self.grid_components.GetRowLabelValue(row))
+            values_temp.append(rows_temp)
+        return values_temp
+
+    def set_grid_values(self, grid_values, accordingly=True):
+        """
+        Set values from 'values' to cells of grid.
+
+        """
+        rows = self.grid_components.GetNumberRows()
+        cols = self.grid_components.GetNumberCols()
+        values = grid_values[:]
+        for row in range(rows):
+            for values_index, values_row in enumerate(values):
+                if self.library:
+                    comp1 = self.grid_components.GetCellValue(row, 4)
+                    comp2 = values_row[4]
+                else:
+                    comp1 = self.grid_components.GetCellValue(row, 2)
+                    comp2 = values_row[2]
+                if (comp1 == comp2 or not comp1) | (not accordingly):
+                    for col in range(cols):
+                        value = values[values_index][col].replace(u'\\"', u'"')
+                        self.grid_components.SetCellValue(row, col, value)
+                    self.grid_components.SetRowLabelValue(row, values[values_index][-1])
+                    del values[values_index]
+                    break
+
+    def get_schematic_values(self):
+        """
+        Returns list of fields values of components from schematic.
+
+        """
+        values = []
+        spec = Specification()
+        for sheet in self.sheets:
+            for comp in spec.get_components(sheet.sch_name, True):
+                if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
+                    continue
+                row = [
+                    u'1',  # Used
+                    u'',  # Group
+                    comp.fields[0].text,  # Reference
+                    u'',  # Mark
+                    comp.fields[1].text,  # Value
+                    u'',  # Acceracy
+                    u'',  # Type
+                    u'',  # GOST
+                    u'',  # Comment
+                    sheet.sch_name  # Sheet name
+                    ]
+                for field in comp.fields:
+                    if hasattr(field, 'name'):
+                        if field.name == u'Группа':
+                            row[1] = field.text
+                        elif field.name == u'Марка':
+                            row[3] = field.text
+                        elif field.name == u'Класс точности':
+                            row[5] = field.text
+                        elif field.name == u'Тип':
+                            row[6] = field.text
+                        elif field.name == u'Стандарт':
+                            row[7] = field.text
+                        elif field.name == u'Примечание':
+                            row[8] = field.text
+                values.append(row)
+        return values
+
+    def set_schematic_values(self, values):
+        """
+        Set values to fields of the components of schematic.
+
+        """
+        sorted_values = sorted(values, key=itemgetter(-1))
+        field_names = {
+            1:u'Группа',
+            3:u'Марка',
+            5:u'Класс точности',
+            6:u'Тип',
+            7:u'Стандарт',
+            8:u'Примечание'
+            }
+        for sheet in self.sheets:
+            for item in sheet.items:
+                if item.__class__.__name__ == 'Comp':
+                    if not item.ref.startswith('#'):
+                        for value in sorted_values:
+                            if value[2] == item.ref and value[-1] == sheet.sch_name:
+                                item.fields[1].text = value[4]
+                                for ind, field_name in field_names.items():
+                                    if value[ind] != u'':
+                                        for field in item.fields:
+                                            if hasattr(field, 'name'):
+                                                if field.name == field_name:
+                                                    field.text = value[ind]
+                                                    break
+                                        else:
+                                            str_field = u'F ' + str(len(item.fields))
+                                            str_field += u' "' + value[ind] + u'" '
+                                            str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
+                                            str_field += u' 0001 C CNN'
+                                            str_field += u' "' + field_name + '"'
+                                            item.fields.append(sheet.Comp.Field(str_field.encode('utf-8')))
+                                    else:
+                                        for field_index, field in enumerate(item.fields):
+                                            if hasattr(field, 'name'):
+                                                if field.name == field_name:
+                                                    del item.fields[field_index]
+                                for field_index, field in enumerate(item.fields):
+                                    field.number = field_index
+
+    def get_library_values(self):
+        """
+        Returns list of fields values of components from library.
+
+        """
+        values = []
+        for comp in self.library.components:
+            if comp.reference.startswith('#'):
+                continue
+            row = [
+                u'1',  # Used
+                u'',  # Group
+                comp.fields[0].text,  # Reference
+                u'',  # Mark
+                comp.fields[1].text,  # Value
+                u'',  # Acceracy
+                u'',  # Type
+                u'',  # GOST
+                u'',  # Comment
+                self.library.lib_name  # Library name
+                ]
+            for field in comp.fields:
+                if hasattr(field, 'name'):
+                    if field.name == u'Группа':
+                        row[1] = field.text
+                    elif field.name == u'Марка':
+                        row[3] = field.text
+                    elif field.name == u'Класс точности':
+                        row[5] = field.text
+                    elif field.name == u'Тип':
+                        row[6] = field.text
+                    elif field.name == u'Стандарт':
+                        row[7] = field.text
+                    elif field.name == u'Примечание':
+                        row[8] = field.text
+            values.append(row)
+        return values
+
+    def set_library_values(self, values):
+        """
+        Set values to fields of the components of library.
+
+        """
+        sorted_values = values[:]
+        field_names = {
+            1:u'Группа',
+            3:u'Марка',
+            5:u'Класс точности',
+            6:u'Тип',
+            7:u'Стандарт',
+            8:u'Примечание'
+            }
+        for comp in self.library.components:
+            if not comp.reference.startswith('#'):
+                for value in sorted_values:
+                    if value[4] == comp.name:
+                        for ind, field_name in field_names.items():
+                            if value[ind] != u'':
+                                for field in comp.fields:
+                                    if hasattr(field, 'name'):
+                                        if field.name == field_name:
+                                            field.text = value[ind]
+                                            break
+                                else:
+                                    str_field = u'F' + str(len(comp.fields))
+                                    str_field += u' "' + value[ind] + u'" '
+                                    str_field += u' 0 0 60 H I C CNN'
+                                    str_field += u' "' + field_name + '"'
+                                    comp.fields.append(self.library.Component.Field(str_field.encode('utf-8')))
+                            else:
+                                for field_index, field in enumerate(comp.fields):
+                                    if hasattr(field, 'name'):
+                                        if field.name == field_name:
+                                            del comp.fields[field_index]
+                        for field_index, field in enumerate(comp.fields):
+                            field.number = field_index
+
+    def is_grid_chaged(self):
+        """
+        Returns True if values of the grid was changed.
+
+        """
+        rows = self.grid_components.GetNumberRows()
+        cols = self.grid_components.GetNumberCols()
+        old_values = self.undo_buffer[-1][:]
+        for row in range(rows):
+            ref = self.grid_components.GetCellValue(row, 2)
+            for old_row in range(len(old_values)):
+                if ref == old_values[old_row][2]:
+                    for col in range(cols):
+                        old_value = old_values[old_row][col].replace('\\"', '"')
+                        value = self.grid_components.GetCellValue(row, col)
+                        if old_value != value:
+                            return True
+                    del old_values[old_row]
+                    break
+        return False
+
+    def get_selected_rows(self):
+        """
+        Returns list of indexes of selected rows.
+
+        """
+        top_left = self.grid_components.GetSelectionBlockTopLeft()
+        bottom_right =  self.grid_components.GetSelectionBlockBottomRight()
+        selected_rows = []
+        for i in range(len(top_left)):
+            row_start, col_start = top_left[i]
+            row_end, col_end = bottom_right[i]
+            for row in range(row_start, row_end + 1):
+                selected_rows.append(row)
+        return selected_rows
+
+    def get_selected_cols(self):
+        """
+        Returns list of indexes of selected columns from field selector.
+
+        """
+        selector = gui.FieldSelector(self)
+        if self.library:
+            selector.checkbox_4.SetValue(False)
+            selector.checkbox_4.Hide()
+            selector.Layout()
+            selector.GetSizer().Fit(selector)
+        result = selector.ShowModal()
+        selected_cols = []
+        if result == wx.ID_OK:
+            for i in range(1, 9):
+                if i == 2:
+                    continue
+                if getattr(selector, 'checkbox_' + str(i)).IsChecked():
+                    selected_cols.append(i)
+        return selected_cols
 
 
 def main():
-    '''
-        Main function called at start
-    '''
+    """
+    Main function - called at start.
 
+    """
     # Parsing of command-line arguments
-    parser = argparse.ArgumentParser(description=(u'Скрипт создает файл спецификации оформленный в соответствии с ЕСКД из перечня элементов (BOM).\n'))
-    parser.add_argument('-b', '--bom',      type=str,           help=u'полное или относительное имя BOM файла')
-    parser.add_argument('-c', '--console',  action='store_true',help=u'работа в режиме командной строки')
-    parser.add_argument('-o', '--output',   type=str,           help=u'полное или относительное имя файла спецификации')
-    parser.add_argument('-s', '--schematic',type=str,           help=u'полное или относительное имя файла схемы в формате KiCAD')
-    parser.add_argument('-v', '--verbose',  action='store_true',help=u'вывод информации о ходе выполнения')
-
+    parser = argparse.ArgumentParser(
+        description=(
+            u'Приложение создает файл перечня элементов оформленный ' \
+            u'в соответствии с ЕСКД для схемы выполненой в САПР KiCAD.\n'
+            )
+        )
+    parser.add_argument(
+        'schematic',
+        default='',
+        nargs='?',
+        type=str,
+        help=u'полное или относительное имя файла схемы в формате KiCAD'
+        )
+    parser.add_argument(
+        'spec',
+        default='',
+        nargs='?',
+        type=str,
+        help=u'полное или относительное имя файла перечня элеменнтов'
+        )
     args = parser.parse_args()
+    os.chdir(path.dirname(path.abspath(__file__)))
+    app = wx.App(False)
+    window = Window(None)
 
-    # working in console mode
-    if args.console == True:
-
-        if args.bom == None:
-            print >> sys.stderr, u'Для создания спецификации необходимо указать файл перечня элементов (BOM).'
-            return
+    if args.schematic:
+        sch_file_name = path.splitext(path.abspath(args.schematic))[0] + '.sch'
+        if path.isfile(sch_file_name):
+            window.on_open_sch(sch_file_name=sch_file_name)
         else:
-            bomFileName = os.path.abspath(args.bom)
-            if not os.path.exists(bomFileName):
-                print >> sys.stderr, u'Указанный файл перечня элементов не найден.'
-                return
+            window.on_open_sch()
 
-            spec = Specification()
-            spec.loadBOM(bomFileName)
-            if args.verbose == True:
-                print u'Файл перечня элементов загружен.'
+    if args.spec:
+        window.specification_file = path.splitext(path.abspath(args.spec))[0] + '.ods'
 
-            if args.schematic == None:
-                schFileName = os.path.splitext(bomFileName)[0] + '.sch'
-                if os.path.exists(schFileName):
-                    spec.loadSchematic(schFileName)
-                    if args.verbose == True:
-                        print u'Найден файл схемы. Значения полей основной надписи будут скопированы в спецификацию.'
-            elif os.path.exists(args.schematic):
-                spec.loadSchematic(os.path.abspath(args.schematic))
-                if args.verbose == True:
-                    print u'Значения полей основной надписи скопированы из схемы в спецификацию.'
-            else:
-                if args.verbose == True:
-                    print u'Файл схемы не найден. В основной надписи спецификации будут указаны только намера страниц.'
-
-            specFileName = ''
-            if args.output == None:
-                specFileName = os.path.splitext(bomFileName)[0] + '.ods'
-            elif os.path.dirname(args.output) != '':
-                if os.path.exists(os.path.dirname(args.output)):
-                    specFileName = os.path.abspath(args.output)
-                else:
-                    print >> sys.stderr, u'Неверно указан путь к файлу спецификации.'
-                    return
-            else:
-                specFileName = os.path.abspath(args.output)
-
-            if os.path.splitext(specFileName)[1] != '.ods':
-                specFileName += '.ods'
-            spec.saveSpecification(specFileName)
-            if args.verbose == True:
-                print u'Файл спецификации успешно создан.'
-
-    # working in GUI mode
-    else:
-
-        # Create and show main window
-        root = Tk()
-        root.resizable(width=False, height=False)
-        window = Window(root, args)
-        root.mainloop()
+    window.Show(True)
+    app.MainLoop()
 
 if __name__ == '__main__':
     main()
