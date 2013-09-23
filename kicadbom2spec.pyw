@@ -24,6 +24,8 @@ import codecs
 import locale
 import argparse
 from operator import itemgetter
+from types import *
+from ConfigParser import SafeConfigParser
 
 import wx
 import wx.grid
@@ -36,6 +38,9 @@ from spec import *
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+# Global
+settings_file_name = 'settings.ini'
+settings_separator = ';;;'
 
 class Window(gui.MainFrame):
     """
@@ -72,7 +77,68 @@ class Window(gui.MainFrame):
         self.redo_buffer = []
         self.add_units = False
         self.all_components = False
+        self.load_settings()
         self.init_grid()
+
+    def load_settings(self):
+        """
+        Loads setttings from configuration file.
+
+        """
+        self.settings = SafeConfigParser()
+        self.save_window_size_pos = False
+        self.save_selected_mark = False
+        self.save_col_size = False
+        self.auto_groups_dict = {}
+        self.values_dict = {
+            u'группа':[],
+            u'марка':[],
+            u'значение':[],
+            u'класс точности':[],
+            u'тип':[],
+            u'стандарт':[],
+            u'примечание':[]
+            }
+
+        if path.isfile(settings_file_name):
+            # Load settings from file
+            self.settings.readfp(codecs.open(settings_file_name, 'r', encoding='utf-8'))
+            if self.settings.has_section('window'):
+                self.save_window_size_pos = True
+                x, y = self.GetPosition()
+                width, height = self.GetSize()
+                if self.settings.has_option('window', 'x'):
+                    x = self.settings.getint('window', 'x')
+                if self.settings.has_option('window', 'y'):
+                    y = self.settings.getint('window', 'y')
+                if self.settings.has_option('window', 'width'):
+                    width = self.settings.getint('window', 'width')
+                if self.settings.has_option('window', 'height'):
+                    height = self.settings.getint('window', 'height')
+                self.SetDimensions(x, y, width, height)
+                if self.settings.has_option('window', 'maximized'):
+                    if self.settings.getint('window', 'maximized'):
+                        self.Maximize()
+
+            if self.settings.has_section('column sizes'):
+                self.save_col_size = True
+
+            if self.settings.has_section('values'):
+                for item in self.values_dict.keys():
+                    if self.settings.has_option('values', item):
+                        values_list = self.settings.get('values', item)
+                        values_list = values_list.split(settings_separator)
+                        self.values_dict[item].extend(values_list)
+
+            if self.settings.has_section('general'):
+                if self.settings.has_option('general', 'remember selection'):
+                    self.save_selected_mark = self.settings.getboolean('general', 'remember selection')
+
+            if self.settings.has_section('auto filling groups'):
+                for param in self.settings.options('auto filling groups'):
+                    value = self.settings.get('auto filling groups', param)
+                    if value.startswith(u'1'):
+                        self.auto_groups_dict[param.upper()] = value[1:]
 
     def init_grid(self):
         """
@@ -83,6 +149,13 @@ class Window(gui.MainFrame):
         self.reversed_sorting = False
 
         if hasattr(self, 'grid_components'):
+            if self.save_col_size:
+                if not self.settings.has_section('column sizes'):
+                    self.settings.add_section('column sizes')
+                for col in range(self.grid_components.GetNumberCols()):
+                    col_size = self.grid_components.GetColSize(col)
+                    self.settings.set('column sizes', str(col), str(col_size))
+
             self.GetSizer().Remove(self.panel_components.GetSizer())
             self.grid_components.Destroy()
 
@@ -146,6 +219,11 @@ class Window(gui.MainFrame):
         # Columns
         self.grid_components.SetDefaultColSize(150)
         self.grid_components.SetColSize(0, 20)
+        if hasattr(self, 'settings'):
+            if self.settings.has_section('column sizes'):
+                for col in self.settings.options('column sizes'):
+                    col_size = self.settings.getint('column sizes', col)
+                    self.grid_components.SetColSize(int(col), col_size)
         self.grid_components.EnableDragColSize(True)
         self.grid_components.SetColLabelSize(30)
         self.grid_components.SetColLabelValue(0, u' ')
@@ -603,11 +681,13 @@ class Window(gui.MainFrame):
             if col == 2:
                 all_choices.append([])
                 continue
-            field_choices = []
+            field_choices = self.values_dict[self.grid_components.GetColLabelValue(col).lower()][:]
             for row in selected_rows:
                 cell_value = self.grid_components.GetCellValue(row, col)
                 if cell_value and not cell_value in field_choices:
                     field_choices.append(cell_value)
+            while '' in field_choices:
+                field_choices.remove('')
             all_choices.append(field_choices)
         for i in range(1, col_num):
             if i == 2:
@@ -638,6 +718,161 @@ class Window(gui.MainFrame):
             if self.is_grid_chaged():
                 self.on_grid_change()
 
+    def on_settings(self, event):
+        """
+        Open settings manager.
+
+        """
+
+        def split_auto_groups_item(string):
+            """
+            Split auto_groups_checklistbox item string
+            on couple (param, value).
+
+            """
+            matches = re.search(r'^(.+) - "(.*)"$', string)
+            if matches:
+                return matches.groups()
+            else:
+                return None
+
+        def on_auto_groups_checklistbox_selected(event):
+            """
+            Enable buttons when item selected.
+
+            """
+            settings_editor = event.GetEventObject().GetGrandParent().GetParent()
+            settings_editor.auto_groups_edit_button.Enable(True)
+            settings_editor.auto_groups_remove_button.Enable(True)
+
+        def on_auto_groups_add_button_clicked(event):
+            """
+            Add an element to auto_groups_checklistbox.
+
+            """
+            settings_editor = event.GetEventObject().GetGrandParent().GetParent()
+            add_dialog = gui.EditAutoGroupsDialog(self)
+            add_dialog.SetTitle(u'Добавить элемент списка')
+            result = add_dialog.ShowModal()
+            if result == wx.ID_OK:
+                param = add_dialog.param_text.GetValue()
+                value = add_dialog.value_text.GetValue()
+                item = u'{} - "{}"'.format(param, value)
+                settings_editor.auto_groups_checklistbox.Append(item)
+
+        def on_auto_groups_edit_button_clicked(event):
+            """
+            Edit selected element in auto_groups_checklistbox.
+
+            """
+            settings_editor = event.GetEventObject().GetGrandParent().GetParent()
+            edit_dialog = gui.EditAutoGroupsDialog(self)
+            edit_dialog.SetTitle(u'Изменить элемент списка')
+            index = settings_editor.auto_groups_checklistbox.GetSelections()[0]
+            text = settings_editor.auto_groups_checklistbox.GetString(index)
+            param, value = split_auto_groups_item(text)
+            edit_dialog.param_text.SetValue(param)
+            edit_dialog.value_text.SetValue(value)
+            result = edit_dialog.ShowModal()
+            if result == wx.ID_OK:
+                param = edit_dialog.param_text.GetValue()
+                value = edit_dialog.value_text.GetValue()
+                item = u'{} - "{}"'.format(param, value)
+                settings_editor.auto_groups_checklistbox.SetString(index, item)
+
+        def on_auto_groups_remove_button_clicked(event):
+            """
+            Remove selected element from auto_groups_checklistbox.
+
+            """
+            settings_editor = event.GetEventObject().GetGrandParent().GetParent()
+            index = settings_editor.auto_groups_checklistbox.GetSelections()[0]
+            settings_editor.auto_groups_checklistbox.Delete(index)
+
+        settings_editor = gui.SettingsDialog(self)
+        settings_editor.auto_groups_checklistbox.Bind(wx.EVT_LISTBOX, on_auto_groups_checklistbox_selected)
+        settings_editor.auto_groups_checklistbox.Bind(wx.EVT_LISTBOX_DCLICK, on_auto_groups_edit_button_clicked)
+        settings_editor.auto_groups_add_button.Bind(wx.EVT_BUTTON, on_auto_groups_add_button_clicked)
+        settings_editor.auto_groups_edit_button.Bind(wx.EVT_BUTTON, on_auto_groups_edit_button_clicked)
+        settings_editor.auto_groups_remove_button.Bind(wx.EVT_BUTTON, on_auto_groups_remove_button_clicked)
+
+        field_names = (
+            u'группа',
+            u'марка',
+            u'значение',
+            u'класс точности',
+            u'тип',
+            u'стандарт',
+            u'примечание',
+            )
+        for i in range(len(field_names)):
+            field_text = getattr(settings_editor, 'field{}_text'.format(i + 1))
+            values = self.values_dict[field_names[i]]
+            for value in values:
+                field_text.AppendText(value + '\n')
+
+        settings_editor.window_checkbox.SetValue(self.save_window_size_pos)
+
+        settings_editor.col_size_checkbox.SetValue(self.save_col_size)
+
+        settings_editor.remember_selection_checkbox.SetValue(self.save_selected_mark)
+
+        if self.settings.has_section('auto filling groups'):
+            settings_editor.auto_groups_checklistbox.Clear()
+            for param in self.settings.options('auto filling groups'):
+                value = self.settings.get('auto filling groups', param)
+                checked = {'1':True, '0':False}[value[0]]
+                value = u'{} - "{}"'.format(param.upper(), value[1:])
+                index = settings_editor.auto_groups_checklistbox.Append(value)
+                settings_editor.auto_groups_checklistbox.Check(index, checked)
+
+        result = settings_editor.ShowModal()
+        if result == wx.ID_OK:
+            for i in range(len(field_names)):
+                field_text = getattr(settings_editor, 'field{}_text'.format(i + 1))
+                self.values_dict[field_names[i]] = []
+                for line in range(field_text.GetNumberOfLines()):
+                    line_text = field_text.GetLineText(line)
+                    if line_text:
+                        self.values_dict[field_names[i]].append(line_text)
+
+            if not self.settings.has_section('values'):
+                self.settings.add_section('values')
+            for field in self.values_dict.keys():
+                field_values = settings_separator.join(self.values_dict[field])
+                field_values = field_values.replace('%', '%%')
+                if field_values:
+                    self.settings.set('values', field, field_values)
+
+            self.save_window_size_pos = settings_editor.window_checkbox.GetValue()
+            self.save_col_size = settings_editor.col_size_checkbox.GetValue()
+            if not self.save_col_size:
+                self.settings.remove_section('column sizes')
+            self.save_selected_mark = settings_editor.remember_selection_checkbox.GetValue()
+            if not self.settings.has_section('general'):
+                self.settings.add_section('general')
+            self.settings.set(
+                'general',
+                'remember selection',
+                {True:'1', False:'0'}[self.save_selected_mark]
+                )
+
+            auto_groups_items_count = settings_editor.auto_groups_checklistbox.GetCount()
+            self.settings.remove_section('auto filling groups')
+            self.auto_groups_dict = {}
+            if not self.settings.has_section('auto filling groups') and auto_groups_items_count:
+                self.settings.add_section('auto filling groups')
+                for item in range(auto_groups_items_count):
+                    value = {True:u'1', False:u'0'}[settings_editor.auto_groups_checklistbox.IsChecked(item)]
+                    text = settings_editor.auto_groups_checklistbox.GetString(item)
+                    param = split_auto_groups_item(text)
+                    if param:
+                        value += param[1]
+                        param = param[0]
+                        self.settings.set('auto filling groups', param, value)
+                        if value.startswith('1'):
+                            self.auto_groups_dict[param] = value[1:]
+
     def on_exit(self, event):
         """
         Close the program.
@@ -648,9 +883,38 @@ class Window(gui.MainFrame):
                 u'Имеются не сохраненные изменения!\nПродолжить?',
                 u'Внимание!',
                 wx.ICON_QUESTION|wx.YES_NO, self
-                ) == wx.YES:
+                ) == wx.NO:
 
-                self.Destroy()
+                return
+
+        if self.save_window_size_pos:
+            if not self.settings.has_section('window'):
+                self.settings.add_section('window')
+            if self.IsMaximized():
+                self.settings.set('window', 'maximized', '1')
+            else:
+                self.settings.set('window', 'maximized', '0')
+                x, y = self.GetPosition()
+                width, height = self.GetSize()
+                self.settings.set('window', 'x', str(x))
+                self.settings.set('window', 'y', str(y))
+                self.settings.set('window', 'width', str(width))
+                self.settings.set('window', 'height', str(height))
+        else:
+            self.settings.remove_section('window')
+
+        if self.save_col_size:
+            if not self.settings.has_section('column sizes'):
+                self.settings.add_section('column sizes')
+            for col in range(self.grid_components.GetNumberCols()):
+                col_size = self.grid_components.GetColSize(col)
+                self.settings.set('column sizes', str(col), str(col_size))
+        else:
+            self.settings.remove_section('column sizes')
+
+        self.settings.write(codecs.open(settings_file_name, 'w', encoding='utf-8'))
+
+        self.Destroy()
 
     def on_clear_fields(self, event):
         """
@@ -890,7 +1154,9 @@ class Window(gui.MainFrame):
                     ]
                 for field in comp.fields:
                     if hasattr(field, 'name'):
-                        if field.name == u'Группа':
+                        if field.name == u'Исключен из ПЭ':
+                            row[0] = u'0'
+                        elif field.name == u'Группа':
                             row[1] = field.text
                         elif field.name == u'Марка':
                             row[3] = field.text
@@ -902,6 +1168,11 @@ class Window(gui.MainFrame):
                             row[7] = field.text
                         elif field.name == u'Примечание':
                             row[8] = field.text
+                if row[1] == u'':
+                    for sufix in self.auto_groups_dict.keys():
+                        if row[2].startswith(sufix):
+                            row[1] = self.auto_groups_dict[sufix]
+                            break
                 values.append(row)
         return values
 
@@ -945,6 +1216,22 @@ class Window(gui.MainFrame):
                                             if hasattr(field, 'name'):
                                                 if field.name == field_name:
                                                     del item.fields[field_index]
+                                                    break
+
+                                if self.save_selected_mark and value[0] == '0':
+                                    str_field = u'F ' + str(len(item.fields))
+                                    str_field += u' "" '
+                                    str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
+                                    str_field += u' 0001 C CNN'
+                                    str_field += u' "Исключен из ПЭ"'
+                                    item.fields.append(sheet.Comp.Field(str_field.encode('utf-8')))
+                                else:
+                                    for field_index, field in enumerate(item.fields):
+                                        if hasattr(field, 'name'):
+                                            if field.name == u'Исключен из ПЭ':
+                                                del item.fields[field_index]
+                                                break
+
                                 for field_index, field in enumerate(item.fields):
                                     field.number = field_index
 

@@ -25,9 +25,10 @@ ID_FIND = 1011
 ID_REPLACE = 1012
 ID_EDIT = 1013
 ID_CLEAR = 1014
-ID_TOOL = 1015
-ID_HELP = 1016
-ID_ABOUT = 1017
+ID_SETTINGS = 1015
+ID_TOOL = 1016
+ID_HELP = 1017
+ID_ABOUT = 1018
 
 ###########################################################################
 ## Class MainFrame
@@ -98,7 +99,7 @@ class MainFrame ( wx.Frame ):
 		self.menu_edit.AppendItem( self.menuitem_cut )
 		self.menuitem_cut.Enable( False )
 		
-		self.menuitem_paste = wx.MenuItem( self.menu_edit, ID_PASTE, u"&Вставить...", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_paste = wx.MenuItem( self.menu_edit, ID_PASTE, u"В&ставить...", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_paste.SetBitmap( wx.Bitmap( u"bitmaps/edit-paste.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_edit.AppendItem( self.menuitem_paste )
 		self.menuitem_paste.Enable( False )
@@ -126,6 +127,12 @@ class MainFrame ( wx.Frame ):
 		self.menuitem_clear.SetBitmap( wx.Bitmap( u"bitmaps/edit-clear.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_edit.AppendItem( self.menuitem_clear )
 		self.menuitem_clear.Enable( False )
+		
+		self.menu_edit.AppendSeparator()
+		
+		self.menuItem_settings = wx.MenuItem( self.menu_edit, ID_SETTINGS, u"Пара&метры...", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuItem_settings.SetBitmap( wx.Bitmap( u"bitmaps/document-properties.png", wx.BITMAP_TYPE_ANY ) )
+		self.menu_edit.AppendItem( self.menuItem_settings )
 		
 		self.menubar.Append( self.menu_edit, u"&Правка" ) 
 		
@@ -204,6 +211,7 @@ class MainFrame ( wx.Frame ):
 		self.Centre( wx.BOTH )
 		
 		# Connect Events
+		self.Bind( wx.EVT_CLOSE, self.on_exit )
 		self.Bind( wx.EVT_MENU, self.on_open_sch, id = self.menuitem_open_sch.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_save_sch, id = self.menuitem_save_sch.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_open_lib, id = self.menuitem_open_lib.GetId() )
@@ -219,6 +227,7 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.on_find_replace, id = self.menuitem_replace.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_edit_fields, id = self.menuitem_edit.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_clear_fields, id = self.menuitem_clear.GetId() )
+		self.Bind( wx.EVT_MENU, self.on_settings, id = self.menuItem_settings.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_tool, id = self.menuitem_tool.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_help, id = self.menuitem_help.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_about, id = self.menuitem_about.GetId() )
@@ -228,6 +237,9 @@ class MainFrame ( wx.Frame ):
 	
 	
 	# Virtual event handlers, overide them in your derived class
+	def on_exit( self, event ):
+		event.Skip()
+	
 	def on_open_sch( self, event ):
 		event.Skip()
 	
@@ -243,8 +255,6 @@ class MainFrame ( wx.Frame ):
 	def on_spec( self, event ):
 		event.Skip()
 	
-	def on_exit( self, event ):
-		event.Skip()
 	
 	def on_undo( self, event ):
 		event.Skip()
@@ -269,6 +279,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 	
 	def on_clear_fields( self, event ):
+		event.Skip()
+	
+	def on_settings( self, event ):
 		event.Skip()
 	
 	def on_tool( self, event ):
@@ -697,6 +710,261 @@ class SpecDialog ( wx.Dialog ):
 		self.SetSizer( sizer_spec_dialog )
 		self.Layout()
 		sizer_spec_dialog.Fit( self )
+		
+		self.Centre( wx.BOTH )
+	
+	def __del__( self ):
+		pass
+	
+
+###########################################################################
+## Class SettingsDialog
+###########################################################################
+
+class SettingsDialog ( wx.Dialog ):
+	
+	def __init__( self, parent ):
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Редактор настроек", pos = wx.DefaultPosition, size = wx.Size( 600,400 ), style = wx.DEFAULT_DIALOG_STYLE )
+		
+		self.SetSizeHintsSz( wx.Size( 600,400 ), wx.Size( -1,-1 ) )
+		
+		sizer_settings_dialog = wx.BoxSizer( wx.VERTICAL )
+		
+		self.settings_tabs = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_TOP )
+		self.general_tab_scrolledwindow = wx.ScrolledWindow( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
+		self.general_tab_scrolledwindow.SetScrollRate( 5, 5 )
+		self.general_tab_scrolledwindow.SetMaxSize( wx.Size( 0,0 ) )
+		
+		general_tab_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.window_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Сохранять положение и размер окна", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.window_checkbox.SetToolTipString( u"Если этот параметр установлен, то при закрытии программы будут сохарнены положение и размер окна и при следующем запуске они будут восстановлены." )
+		
+		general_tab_sizer.Add( self.window_checkbox, 0, wx.EXPAND|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.col_size_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Сохранять ширину колонок таблицы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.col_size_checkbox.SetToolTipString( u"Если этот параметр установлен, то в процессе работы и при завершении работы программы будут сохранены размеры ширины столбцов таблицы элементов и при следующем запуске они будут восстановлены." )
+		
+		general_tab_sizer.Add( self.col_size_checkbox, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		self.remember_selection_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Запоминать выбор элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.remember_selection_checkbox.SetToolTipString( u"Если этот параметр установлен, то при сохранении схемы элементам, которые не отмечены для вывода в перечень элементов, будет добавлено поле \"Исключен из ПЭ\". \nПри открытии схемы для элементов с полем \"Исключен из ПЭ\" будет автоматически снята отметка о выводе в перечень элементов." )
+		
+		general_tab_sizer.Add( self.remember_selection_checkbox, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.staticline2 = wx.StaticLine( self.general_tab_scrolledwindow, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		general_tab_sizer.Add( self.staticline2, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		self.auto_groups_statictext = wx.StaticText( self.general_tab_scrolledwindow, wx.ID_ANY, u"Автоматически заполнять поле \"Группа\" для:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.auto_groups_statictext.Wrap( -1 )
+		self.auto_groups_statictext.SetToolTipString( u"Если элементам не назначено значие поля \"Группа\", то при загрузке элементов из файла схемы/библиотеки для выбранных типов они будут сформированны автоматически." )
+		
+		general_tab_sizer.Add( self.auto_groups_statictext, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		auto_groups_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		
+		auto_groups_sizer.AddSpacer( ( 20, 0), 0, 0, 5 )
+		
+		auto_groups_checklistboxChoices = []
+		self.auto_groups_checklistbox = wx.CheckListBox( self.general_tab_scrolledwindow, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,200 ), auto_groups_checklistboxChoices, wx.LB_NEEDED_SB|wx.LB_SORT )
+		auto_groups_sizer.Add( self.auto_groups_checklistbox, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		auto_groups_buttons_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.auto_groups_add_button = wx.Button( self.general_tab_scrolledwindow, wx.ID_ANY, u"Добавить", wx.DefaultPosition, wx.DefaultSize, 0 )
+		auto_groups_buttons_sizer.Add( self.auto_groups_add_button, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+		
+		self.auto_groups_edit_button = wx.Button( self.general_tab_scrolledwindow, wx.ID_ANY, u"Изменить", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.auto_groups_edit_button.Enable( False )
+		
+		auto_groups_buttons_sizer.Add( self.auto_groups_edit_button, 0, wx.ALL|wx.ALIGN_RIGHT, 5 )
+		
+		self.auto_groups_remove_button = wx.Button( self.general_tab_scrolledwindow, wx.ID_ANY, u"Удалить", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.auto_groups_remove_button.Enable( False )
+		
+		auto_groups_buttons_sizer.Add( self.auto_groups_remove_button, 0, wx.ALL|wx.ALIGN_RIGHT, 5 )
+		
+		
+		auto_groups_sizer.Add( auto_groups_buttons_sizer, 0, 0, 5 )
+		
+		
+		general_tab_sizer.Add( auto_groups_sizer, 1, wx.EXPAND, 5 )
+		
+		
+		self.general_tab_scrolledwindow.SetSizer( general_tab_sizer )
+		self.general_tab_scrolledwindow.Layout()
+		general_tab_sizer.Fit( self.general_tab_scrolledwindow )
+		self.settings_tabs.AddPage( self.general_tab_scrolledwindow, u"Основные", True )
+		self.values_tab_panel = wx.Panel( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		values_tab_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.value_notebook = wx.Notebook( self.values_tab_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.field1_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,-1 ), wx.TAB_TRAVERSAL )
+		field1_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.field1_text = wx.TextCtrl( self.field1_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+		field1_sizer.Add( self.field1_text, 1, wx.EXPAND, 5 )
+		
+		
+		self.field1_panel.SetSizer( field1_sizer )
+		self.field1_panel.Layout()
+		field1_sizer.Fit( self.field1_panel )
+		self.value_notebook.AddPage( self.field1_panel, u"Группа", True )
+		self.field2_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		field2_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.field2_text = wx.TextCtrl( self.field2_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+		field2_sizer.Add( self.field2_text, 1, wx.EXPAND, 5 )
+		
+		
+		self.field2_panel.SetSizer( field2_sizer )
+		self.field2_panel.Layout()
+		field2_sizer.Fit( self.field2_panel )
+		self.value_notebook.AddPage( self.field2_panel, u"Марка", False )
+		self.field3_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		field3_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.field3_text = wx.TextCtrl( self.field3_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+		field3_sizer.Add( self.field3_text, 1, wx.EXPAND, 5 )
+		
+		
+		self.field3_panel.SetSizer( field3_sizer )
+		self.field3_panel.Layout()
+		field3_sizer.Fit( self.field3_panel )
+		self.value_notebook.AddPage( self.field3_panel, u"Значение", False )
+		self.field4_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		field4_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.field4_text = wx.TextCtrl( self.field4_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+		field4_sizer.Add( self.field4_text, 1, wx.EXPAND, 5 )
+		
+		
+		self.field4_panel.SetSizer( field4_sizer )
+		self.field4_panel.Layout()
+		field4_sizer.Fit( self.field4_panel )
+		self.value_notebook.AddPage( self.field4_panel, u"Класс точности", False )
+		self.field5_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		field5_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.field5_text = wx.TextCtrl( self.field5_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+		field5_sizer.Add( self.field5_text, 1, wx.EXPAND, 5 )
+		
+		
+		self.field5_panel.SetSizer( field5_sizer )
+		self.field5_panel.Layout()
+		field5_sizer.Fit( self.field5_panel )
+		self.value_notebook.AddPage( self.field5_panel, u"Тип", False )
+		self.field6_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		field6_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.field6_text = wx.TextCtrl( self.field6_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+		field6_sizer.Add( self.field6_text, 1, wx.EXPAND, 5 )
+		
+		
+		self.field6_panel.SetSizer( field6_sizer )
+		self.field6_panel.Layout()
+		field6_sizer.Fit( self.field6_panel )
+		self.value_notebook.AddPage( self.field6_panel, u"Стандарт", False )
+		self.field7_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		field7_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.field7_text = wx.TextCtrl( self.field7_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+		field7_sizer.Add( self.field7_text, 1, wx.EXPAND, 5 )
+		
+		
+		self.field7_panel.SetSizer( field7_sizer )
+		self.field7_panel.Layout()
+		field7_sizer.Fit( self.field7_panel )
+		self.value_notebook.AddPage( self.field7_panel, u"Примечание", False )
+		
+		values_tab_sizer.Add( self.value_notebook, 1, wx.EXPAND |wx.ALL, 5 )
+		
+		
+		self.values_tab_panel.SetSizer( values_tab_sizer )
+		self.values_tab_panel.Layout()
+		values_tab_sizer.Fit( self.values_tab_panel )
+		self.settings_tabs.AddPage( self.values_tab_panel, u"Значения полей", False )
+		
+		sizer_settings_dialog.Add( self.settings_tabs, 1, wx.EXPAND |wx.ALL, 5 )
+		
+		dialog_buttons = wx.StdDialogButtonSizer()
+		self.dialog_buttonsOK = wx.Button( self, wx.ID_OK )
+		dialog_buttons.AddButton( self.dialog_buttonsOK )
+		self.dialog_buttonsCancel = wx.Button( self, wx.ID_CANCEL )
+		dialog_buttons.AddButton( self.dialog_buttonsCancel )
+		dialog_buttons.Realize();
+		
+		sizer_settings_dialog.Add( dialog_buttons, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.SetSizer( sizer_settings_dialog )
+		self.Layout()
+		
+		self.Centre( wx.BOTH )
+	
+	def __del__( self ):
+		pass
+	
+
+###########################################################################
+## Class EditAutoGroupsDialog
+###########################################################################
+
+class EditAutoGroupsDialog ( wx.Dialog ):
+	
+	def __init__( self, parent ):
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.DEFAULT_DIALOG_STYLE )
+		
+		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+		
+		edit_auto_groups_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		param_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.param_statictext = wx.StaticText( self, wx.ID_ANY, u"Обозначение элемента:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.param_statictext.Wrap( -1 )
+		self.param_statictext.SetToolTipString( u"Одна или две буквы, с которых начинается обозначение элемента. Например, С для конденсаторов, D или DD для микросхем и т.д." )
+		
+		param_sizer.Add( self.param_statictext, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		
+		param_sizer.AddSpacer( ( 0, 0), 1, 0, 5 )
+		
+		self.param_text = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.param_text.SetMaxLength( 2 ) 
+		param_sizer.Add( self.param_text, 0, wx.ALL, 5 )
+		
+		
+		edit_auto_groups_sizer.Add( param_sizer, 0, wx.EXPAND, 5 )
+		
+		value_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.value_statictext = wx.StaticText( self, wx.ID_ANY, u"Значение поля \"Группа\":", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.value_statictext.Wrap( -1 )
+		self.value_statictext.SetToolTipString( u"Значение поля \"Группа\" которое будет установлено по умолчанию для указанных элементов." )
+		
+		value_sizer.Add( self.value_statictext, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.value_text = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 250,-1 ), 0 )
+		value_sizer.Add( self.value_text, 1, wx.ALL, 5 )
+		
+		
+		edit_auto_groups_sizer.Add( value_sizer, 0, wx.EXPAND, 5 )
+		
+		edit_auto_groups_dialog_buttons = wx.StdDialogButtonSizer()
+		self.edit_auto_groups_dialog_buttonsOK = wx.Button( self, wx.ID_OK )
+		edit_auto_groups_dialog_buttons.AddButton( self.edit_auto_groups_dialog_buttonsOK )
+		self.edit_auto_groups_dialog_buttonsCancel = wx.Button( self, wx.ID_CANCEL )
+		edit_auto_groups_dialog_buttons.AddButton( self.edit_auto_groups_dialog_buttonsCancel )
+		edit_auto_groups_dialog_buttons.Realize();
+		
+		edit_auto_groups_sizer.Add( edit_auto_groups_dialog_buttons, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.SetSizer( edit_auto_groups_sizer )
+		self.Layout()
+		edit_auto_groups_sizer.Fit( self )
 		
 		self.Centre( wx.BOTH )
 	
