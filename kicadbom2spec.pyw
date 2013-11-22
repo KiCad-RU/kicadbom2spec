@@ -16,7 +16,7 @@
 ### END LICENSE
 
 import os
-from os import path
+from os import path, remove, rename
 import sys
 import subprocess
 import re
@@ -26,6 +26,7 @@ import argparse
 from operator import itemgetter
 from types import *
 from ConfigParser import SafeConfigParser
+from shutil import copyfile
 
 import wx
 import wx.grid
@@ -75,8 +76,6 @@ class Window(gui.MainFrame):
         self.not_found = False
         self.undo_buffer = []
         self.redo_buffer = []
-        self.add_units = False
-        self.all_components = False
         self.load_settings()
         self.init_grid()
 
@@ -103,6 +102,7 @@ class Window(gui.MainFrame):
         if path.isfile(settings_file_name):
             # Load settings from file
             self.settings.readfp(codecs.open(settings_file_name, 'r', encoding='utf-8'))
+
             if self.settings.has_section('window'):
                 self.save_window_size_pos = True
                 x, y = self.GetPosition()
@@ -574,7 +574,22 @@ class Window(gui.MainFrame):
         comp_values = self.get_grid_values()
         self.set_schematic_values(comp_values)
         for sheet in self.sheets:
-            sheet.save()
+            try:
+                rename(sheet.sch_name, sheet.sch_name + '.bak')
+                sheet.save()
+                remove(sheet.sch_name + '.bak')
+            except:
+                if path.exists(sheet.sch_name + '.bak'):
+                    remove(sheet.sch_name)
+                    rename(sheet.sch_name + '.bak', sheet.sch_name)
+                wx.MessageBox(
+                    u'Не удалось сохранить файл схемы:\n' +
+                    sheet.sch_name + '\n' \
+                    u'Содержимое этого файла восстановлено из резервной копии.',
+                    u'Внимание!',
+                    wx.ICON_ERROR|wx.OK, self
+                    )
+
         self.saved = True
         self.menuitem_save_sch.Enable(False)
 
@@ -630,7 +645,21 @@ class Window(gui.MainFrame):
         """
         comp_values = self.get_grid_values()
         self.set_library_values(comp_values)
-        self.library.save()
+        try:
+            rename(self.library_file, self.library_file + '.bak')
+            self.library.save()
+            remove(self.library_file + '.bak')
+        except:
+            if path.exists(self.library_file + '.bak'):
+                remove(self.library_file)
+                rename(self.library_file + '.bak', self.library_file)
+            wx.MessageBox(
+                u'Не удалось сохранить файл библиотеки:\n' +
+                sheet.sch_name + '\n' \
+                u'Содержимое этого файла восстановлено из резервной копии.',
+                u'Внимание!',
+                wx.ICON_ERROR|wx.OK, self
+                )
         self.saved = True
         self.menuitem_save_lib.Enable(False)
 
@@ -640,33 +669,70 @@ class Window(gui.MainFrame):
 
         """
         spec_dialog = gui.SpecDialog(self)
+        # Load settings
+        all_components = False
+        add_units = False
+        open_spec = False
+        if self.settings.has_section('spec'):
+            if self.settings.has_option('spec', 'all'):
+                all_components = self.settings.getboolean('spec', 'all')
+            if self.settings.has_option('spec', 'units'):
+                add_units = self.settings.getboolean('spec', 'units')
+            if self.settings.has_option('spec', 'open'):
+                open_spec = self.settings.getboolean('spec', 'open')
+
         spec_dialog.filepicker_spec.SetPath(self.specification_file)
-        spec_dialog.checkbox_add_units.SetValue(self.add_units)
-        spec_dialog.checkbox_all_components.SetValue(self.all_components)
+        spec_dialog.checkbox_add_units.SetValue(add_units)
+        spec_dialog.checkbox_all_components.SetValue(all_components)
+        spec_dialog.checkbox_open.SetValue(open_spec)
+
         result = spec_dialog.ShowModal()
+
+        # Save settings from spec dialog
+        all_components = spec_dialog.checkbox_all_components.IsChecked()
+        add_units = spec_dialog.checkbox_add_units.IsChecked()
+        open_spec = spec_dialog.checkbox_open.GetValue()
+
+        if not self.settings.has_section('spec'):
+            self.settings.add_section('spec')
+        self.settings.set('spec', 'all', str(all_components))
+        self.settings.set('spec', 'units', str(add_units))
+        self.settings.set('spec', 'open', str(open_spec))
+
         if result == wx.ID_OK:
+            # Set cursor to 'wait'
+            wx.BeginBusyCursor()
+            wx.SafeYield()
             comp_fields = []
             self.specification_file = spec_dialog.filepicker_spec.GetPath()
-            self.all_components = spec_dialog.checkbox_all_components.IsChecked()
             grid_values = self.get_grid_values()
             for row in grid_values:
-                if (row[0] == u'1') | self.all_components:
+                if (row[0] == u'1') | all_components:
                     fields = row[1:-1]
                     fields.insert(1, re.search(r'[A-Z]+', fields[1]).group())
                     fields[2] = re.search(r'[0-9]+', fields[2]).group()
                     fields.append('1')
                     comp_fields.append(fields)
             spec = Specification()
-            self.add_units = spec_dialog.checkbox_add_units.IsChecked()
-            spec.add_units = self.add_units
+            spec.add_units = add_units
             spec.load(self.schematic_file, comp_fields)
             spec.save(self.specification_file)
-            wx.MessageBox(
-                u'Перечень элементов успешно создан и сохранен!',
-                u'kicdbom2spec',
-                wx.ICON_INFORMATION | wx.OK,
-                self
-                )
+            # Set cursor back to 'normal'
+            if wx.IsBusy():
+                wx.EndBusyCursor()
+
+            if open_spec:
+                if sys.platform == 'linux2':
+                    subprocess.call(["xdg-open", self.specification_file])
+                else:
+                    os.startfile(self.specification_file)
+            else:
+                wx.MessageBox(
+                    u'Перечень элементов успешно создан и сохранен!',
+                    u'kicdbom2spec',
+                    wx.ICON_INFORMATION | wx.OK,
+                    self
+                    )
 
     def on_edit_fields(self, event):
         """
@@ -941,6 +1007,7 @@ class Window(gui.MainFrame):
 
             """
             find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
+            case_sensitive = event.GetEventObject().GetGrandParent().checkbox_case_sensitive.GetValue()
             if not find_str:
                 return
 
@@ -953,6 +1020,9 @@ class Window(gui.MainFrame):
                     if row == cur_row and col <= cur_col:
                         continue
                     cell_value = self.grid_components.GetCellValue(row, col)
+                    if not case_sensitive:
+                        cell_value = cell_value.lower()
+                        find_str = find_str.lower()
                     if find_str in cell_value:
                         self.not_found = False
                         self.grid_components.SetGridCursor(row, col)
@@ -982,6 +1052,7 @@ class Window(gui.MainFrame):
 
             """
             find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
+            case_sensitive = event.GetEventObject().GetGrandParent().checkbox_case_sensitive.GetValue()
             if not find_str:
                 return
             rows = self.grid_components.GetNumberRows()
@@ -993,6 +1064,9 @@ class Window(gui.MainFrame):
                     if row == cur_row and col >= cur_col:
                         continue
                     cell_value = self.grid_components.GetCellValue(row, col)
+                    if not case_sensitive:
+                        cell_value = cell_value.lower()
+                        find_str = find_str.lower()
                     if find_str in cell_value:
                         self.not_found = False
                         self.grid_components.SetGridCursor(row, col)
@@ -1353,7 +1427,20 @@ class Window(gui.MainFrame):
         Returns list of indexes of selected columns from field selector.
 
         """
+
+        def on_checkbox_all_clicked(event):
+            """
+            Check/uncheck all fields in field seletor.
+
+            """
+            selector = event.GetEventObject().GetGrandParent()
+            state = selector.checkbox_all.GetValue()
+            for col in (1, 3, 4, 5, 6, 7, 8):
+                checkbox = getattr(selector, 'checkbox_{}'.format(col))
+                checkbox.SetValue(state)
+
         selector = gui.FieldSelector(self)
+        selector.checkbox_all.Bind(wx.EVT_CHECKBOX, on_checkbox_all_clicked)
         if self.library:
             selector.checkbox_4.SetValue(False)
             selector.checkbox_4.Hide()

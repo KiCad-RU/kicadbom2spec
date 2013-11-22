@@ -475,6 +475,12 @@ class FieldSelector ( wx.Dialog ):
 		self.checkbox_8 = wx.CheckBox( self.panel_field_selector, wx.ID_ANY, u"Примечание", wx.DefaultPosition, wx.DefaultSize, 0 )
 		sizer_fields.Add( self.checkbox_8, 0, wx.ALL|wx.EXPAND, 5 )
 		
+		self.staticline = wx.StaticLine( self.panel_field_selector, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		sizer_fields.Add( self.staticline, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		self.checkbox_all = wx.CheckBox( self.panel_field_selector, wx.ID_ANY, u"Все поля", wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_fields.Add( self.checkbox_all, 0, wx.ALL|wx.EXPAND, 5 )
+		
 		
 		self.panel_field_selector.SetSizer( sizer_fields )
 		self.panel_field_selector.Layout()
@@ -515,6 +521,8 @@ class FindReplaceDialog ( wx.Dialog ):
 		sizer_find_replace = wx.BoxSizer( wx.VERTICAL )
 		
 		self.panel_find = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		sizer_find_common = wx.BoxSizer( wx.VERTICAL )
+		
 		sizer_find = wx.BoxSizer( wx.HORIZONTAL )
 		
 		self.statictext_find = wx.StaticText( self.panel_find, wx.ID_ANY, u"Найти:", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -535,9 +543,18 @@ class FindReplaceDialog ( wx.Dialog ):
 		sizer_find.Add( self.button_find_next, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		
-		self.panel_find.SetSizer( sizer_find )
+		sizer_find_common.Add( sizer_find, 1, wx.EXPAND, 5 )
+		
+		self.checkbox_case_sensitive = wx.CheckBox( self.panel_find, wx.ID_ANY, u"С учетом регистра", wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_find_common.Add( self.checkbox_case_sensitive, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.staticline = wx.StaticLine( self.panel_find, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		sizer_find_common.Add( self.staticline, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		
+		
+		self.panel_find.SetSizer( sizer_find_common )
 		self.panel_find.Layout()
-		sizer_find.Fit( self.panel_find )
+		sizer_find_common.Fit( self.panel_find )
 		sizer_find_replace.Add( self.panel_find, 0, wx.EXPAND, 5 )
 		
 		self.panel_replace = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
@@ -681,7 +698,7 @@ class SpecDialog ( wx.Dialog ):
 		self.staticline_1 = wx.StaticLine( self.panel_spec_dialog, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		sizer_spec.Add( self.staticline_1, 0, wx.EXPAND |wx.ALL, 5 )
 		
-		self.checkbox_add_units = wx.CheckBox( self.panel_spec_dialog, wx.ID_ANY, u"Добавлять единицы измерения", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_add_units = wx.CheckBox( self.panel_spec_dialog, wx.ID_ANY, u"Добавить единицы измерения", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_add_units.SetToolTipString( u"Если для резисторов, конденсаторов или индуктивностей указаны только значения и данная опция включена, то к значениям будут добавлены соответствующие единицы измерения (Ом, Ф, Гн)." )
 		
 		sizer_spec.Add( self.checkbox_add_units, 0, wx.ALL|wx.EXPAND, 5 )
@@ -690,6 +707,11 @@ class SpecDialog ( wx.Dialog ):
 		self.checkbox_all_components.SetToolTipString( u"Если данная функция включена, в перечень элементов будут включены все элементы, не зависимо от того установлен флажок для элемента или нет." )
 		
 		sizer_spec.Add( self.checkbox_all_components, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_open = wx.CheckBox( self.panel_spec_dialog, wx.ID_ANY, u"Открыть перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_open.SetToolTipString( u"Если этот параметр установлен, то после создания перечня элементов он будет открыть в редакторе по умолчанию." )
+		
+		sizer_spec.Add( self.checkbox_open, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		
 		self.panel_spec_dialog.SetSizer( sizer_spec )

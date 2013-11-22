@@ -100,6 +100,9 @@ class Specification():
                     for p_data in p.childNodes:
                         if p_data.tagName == 'Text':
                             if p_data.data == label:
+                                # Decoding internal escapes
+                                text = text.decode('string_escape')
+                                # Decoding escapes from KiCAD
                                 p_data.data = text.decode('string_escape')
                                 if group == True:
                                     # Set center align and underline for ghoup name
@@ -108,7 +111,7 @@ class Specification():
                                     if groupStyle == None:
                                         groupStyle = deepcopy(self.specification.getStyleByName(curStyleName))
                                         groupStyle.setAttribute('name', curStyleName + 'g')
-                                        groupStyle.addElement(ParagraphProperties(textalign='center'))
+                                        groupStyle.addElement(ParagraphProperties(textalignlast='center'))
                                         groupStyle.addElement(TextProperties(textunderlinetype='single',
                                                                              textunderlinestyle='solid',))
                                         self.specification.styles.addElement(groupStyle)
@@ -290,7 +293,7 @@ class Specification():
         self.get_descr(sch_file_name)
 
         # Split elements into groups
-        # output - ['group',[[ref_type, ref_number, mark, value, accuracy, type, GOST, comment, couut], ...]]
+        # output - [['group',[[ref_type, ref_number, mark, value, accuracy, type, GOST, comment, couut], ... ]], ... ]
         temp_name = comp_array[0][0]
         temp_array = None
         comp_lines = None
@@ -312,6 +315,12 @@ class Specification():
                     comp_lines = [[temp_name, temp_array],]
                 else:
                     comp_lines.append([temp_name, temp_array])
+
+        # Sort grops by reference of first element
+        comp_lines = sorted(comp_lines, key=lambda x: x[1][0][0])
+        # Group with no name must be first
+        if comp_lines[-1][0] == '':
+            comp_lines.insert(0, comp_lines.pop(-1))
 
         temp_array = []
         # Combining the identical elements in one line
