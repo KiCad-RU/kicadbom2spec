@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*-    Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4    -*-
 ### BEGIN LICENSE
 # Copyright (C) 2012 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
@@ -15,6 +15,8 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
+VERSION=3.3
+
 import os
 from os import path, remove, rename
 import sys
@@ -28,6 +30,8 @@ from types import *
 from ConfigParser import SafeConfigParser
 from shutil import copyfile
 
+import wxversion
+wxversion.select('2.8')
 import wx
 import wx.grid
 
@@ -1149,6 +1153,18 @@ class Window(gui.MainFrame):
 
         """
         about_dialog = gui.AboutDialog(self)
+        about_dialog.statictext_version.SetLabel(
+                about_dialog.statictext_version.GetLabel() + \
+                str(VERSION) + '\n' + \
+                'Python: {}.{}.{}-{}'.format(
+                    sys.version_info[0],
+                    sys.version_info[1],
+                    sys.version_info[2],
+                    sys.version_info[3]
+                    ) + '\n' + \
+                'wxWidgets: {}'.format(wx.version())
+                )
+        about_dialog.dialog_buttonOK.SetFocus()
         about_dialog.ShowModal()
 
     def on_help(self, event):

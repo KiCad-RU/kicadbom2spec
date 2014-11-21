@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Oct  8 2012)
+## Python code generated with wxFormBuilder (version Jun  6 2014)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -159,43 +159,43 @@ class MainFrame ( wx.Frame ):
 		self.SetMenuBar( self.menubar )
 		
 		self.toolbar = self.CreateToolBar( wx.TB_HORIZONTAL, wx.ID_ANY ) 
-		self.toolbar.AddLabelTool( ID_OPEN_SCH, u"Открыть схему", wx.Bitmap( u"bitmaps/document-open.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Открыть файл схемы", wx.EmptyString, None ) 
+		self.tool_open_sch = self.toolbar.AddLabelTool( ID_OPEN_SCH, u"Открыть схему", wx.Bitmap( u"bitmaps/document-open.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Открыть файл схемы", wx.EmptyString, None ) 
 		
-		self.toolbar.AddLabelTool( ID_SAVE_SCH, u"Сохранить схему", wx.Bitmap( u"bitmaps/document-save.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Сохранить изменения пользовательских полей в файл схемы", wx.EmptyString, None ) 
-		
-		self.toolbar.AddSeparator()
-		
-		self.toolbar.AddLabelTool( ID_SPEC, u"Создать спецификацию", wx.Bitmap( u"bitmaps/document-export.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Создать перечень элементов", wx.EmptyString, None ) 
+		self.tool_save_sch = self.toolbar.AddLabelTool( ID_SAVE_SCH, u"Сохранить схему", wx.Bitmap( u"bitmaps/document-save.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Сохранить изменения пользовательских полей в файл схемы", wx.EmptyString, None ) 
 		
 		self.toolbar.AddSeparator()
 		
-		self.toolbar.AddLabelTool( ID_COPY, u"Копировать", wx.Bitmap( u"bitmaps/edit-copy.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Копировать поля", wx.EmptyString, None ) 
-		
-		self.toolbar.AddLabelTool( ID_CUT, u"Вырезать", wx.Bitmap( u"bitmaps/edit-cut.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Вырезать поля", wx.EmptyString, None ) 
-		
-		self.toolbar.AddLabelTool( ID_PASTE, u"Вставить", wx.Bitmap( u"bitmaps/edit-paste.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Вставить поля", wx.EmptyString, None ) 
+		self.tool_spec = self.toolbar.AddLabelTool( ID_SPEC, u"Создать спецификацию", wx.Bitmap( u"bitmaps/document-export.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Создать перечень элементов", wx.EmptyString, None ) 
 		
 		self.toolbar.AddSeparator()
 		
-		self.toolbar.AddLabelTool( ID_UNDO, u"Отменить", wx.Bitmap( u"bitmaps/edit-undo.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Отменить последнее действие", wx.EmptyString, None ) 
+		self.tool_copy = self.toolbar.AddLabelTool( ID_COPY, u"Копировать", wx.Bitmap( u"bitmaps/edit-copy.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Копировать поля", wx.EmptyString, None ) 
 		
-		self.toolbar.AddLabelTool( ID_REDO, u"Повторить", wx.Bitmap( u"bitmaps/edit-redo.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Повторить предыдущее действие", wx.EmptyString, None ) 
+		self.tool_cut = self.toolbar.AddLabelTool( ID_CUT, u"Вырезать", wx.Bitmap( u"bitmaps/edit-cut.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Вырезать поля", wx.EmptyString, None ) 
 		
-		self.toolbar.AddSeparator()
-		
-		self.toolbar.AddLabelTool( ID_EDIT, u"Редактировать", wx.Bitmap( u"bitmaps/gtk-edit.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Редактировать поля", wx.EmptyString, None ) 
-		
-		self.toolbar.AddLabelTool( ID_CLEAR, u"Очистить", wx.Bitmap( u"bitmaps/edit-clear.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Очистить пользовательские поля", wx.EmptyString, None ) 
+		self.tool_paste = self.toolbar.AddLabelTool( ID_PASTE, u"Вставить", wx.Bitmap( u"bitmaps/edit-paste.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Вставить поля", wx.EmptyString, None ) 
 		
 		self.toolbar.AddSeparator()
 		
-		self.toolbar.AddLabelTool( ID_FIND, u"Найти", wx.Bitmap( u"bitmaps/edit-find.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Найти текст", wx.EmptyString, None ) 
+		self.tool_undo = self.toolbar.AddLabelTool( ID_UNDO, u"Отменить", wx.Bitmap( u"bitmaps/edit-undo.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Отменить последнее действие", wx.EmptyString, None ) 
 		
-		self.toolbar.AddLabelTool( ID_REPLACE, u"Заменить", wx.Bitmap( u"bitmaps/edit-find-replace.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Заменить текст", wx.EmptyString, None ) 
+		self.tool_redo = self.toolbar.AddLabelTool( ID_REDO, u"Повторить", wx.Bitmap( u"bitmaps/edit-redo.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Повторить предыдущее действие", wx.EmptyString, None ) 
 		
 		self.toolbar.AddSeparator()
 		
-		self.toolbar.AddLabelTool( ID_HELP, u"Справка", wx.Bitmap( u"bitmaps/help-contents.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Открыть справку", wx.EmptyString, None ) 
+		self.tool_edit = self.toolbar.AddLabelTool( ID_EDIT, u"Редактировать", wx.Bitmap( u"bitmaps/gtk-edit.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Редактировать поля", wx.EmptyString, None ) 
+		
+		self.tool_clear = self.toolbar.AddLabelTool( ID_CLEAR, u"Очистить", wx.Bitmap( u"bitmaps/edit-clear.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Очистить пользовательские поля", wx.EmptyString, None ) 
+		
+		self.toolbar.AddSeparator()
+		
+		self.tool_find = self.toolbar.AddLabelTool( ID_FIND, u"Найти", wx.Bitmap( u"bitmaps/edit-find.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Найти текст", wx.EmptyString, None ) 
+		
+		self.tool_replace = self.toolbar.AddLabelTool( ID_REPLACE, u"Заменить", wx.Bitmap( u"bitmaps/edit-find-replace.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Заменить текст", wx.EmptyString, None ) 
+		
+		self.toolbar.AddSeparator()
+		
+		self.tool_help = self.toolbar.AddLabelTool( ID_HELP, u"Справка", wx.Bitmap( u"bitmaps/help-contents.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Открыть справку", wx.EmptyString, None ) 
 		
 		self.toolbar.Realize() 
 		
@@ -598,7 +598,7 @@ class FindReplaceDialog ( wx.Dialog ):
 class AboutDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"О программе", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.CAPTION )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"О программе", pos = wx.DefaultPosition, size = wx.Size( 460,336 ), style = wx.CAPTION )
 		
 		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 		
@@ -617,9 +617,9 @@ class AboutDialog ( wx.Dialog ):
 		self.m_staticline1 = wx.StaticLine( self.panel_about_dialog, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		sizer_about.Add( self.m_staticline1, 0, wx.EXPAND |wx.ALL, 5 )
 		
-		self.static_text = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"Версия: 3.0", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
-		self.static_text.Wrap( -1 )
-		sizer_about.Add( self.static_text, 0, wx.ALL, 5 )
+		self.statictext_version = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"Версия: ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_LEFT )
+		self.statictext_version.Wrap( -1 )
+		sizer_about.Add( self.statictext_version, 0, wx.ALL, 5 )
 		
 		self.statictext_autor = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"Автор: Барановский Константин", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
 		self.statictext_autor.Wrap( -1 )
@@ -652,23 +652,22 @@ class AboutDialog ( wx.Dialog ):
 		self.m_staticline2 = wx.StaticLine( self.panel_about_dialog, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		sizer_about.Add( self.m_staticline2, 0, wx.EXPAND |wx.ALL, 5 )
 		
-		m_sdbSizer3 = wx.StdDialogButtonSizer()
-		self.m_sdbSizer3OK = wx.Button( self.panel_about_dialog, wx.ID_OK )
-		m_sdbSizer3.AddButton( self.m_sdbSizer3OK )
-		m_sdbSizer3.Realize();
+		dialog_button = wx.StdDialogButtonSizer()
+		self.dialog_buttonOK = wx.Button( self.panel_about_dialog, wx.ID_OK )
+		dialog_button.AddButton( self.dialog_buttonOK )
+		dialog_button.Realize();
 		
-		sizer_about.Add( m_sdbSizer3, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.RIGHT, 15 )
+		sizer_about.Add( dialog_button, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.RIGHT, 15 )
 		
 		
 		self.panel_about_dialog.SetSizer( sizer_about )
 		self.panel_about_dialog.Layout()
 		sizer_about.Fit( self.panel_about_dialog )
-		sizer_about_dialog.Add( self.panel_about_dialog, 1, wx.EXPAND |wx.ALL, 5 )
+		sizer_about_dialog.Add( self.panel_about_dialog, 1, wx.ALL|wx.FIXED_MINSIZE, 5 )
 		
 		
 		self.SetSizer( sizer_about_dialog )
 		self.Layout()
-		sizer_about_dialog.Fit( self )
 		
 		self.Centre( wx.BOTH )
 	

@@ -338,10 +338,11 @@ class Schematic:
                     self.fields.append(self.Field(line))
                 elif parts[0].startswith('\t'):
                     # Skip 1st line that starts with tab - redundant: not used
-                    if line == '\t1    ' + str(self.pos_x) + \
-                               (4 - len(str(self.pos_x))) *  ' ' + ' ' + \
-                               str(self.pos_y) + \
-                               (4 - len(str(self.pos_y))) *  ' ':
+                    if line == '\t{} {} {}'.format(
+                               add_trailing_spaces(self.unit),
+                               add_trailing_spaces(self.pos_x),
+                               add_trailing_spaces(self.pos_y)
+                               ):
                         pass
                     else:
                         line = line.lstrip('\t')
@@ -370,13 +371,15 @@ class Schematic:
             sch_file.write(comp_str.decode('utf-8'))
             for field in self.fields:
                 field.save(sch_file)
-            comp_str = '\t1    '
-            comp_str += str(self.pos_x) + (4 - len(str(self.pos_x))) * ' '
-            comp_str += ' ' + str(self.pos_y) + (4 - len(str(self.pos_y))) * ' '
+            comp_str = '\t'
+            comp_str += add_trailing_spaces(self.unit)
+            comp_str += ' ' + add_trailing_spaces(self.pos_y)
+            comp_str += ' ' + add_trailing_spaces(self.pos_x)
+            comp_str += ' ' + add_trailing_spaces(self.pos_y)
             comp_str += '\n'
             comp_str += '\t'
             for item in self.orient_matrix:
-                comp_str += str(item) + (4 - len(str(item))) * ' '
+                comp_str += add_trailing_spaces(item)
                 if self.orient_matrix.index(item) != \
                    len(self.orient_matrix) - 1:
                     comp_str += ' '
@@ -1632,3 +1635,23 @@ def split_line(str_to_split):
             if item:
                 output.append(item)
     return output
+
+
+def add_trailing_spaces(value):
+    """
+    If coordinates have the langth less than 4 they must be appended with trailing spaces.
+
+        Arguments:
+
+        value (int) - int value that must be converted to string and
+            appended with trailing spaces.
+
+        Returns:
+
+        str_value (str) - value as sring with trailing spaces if needed.
+
+    """
+    str_value = str(value)
+    if len(str_value) < 4:
+        str_value += (4 - len(str_value)) * ' '
+    return str_value
