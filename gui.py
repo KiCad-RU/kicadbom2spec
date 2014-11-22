@@ -598,7 +598,7 @@ class FindReplaceDialog ( wx.Dialog ):
 class AboutDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"О программе", pos = wx.DefaultPosition, size = wx.Size( 460,336 ), style = wx.CAPTION )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"О программе", pos = wx.DefaultPosition, size = wx.Size( 460,343 ), style = wx.CAPTION )
 		
 		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 		
@@ -619,11 +619,14 @@ class AboutDialog ( wx.Dialog ):
 		
 		self.statictext_version = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"Версия: ", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_LEFT )
 		self.statictext_version.Wrap( -1 )
-		sizer_about.Add( self.statictext_version, 0, wx.ALL, 5 )
+		sizer_about.Add( self.statictext_version, 0, wx.ALL|wx.EXPAND, 5 )
 		
-		self.statictext_autor = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"Автор: Барановский Константин", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
+		
+		sizer_about.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		self.statictext_autor = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"Автор: Барановский Константин", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_LEFT )
 		self.statictext_autor.Wrap( -1 )
-		sizer_about.Add( self.statictext_autor, 0, wx.ALL, 5 )
+		sizer_about.Add( self.statictext_autor, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		sizer_email = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -663,7 +666,7 @@ class AboutDialog ( wx.Dialog ):
 		self.panel_about_dialog.SetSizer( sizer_about )
 		self.panel_about_dialog.Layout()
 		sizer_about.Fit( self.panel_about_dialog )
-		sizer_about_dialog.Add( self.panel_about_dialog, 1, wx.ALL|wx.FIXED_MINSIZE, 5 )
+		sizer_about_dialog.Add( self.panel_about_dialog, 1, wx.ALL|wx.EXPAND, 5 )
 		
 		
 		self.SetSizer( sizer_about_dialog )
