@@ -711,7 +711,7 @@ class SpecDialog ( wx.Dialog ):
 		sizer_spec.Add( self.checkbox_all_components, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_open = wx.CheckBox( self.panel_spec_dialog, wx.ID_ANY, u"Открыть перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_open.SetToolTipString( u"Если этот параметр установлен, то после создания перечня элементов он будет открыть в редакторе по умолчанию." )
+		self.checkbox_open.SetToolTipString( u"Если этот параметр установлен, то после создания перечня элементов он будет открыт в редакторе по умолчанию." )
 		
 		sizer_spec.Add( self.checkbox_open, 0, wx.ALL|wx.EXPAND, 5 )
 		
