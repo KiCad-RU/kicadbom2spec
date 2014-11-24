@@ -301,7 +301,7 @@ class Schematic:
 
             name (str) - name of the component;
             ref (str) - reference of the component;
-            unit (str) - part of the component;
+            unit (int) - part of the component;
             convert (boot) - True - show as De Morgan convert, False - normal;
             timestamp (str) - timestamp of component;
             pos_x (int) - horizontal position of component;
@@ -328,7 +328,7 @@ class Schematic:
                     self.name = parts[1]
                     self.ref = parts[2]
                 elif parts[0] == 'U':
-                    self.unit = parts[1]
+                    self.unit = int(parts[1])
                     self.convert = (int(parts[2]) == 2)
                     self.timestamp = parts[3]
                 elif parts[0] == 'P':
@@ -361,7 +361,7 @@ class Schematic:
             """
             comp_str = '$Comp\n'
             comp_str += 'L ' + self.name + ' ' + self.ref + '\n'
-            comp_str += 'U ' + self.unit
+            comp_str += 'U ' + str(self.unit)
             if self.convert:
                 comp_str += ' 2'
             else:
@@ -372,16 +372,15 @@ class Schematic:
             for field in self.fields:
                 field.save(sch_file)
             comp_str = '\t'
-            comp_str += add_trailing_spaces(self.unit)
+            comp_str += add_trailing_spaces(str(self.unit))
             comp_str += ' ' + add_trailing_spaces(self.pos_y)
             comp_str += ' ' + add_trailing_spaces(self.pos_x)
             comp_str += ' ' + add_trailing_spaces(self.pos_y)
             comp_str += '\n'
             comp_str += '\t'
-            for item in self.orient_matrix:
+            for index, item in enumerate(self.orient_matrix):
                 comp_str += add_trailing_spaces(item)
-                if self.orient_matrix.index(item) != \
-                   len(self.orient_matrix) - 1:
+                if index != len(self.orient_matrix) - 1:
                     comp_str += ' '
             comp_str += '\n$EndComp\n'
             sch_file.write(comp_str.decode('utf-8'))
@@ -1639,7 +1638,7 @@ def split_line(str_to_split):
 
 def add_trailing_spaces(value):
     """
-    If coordinates have the langth less than 4 they must be appended with trailing spaces.
+    If value have the langth less than 4 they must be appended with trailing spaces.
 
         Arguments:
 
