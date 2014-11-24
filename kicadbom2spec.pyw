@@ -1230,6 +1230,13 @@ class Window(gui.MainFrame):
             for comp in spec.get_components(sheet.sch_name, True):
                 if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
                     continue
+                if comp.unit > 1:
+                    is_present = False
+                    for row in values:
+                        if row[2] == comp.ref:
+                            is_present = True
+                            break
+                    continue
                 row = [
                     u'1',  # Used
                     u'',  # Group
