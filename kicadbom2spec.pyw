@@ -579,23 +579,23 @@ class Window(gui.MainFrame):
         self.set_schematic_values(comp_values)
         for sheet in self.sheets:
             try:
-                rename(sheet.sch_name, sheet.sch_name + '.bak')
-                sheet.save()
-                remove(sheet.sch_name + '.bak')
+                if path.exists(sheet.sch_name + '.tmp'):
+                    remove(sheet.sch_name + '.tmp')
+                sheet.save(sheet.sch_name + '.tmp')
+                remove(sheet.sch_name)
+                rename(sheet.sch_name + '.tmp', sheet.sch_name)
+                self.saved = True
+                self.menuitem_save_sch.Enable(False)
             except:
-                if path.exists(sheet.sch_name + '.bak'):
-                    remove(sheet.sch_name)
-                    rename(sheet.sch_name + '.bak', sheet.sch_name)
+                if path.exists(sheet.sch_name + '.tmp'):
+                    remove(sheet.sch_name + '.tmp')
                 wx.MessageBox(
-                    u'Не удалось сохранить файл схемы:\n' +
+                    u'При сохранении файла схемы:\n' +
                     sheet.sch_name + '\n' \
-                    u'Содержимое этого файла восстановлено из резервной копии.',
+                    u'возникла ошибка. Файл не сохранен.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
                     )
-
-        self.saved = True
-        self.menuitem_save_sch.Enable(False)
 
     def on_open_lib(self, event):
         """
@@ -650,22 +650,23 @@ class Window(gui.MainFrame):
         comp_values = self.get_grid_values()
         self.set_library_values(comp_values)
         try:
-            rename(self.library_file, self.library_file + '.bak')
-            self.library.save()
-            remove(self.library_file + '.bak')
+            if path.exists(self.library_file + '.tmp'):
+                remove(self.library_file + '.tmp')
+            self.library.save(self.library_file + '.tmp')
+            remove(self.library_file)
+            rename(self.library_file + '.tmp', self.library_file)
+            self.saved = True
+            self.menuitem_save_lib.Enable(False)
         except:
-            if path.exists(self.library_file + '.bak'):
-                remove(self.library_file)
-                rename(self.library_file + '.bak', self.library_file)
+            if path.exists(self.library_file + '.tmp'):
+                remove(self.library_file + '.tmp')
             wx.MessageBox(
-                u'Не удалось сохранить файл библиотеки:\n' +
-                sheet.sch_name + '\n' \
-                u'Содержимое этого файла восстановлено из резервной копии.',
+                u'При сохранении файла библиотеки:\n' +
+                self.library_file + '\n' \
+                u'возникла ошибка. Файл не сохранен.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
-        self.saved = True
-        self.menuitem_save_lib.Enable(False)
 
     def on_spec(self, event):
         """

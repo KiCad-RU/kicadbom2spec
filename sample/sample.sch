@@ -1,6 +1,6 @@
 EESchema Schematic File Version 2
 LIBS:sample
-EELAYER 24 0
+EELAYER 25 0
 EELAYER END
 $Descr A4 8268 11693 portrait
 encoding utf-8
@@ -43,7 +43,7 @@ F 8 " ОЖ0.467.18" H 4800 6650 60  0001 C CNN "Стандарт"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L CPOL C3
+L Cpol C3
 U 1 1 518511B5
 P 5800 6650
 F 0 "C3" H 5550 6750 138 0000 R CNN
@@ -91,7 +91,7 @@ F 9 "270...360 кОм" H 3950 4000 60  0001 C CNN "Примечание"
 	1    0    0    -1  
 $EndComp
 $Comp
-L CPOL C1
+L Cpol C1
 U 1 1 51851778
 P 2650 4850
 F 0 "C1" V 2350 4800 138 0000 C CNN

@@ -24,7 +24,9 @@ class Schematic:
     Implementation of KiCAD Schematic diagram file.
 
     """
-    ID = 'EESchema Schematic File'
+    EESCHEMA_FILE_STAMP = 'EESchema'
+    SCHEMATIC_HEAD_STRING = 'Schematic File Version'
+    EESCHEMA_VERSION = 2
 
     def __init__(self, sch_name):
         """
@@ -56,8 +58,8 @@ class Schematic:
         sch_file = codecs.open(self.sch_name, 'r', 'utf-8')
         first_line = sch_file.readline().encode('utf-8')
         first_line = first_line.replace('\n', '')
-        if first_line.startswith(self.ID):
-            self.version = int(split_line(first_line)[4])
+        if first_line.startswith(self.EESCHEMA_FILE_STAMP):
+            self.version = int(split_line(first_line)[-1])
         else:
             return
         for sch_line in sch_file:
@@ -84,49 +86,62 @@ class Schematic:
             elif sch_line.startswith('NoConn'):
                 self.items.append(self.Connection(sch_line))
             elif sch_line.startswith('Text'):
-                if ' Notes ' in sch_line:
-                    sch_line += sch_file.readline().encode('utf-8')
-                    self.items.append(self.Text(sch_line))
-                elif ' GLabel ' in sch_line:
-                    sch_line += sch_file.readline().encode('utf-8')
-                    self.items.append(self.Text(sch_line))
-                elif ' HLabel ' in sch_line:
-                    sch_line += sch_file.readline().encode('utf-8')
-                    self.items.append(self.Text(sch_line))
-                elif ' Label ' in sch_line:
-                    sch_line += sch_file.readline().encode('utf-8')
-                    self.items.append(self.Text(sch_line))
+                sch_line += sch_file.readline().encode('utf-8')
+                self.items.append(self.Text(sch_line))
+#                if ' Notes ' in sch_line:
+#                    sch_line += sch_file.readline().encode('utf-8')
+#                    self.items.append(self.Text(sch_line))
+#                elif ' GLabel ' in sch_line:
+#                    sch_line += sch_file.readline().encode('utf-8')
+#                    self.items.append(self.Text(sch_line))
+#                elif ' HLabel ' in sch_line:
+#                    sch_line += sch_file.readline().encode('utf-8')
+#                    self.items.append(self.Text(sch_line))
+#                elif ' Label ' in sch_line:
+#                    sch_line += sch_file.readline().encode('utf-8')
+#                    self.items.append(self.Text(sch_line))
             elif sch_line.startswith('Wire'):
-                if 'Wire Line' in sch_line:
-                    sch_line += sch_file.readline().encode('utf-8')
-                    self.items.append(self.Wire(sch_line))
-                elif 'Bus Line' in sch_line:
-                    sch_line += sch_file.readline().encode('utf-8')
-                    self.items.append(self.Wire(sch_line))
-                elif 'Notes Line' in sch_line:
-                    sch_line += sch_file.readline().encode('utf-8')
-                    self.items.append(self.Wire(sch_line))
+                sch_line += sch_file.readline().encode('utf-8')
+                self.items.append(self.Wire(sch_line))
+#                if 'Wire Line' in sch_line:
+#                    sch_line += sch_file.readline().encode('utf-8')
+#                    self.items.append(self.Wire(sch_line))
+#                elif 'Bus Line' in sch_line:
+#                    sch_line += sch_file.readline().encode('utf-8')
+#                    self.items.append(self.Wire(sch_line))
+#                elif 'Notes Line' in sch_line:
+#                    sch_line += sch_file.readline().encode('utf-8')
+#                    self.items.append(self.Wire(sch_line))
             elif sch_line.startswith('Entry'):
-                if 'Wire Line' in sch_line:
-                    sch_line += sch_file.readline().encode('utf-8')
-                    self.items.append(self.Entry(sch_line))
-                elif 'Bus Bus' in sch_line:
-                    sch_line += sch_file.readline().encode('utf-8')
-                    self.items.append(self.Entry(sch_line))
+                sch_line += sch_file.readline().encode('utf-8')
+                self.items.append(self.Entry(sch_line))
+#                if 'Wire Line' in sch_line:
+#                    sch_line += sch_file.readline().encode('utf-8')
+#                    self.items.append(self.Entry(sch_line))
+#                elif 'Bus Bus' in sch_line:
+#                    sch_line += sch_file.readline().encode('utf-8')
+#                    self.items.append(self.Entry(sch_line))
             elif sch_line.startswith('LIBS:'):
                 self.libs.add(sch_line)
-            elif sch_line.startswith('EELAYER') and not \
-                 sch_line.startswith('EELAYER END'):
+            elif sch_line.startswith('EELAYER') and not 'END' in sch_line:
+#                 sch_line.startswith('EELAYER END'):
                     self.eelayer.append(self.Eelayer(sch_line))
 
-    def save(self):
+    def save(self, new_name=None):
         """
         Save all content to KiCAD Schematic file.
 
         """
-        sch_file = codecs.open(self.sch_name, 'w', 'utf-8')
+        sch_file_name = self.sch_name
+        if new_name:
+            sch_file_name = new_name
+        sch_file = codecs.open(sch_file_name, 'w', 'utf-8')
 
-        first_line = self.ID + ' Version ' + str(self.version) + '\n'
+        first_line = '{stamp} {head} {version}\n'.format(
+                     stamp = self.EESCHEMA_FILE_STAMP,
+                     head = self.SCHEMATIC_HEAD_STRING,
+                     version = self.EESCHEMA_VERSION
+                     )
         sch_file.write(first_line.decode('utf-8'))
 
         self.libs.save(sch_file)
@@ -142,6 +157,7 @@ class Schematic:
 
         sch_file.write(u'$EndSCHEMATC')
         sch_file.close()
+
 
     class Libs(list):
         """
@@ -159,7 +175,7 @@ class Schematic:
 
             """
             str_lib = str_lib.rstrip('\n')
-            lib = str_lib.lstrip('LIBS:')
+            lib = str_lib.replace('LIBS:', '', 1)
             self.append(lib)
 
         def save(self, sch_file):
@@ -172,8 +188,11 @@ class Schematic:
 
             """
             for lib in self:
-                line = 'LIBS:' + lib + '\n'
+                line = 'LIBS:{lib}\n'.format(
+                       lib = lib
+                       )
                 sch_file.write(line.decode('utf-8'))
+
 
     class Eelayer:
         """
@@ -209,8 +228,12 @@ class Schematic:
                 sch_file (file) - file for writing.
 
             """
-            line = 'EELAYER ' + str(self.nn) + ' ' + str(self.mm) + '\n'
+            line = 'EELAYER {nn} {mm}\n'.format(
+                   nn = self.nn,
+                   mm = self.mm
+                   )
             sch_file.write(line.decode('utf-8'))
+
 
     class Descr:
         """
@@ -276,22 +299,36 @@ class Schematic:
                 sch_file (file) - file for writing.
 
             """
-            descr = '$Descr ' + self.sheet_format + ' ' + \
-                    str(self.sheet_size_x) + ' ' + str(self.sheet_size_y)
-            if self.portrait:
-                descr += ' portrait'
-            descr += '\n'
-            descr += 'encoding ' + self.encoding + '\n'
-            descr += 'Sheet ' + \
-                    str(self.sheet_number) + ' ' + \
-                    str(self.sheet_count) + '\n'
-            items = ('Title', 'Date', 'Rev', 'Comp', \
-                     'Comment1', 'Comment2', 'Comment3', 'Comment4')
-            for item in items:
-                item_val = getattr(self, item.lower())
-                descr += item + ' "' + item_val + '"\n'
-            descr += '$EndDescr\n'
+            descr = '$Descr {paper} {width} {height}{portrait}\n' \
+                    'encoding {encoding}\n' \
+                    'Sheet {number} {count}\n' \
+                    'Title "{title}"\n' \
+                    'Date "{date}"\n' \
+                    'Rev "{rev}"\n' \
+                    'Comp "{comp}"\n' \
+                    'Comment1 "{comment1}"\n' \
+                    'Comment2 "{comment2}"\n' \
+                    'Comment3 "{comment3}"\n' \
+                    'Comment4 "{comment4}"\n' \
+                    '$EndDescr\n'.format(
+                    paper = self.sheet_format,
+                    width = self.sheet_size_x,
+                    height = self.sheet_size_y,
+                    portrait = {True:' portrait', False:''}[self.portrait],
+                    encoding = self.encoding,
+                    number = self.sheet_number,
+                    count = self.sheet_count,
+                    title = self.title,
+                    date = self.date,
+                    rev = self.rev,
+                    comp = self.comp,
+                    comment1 = self.comment1,
+                    comment2 = self.comment2,
+                    comment3 = self.comment3,
+                    comment4 = self.comment4
+                    )
             sch_file.write(descr.decode('utf-8'))
+
 
     class Comp:
         """
@@ -338,10 +375,10 @@ class Schematic:
                     self.fields.append(self.Field(line))
                 elif parts[0].startswith('\t'):
                     # Skip 1st line that starts with tab - redundant: not used
-                    if line == '\t{} {} {}'.format(
-                               add_trailing_spaces(self.unit),
-                               add_trailing_spaces(self.pos_x),
-                               add_trailing_spaces(self.pos_y)
+                    if line == '\t{unit:<4} {pos_x:<4} {pos_y:<4}'.format(
+                               unit = self.unit,
+                               pos_x = self.pos_x,
+                               pos_y = self.pos_y
                                ):
                         pass
                     else:
@@ -359,31 +396,31 @@ class Schematic:
                 sch_file (file) - file for writing.
 
             """
-            comp_str = '$Comp\n'
-            comp_str += 'L ' + self.name + ' ' + self.ref + '\n'
-            comp_str += 'U ' + str(self.unit)
-            if self.convert:
-                comp_str += ' 2'
-            else:
-                comp_str += ' 1'
-            comp_str += ' ' + self.timestamp + '\n'
-            comp_str += 'P ' + str(self.pos_x) + ' ' + str(self.pos_y) + '\n'
+            comp_str = '$Comp\n' \
+                       'L {name} {ref}\n' \
+                       'U {unit} {convert} {timestamp}\n' \
+                       'P {pos_x} {pos_y}\n'.format(
+                       name = self.name,
+                       ref = self.ref,
+                       unit = self.unit,
+                       convert = {True:'2', False:'1'}[self.convert],
+                       timestamp = self.timestamp,
+                       pos_x = self.pos_x,
+                       pos_y = self.pos_y
+                       )
             sch_file.write(comp_str.decode('utf-8'))
             for field in self.fields:
                 field.save(sch_file)
-            comp_str = '\t'
-            comp_str += add_trailing_spaces(str(self.unit))
-            comp_str += ' ' + add_trailing_spaces(self.pos_y)
-            comp_str += ' ' + add_trailing_spaces(self.pos_x)
-            comp_str += ' ' + add_trailing_spaces(self.pos_y)
-            comp_str += '\n'
-            comp_str += '\t'
-            for index, item in enumerate(self.orient_matrix):
-                comp_str += add_trailing_spaces(item)
-                if index != len(self.orient_matrix) - 1:
-                    comp_str += ' '
-            comp_str += '\n$EndComp\n'
+            comp_str = '\t{unit:<4} {pos_x:<4} {pos_y:<4}\n' \
+                       '\t{or_m[0]:<4} {or_m[1]:<4} {or_m[2]:<4} {or_m[3]:<4}\n' \
+                       '$EndComp\n'.format(
+                       unit = self.unit,
+                       pos_x = self.pos_x,
+                       pos_y = self.pos_y,
+                       or_m = self.orient_matrix
+                       )
             sch_file.write(comp_str.decode('utf-8'))
+
 
         class Field:
             """
@@ -403,14 +440,14 @@ class Schematic:
                 pos_y (int) - vertical position of the field;
                 size (int) - size of the text;
                 flags (str) - string of flags;
-                hjustify (str) - horizontal justify;
-                vjustify (str) - vertical justify;
-                    (h, v)justify can be:
+                hjustify (str) - horizontal justify:
                         'L' - left;
                         'C' - center;
                         'R' - right;
-                        'B' - bottom;
+                vjustify (str) - vertical justify:
                         'T' - top;
+                        'C' - center;
+                        'B' - bottom;
                 italic (bool) - if True - text is italic;
                 bold (bool) - if True - text is bold;
                 name (str) - name of the field (only if it is not default
@@ -459,28 +496,25 @@ class Schematic:
                     sch_file (file) - file for writing.
 
                 """
-                field_str = 'F '
-                field_str += str(self.number)
-                field_str += ' "' + self.text + '"'
-                field_str += ' ' + self.orientation
-                field_str += ' ' + str(self.pos_x)
-                field_str += ' ' + str(self.pos_y)
-                field_str += ' ' + str(self.size)
-                field_str += ' ' + self.flags
-                field_str += ' ' + self.hjustify
-                field_str += ' ' + self.vjustify
-                if self.italic:
-                    field_str += 'I'
-                else:
-                    field_str += 'N'
-                if self.bold:
-                    field_str += 'B'
-                else:
-                    field_str += 'N'
+                name = ''
                 if hasattr(self, 'name'):
-                    field_str += ' "' + self.name + '"'
-                field_str += '\n'
+                    name = ' "{}"'.format(self.name)
+                field_str = 'F {number} "{text}" {orient} {pos_x:<3} {pos_y:<3} {size:<3} {flags} {hjustify} {vjustify}{italic}{bold}{name}\n'.format(
+                            number = self.number,
+                            text = self.text,
+                            orient = self.orientation,
+                            pos_x = self.pos_x,
+                            pos_y = self.pos_y,
+                            size = self.size,
+                            flags = self.flags,
+                            hjustify = self.hjustify,
+                            vjustify = self.vjustify,
+                            italic = {True:'I', False:'N'}[self.italic],
+                            bold = {True:'B', False:'N'}[self.bold],
+                            name = name
+                            )
                 sch_file.write(field_str.decode('utf-8'))
+
 
     class Sheet:
         """
@@ -540,18 +574,27 @@ class Schematic:
                 sch_file (file) - file for writing.
 
             """
-            sheet_str = '$Sheet\n'
-            sheet_str += 'S ' + self.pos_x + ' ' + self.pos_y + ' ' + \
-                         self.dim_x + ' ' + self.dim_y + '\n'
-            sheet_str += 'U ' + self.timestamp + '\n'
-            sheet_str += 'F0 "' + self.name + '" ' + str(self.name_size) + '\n'
-            sheet_str += 'F1 "' + self.file_name + '" ' + \
-                        str(self.file_name_size) + '\n'
+            sheet_str = '$Sheet\n' \
+                        'S {pos_x:<4} {pos_y:<4} {dim_x:<4} {dim_y:<4}\n' \
+                        'U {timestamp}\n' \
+                        'F0 "{name}" {name_size}\n' \
+                        'F1 "{file_name}" {file_name_size}\n'.format(
+                        pos_x = self.pos_x,
+                        pos_y = self.pos_y,
+                        dim_x = self.dim_x,
+                        dim_y = self.dim_y,
+                        timestamp = self.timestamp,
+                        name = self.name,
+                        name_size = self.name_size,
+                        file_name = self.file_name,
+                        file_name_size = self.file_name_size
+                        )
             sch_file.write(sheet_str.decode('utf-8'))
             for field in self.fields:
                 field.save(sch_file)
             sheet_str = '$EndSheet\n'
             sch_file.write(sheet_str.decode('utf-8'))
+
 
         class Field:
             """
@@ -605,16 +648,17 @@ class Schematic:
                     sch_file (file) - file for writing.
 
                 """
-                field_str = 'F'
-                field_str += ' ' + str(self.number)
-                field_str += ' "' + self.text + '"'
-                field_str += ' ' + self.form
-                field_str += ' ' + self.side
-                field_str += ' ' + str(self.pos_x)
-                field_str += ' ' + str(self.pos_y)
-                field_str += ' ' + str(self.dimension)
-                field_str += '\n'
+                field_str = 'F{number} "{text}" {form} {side} {pos_x:<3} {pos_y:<3} {dim:<3}\n'.format(
+                            number = self.number,
+                            text = self.text,
+                            form = self.form,
+                            side = self.side,
+                            pos_x = self.pos_x,
+                            pos_y = self.pos_y,
+                            dim = self.dimension
+                            )
                 sch_file.write(field_str.decode('utf-8'))
+
 
     class Bitmap:
         """
@@ -672,29 +716,36 @@ class Schematic:
                 sch_file (file) - file for writing.
 
             """
-            bitmap_str = '$Bitmap\n'
-            bitmap_str += 'Pos ' + str(self.pos_x) + ' ' + \
-                         str(self.pos_y) + '\n'
-            bitmap_str += 'Scale ' + \
-                         "{:.6f}".format(self.scale).replace('.', ',') + '\n'
-            bitmap_str += 'Data\n'
+            data_str = ''
             i = 0
             for byte in self.data:
-                i = i + 1
-                bitmap_str += '{:02X}'.format(byte) + ' '
-                if i % 32 == 0:
-                    bitmap_str += '\n'
-            bitmap_str += '\nEndData\n'
-            bitmap_str += '$EndBitmap\n'
+                i += 1
+                data_str += '{:02X} '.format(byte)
+                if i == 32:
+                    i = 0
+                    data_str += '\n'
+            bitmap_str = '$Bitmap\n' \
+                         'Pos {pos_x:<4} {pos_y:<4}\n' \
+                         'Scale {scale}\n' \
+                         'Data\n' \
+                         '{data}\n' \
+                         'EndData\n' \
+                         '$EndBitmap\n'.format(
+                         pos_x = self.pos_x,
+                         pos_y = self.pos_y,
+                         scale = '{:.6f}'.format(self.scale),
+                         data = data_str
+                         )
             sch_file.write(bitmap_str.decode('utf-8'))
+
 
     class Connection:
         """
-        Description of the connection or no connection position.
+        Description of the connection (junction) or no connection position.
 
             Attributes:
 
-            tpye (str) - type of the connection;
+            tpye (str) - type of the connection (Connection, NoConn);
             pos_x (int) - horizontal position of the connection;
             pos_y (int) - vertical position of the connection.
 
@@ -724,9 +775,13 @@ class Schematic:
                 sch_file (file) - file for writing;
 
             """
-            connection_str = self.type + ' ~ ' + str(self.pos_x) + ' ' + \
-                             str(self.pos_y) + '\n'
+            connection_str = '{type} ~ {pos_x:<4} {pos_y:<4}\n'.format(
+                             type = self.type,
+                             pos_x = self.pos_x,
+                             pos_y = self.pos_y
+                             )
             sch_file.write(connection_str.decode('utf-8'))
+
 
     class Text:
         """
@@ -734,7 +789,7 @@ class Schematic:
 
             Attributes:
 
-            type (str) - type of the text label;
+            type (str) - type of the text label (Notes, Label, GLable, HLabel);
             text (str) - text of the label;
             pos_x (int) - horizontal position of the text label;
             pos_y (int) - vertical position of the text label;
@@ -763,7 +818,7 @@ class Schematic:
             self.pos_y = int(parts[3])
             self.orientation = int(parts[4])
             self.dimension = int(parts[5])
-            if parts[1] == 'GLabel' or parts[1] == 'HLabel':
+            if parts[1] in ('GLabel', 'HLabel'):
                 self.shape = parts[6]
             self.italic = parts[-2] == 'Italic'
             self.bold = int(parts[-1])
@@ -778,18 +833,22 @@ class Schematic:
                 sch_file (file) - file for writing;
 
             """
-            text_str = 'Text ' + self.type + ' ' + str(self.pos_x) + ' ' + \
-                       str(self.pos_y) + ' ' + str(self.orientation) + ' ' +\
-                       str(self.dimension)
-            if type == 'GLabel' or type == 'HLabel':
-                text_str += ' ' + self.shape
-            if self.italic:
-                text_str += ' Italic'
-            else:
-                text_str += ' ~'
-            text_str += ' ' + str(self.bold) + '\n'
-            text_str += self.text + '\n'
+            shape = ''
+            if self.type in ('GLabel', 'HLabel'):
+                shape = '{} '.format(self.shape)
+            text_str = 'Text {type} {pos_x:<4} {pos_y:<4} {orient:<4} {dim:<4} {shape}{italic} {bold}\n{text}\n'.format(
+                       type = self.type,
+                       pos_x = self.pos_x,
+                       pos_y = self.pos_y,
+                       orient = self.orientation,
+                       dim = self.dimension,
+                       shape = shape,
+                       italic = {True:'Italic', False:'~'}[self.italic],
+                       bold = self.bold,
+                       text = self.text
+                       )
             sch_file.write(text_str.decode('utf-8'))
+
 
     class Wire:
         """
@@ -797,7 +856,7 @@ class Schematic:
 
             Attributes:
 
-            type (str) - type of the wire;
+            type (str) - type of the wire (Note, Wire, Bus);
             start_x (int) - horizontal coordinates of the start position;
             start_y (int) - vertical coordinates of the start position;
             end_x (int) - horizontal coordinates of the end position;
@@ -815,8 +874,8 @@ class Schematic:
 
             """
             lines = str_wire.splitlines()
-            self.type = lines[0].lstrip('Wire').lstrip(' ')
-
+            parts = split_line(lines[0])
+            self.type = parts[1]
             parts = split_line(lines[1])
             self.start_x = int(parts[0].lstrip('\t'))
             self.start_y = int(parts[1])
@@ -832,10 +891,17 @@ class Schematic:
                 sch_file (file) - file for writing;
 
             """
-            wire_str = 'Wire ' + self.type + '\n'
-            wire_str += '\t' + str(self.start_x) + ' ' + str(self.start_y) + \
-                        ' ' + str(self.end_x) + ' ' + str(self.end_y) + '\n'
+            wire_str = 'Wire {type} Line\n' \
+                       '\t{start_x:<4} {start_y:<4} {end_x:<4} {end_y:<4}\n'.format(
+                       type = self.type,
+                       start_x = self.start_x,
+                       start_y = self.start_y,
+                       end_x = self.end_x,
+                       end_y = self.end_y
+                       )
             sch_file.write(wire_str.decode('utf-8'))
+
+
 
     class Entry:
         """
@@ -843,6 +909,7 @@ class Schematic:
 
             Attributes:
 
+            type (str) - type of the wire (Wire Line, Bus Bus);
             start_x (int) - horizontal coordinates of the start position;
             start_y (int) - vertical coordinates of the start position;
             end_x (int) - horizontal coordinates of the end position;
@@ -860,7 +927,8 @@ class Schematic:
 
             """
             lines = str_entry.splitlines()
-            self.type = lines[0].lstrip('Entry ')
+            parts = split_line(lines[0])
+            self.type = '{parts[1]} {parts[2]}'.format(parts = parts)
             parts = split_line(lines[1])
             self.start_x = int(parts[0].lstrip('\t'))
             self.start_y = int(parts[1])
@@ -876,10 +944,15 @@ class Schematic:
                 sch_file (file) - file for writing;
 
             """
-            wire_str = 'Entry ' + self.type + '\n'
-            wire_str += '\t' + str(self.start_x) + ' ' + str(self.start_y) + \
-                        ' ' + str(self.end_x) + ' ' + str(self.end_y) + '\n'
-            sch_file.write(wire_str.decode('utf-8'))
+            entry_str = 'Entry {type}\n' \
+                       '\t{start_x:<4} {start_y:<4} {end_x:<4} {end_y:<4}\n'.format(
+                       type = self.type,
+                       start_x = self.start_x,
+                       start_y = self.start_y,
+                       end_x = self.end_x,
+                       end_y = self.end_y
+                       )
+            sch_file.write(entry_str.decode('utf-8'))
 
 
 class Library:
@@ -887,7 +960,7 @@ class Library:
     Implementation of KiCAD Schematic library.
 
     """
-    ID = 'EESchema-LIBRARY'
+    LIBFILE_IDENT = 'EESchema-LIBRARY Version'
 
     def __init__(self, lib_name):
         """
@@ -897,7 +970,6 @@ class Library:
 
             lib_name (str) - full name of KiCAD Schematic library file;
             version (float) - version of file format;
-            date (str) - date of last changes;
             encoding (srt) - encoding of text;
             components (list of Component) - list of components of library.
 
@@ -915,10 +987,8 @@ class Library:
         lib_file = codecs.open(self.lib_name, 'r', 'utf-8')
         first_line = lib_file.readline().encode('utf-8')
         first_line = first_line.replace('\n', '')
-        if first_line.startswith(self.ID):
+        if first_line.startswith(self.LIBFILE_IDENT):
             self.version = float(split_line(first_line)[2])
-            date_index = first_line.index('Date: ') + len('Date: ')
-            self.date = first_line[date_index:]
         else:
             return
         for lib_line in lib_file:
@@ -934,22 +1004,28 @@ class Library:
             elif lib_line.startswith('#End Library'):
                     return
 
-    def save(self):
+    def save(self, new_name=None):
         """
         Save all content to KiCAD Schematic library file.
 
         """
-        lib_file = codecs.open(self.lib_name, 'w', 'utf-8')
+        lib_file_name = self.lib_name
+        if new_name:
+            lib_file_name = new_name
+        lib_file = codecs.open(lib_file_name, 'w', 'utf-8')
 
-        header = '{} Version {:.1f} Date: {}\n'.format(self.ID, self.version, self.date)
-        header += '#encoding {}\n'.format(self.encoding)
+        header = '{id} {version:.1f}\n' \
+                 '#encoding {encoding}\n'.format(
+                 id = self.LIBFILE_IDENT,
+                 version = self.version,
+                 encoding = self.encoding
+                 )
         lib_file.write(header.decode('utf-8'))
-
         for components in self.components:
             components.save(lib_file)
-
         lib_file.write(u'#\n#End Library\n')
         lib_file.close()
+
 
     class Component:
         """
@@ -1044,22 +1120,29 @@ class Library:
                 lib_file (file) - file for writing.
 
             """
-            component_str = '#\n# {}\n#\n'.format(self.name)
-            component_str += 'DEF {0} {1} {2} {3} {4} {5} {6} {7} {8}\n'.format(
-                self.name,
-                self.reference,
-                '0',
-                str(self.text_offset),
-                {True:'Y', False:'N'}[self.draw_pinnumber],
-                {True:'Y', False:'N'}[self.draw_pinname],
-                str(self.unit_count),
-                {True:'L', False:'F'}[self.units_locked],
-                self.option_flag
-                )
+            nick = self.name
+            if nick.startswith('~'):
+                nick = nick.replace('~', '', 1)
+            component_str = '#\n' \
+                            '# {nick}\n' \
+                            '#\n' \
+                            'DEF {name} {ref} 0 {offset} {pin_num} {pin_name} {unit_count} {units_locked} {options}\n'.format(
+                            nick = nick,
+                            name = self.name,
+                            ref = self.reference,
+                            offset = str(self.text_offset),
+                            pin_num = {True:'Y', False:'N'}[self.draw_pinnumber],
+                            pin_name = {True:'Y', False:'N'}[self.draw_pinname],
+                            unit_count = str(self.unit_count),
+                            units_locked = {True:'L', False:'F'}[self.units_locked],
+                            options = self.option_flag
+                            )
             lib_file.write(component_str.decode('utf-8'))
             for field in self.fields:
                 field.save(lib_file)
-            component_str = 'ALIAS ' + ' '.join(self.aliases) + '\n'
+            component_str = ''
+            if self.aliases:
+                component_str += 'ALIAS {}\n'.format(' '.join(self.aliases))
             if hasattr(self, 'fplist'):
                 component_str += '$FPLIST\n'
                 for fp in self.fplist:
@@ -1069,7 +1152,8 @@ class Library:
             lib_file.write(component_str.decode('utf-8'))
             for graphic_element in self.graphic_elements:
                 graphic_element.save(lib_file)
-            component_str = 'ENDDRAW\nENDDEF\n'
+            component_str = 'ENDDRAW\n' \
+                            'ENDDEF\n'
             lib_file.write(component_str.decode('utf-8'))
 
 
@@ -1091,14 +1175,14 @@ class Library:
                 diamension (int) - diamension of the text;
                 orientation (str) - 'H' - horizontal, 'V' - vertical;
                 visibility (bool) - True - text is visible, False - text is invisible;
-                hjustify (str) - horizontal justify;
-                vjustify (str) - vertical justify;
-                    (h, v)justify can be:
+                hjustify (str) - horizontal justify:
                         'L' - left;
+                        'C' - center;
                         'R' - right;
+                vjustify (str) - vertical justify:
+                        'T' - top;
                         'C' - center;
                         'B' - bottom;
-                        'T' - top;
                 italic (bool) - if True - text is italic;
                 bold (bool) - if True - text is bold;
                 name (str) - name of the field (only if it is not default
@@ -1119,21 +1203,10 @@ class Library:
                 self.number = int(items[0][1:])
                 if len(items) == 10:
                     self.name = items[9]
-                temp = items[8]
-                items = items[1:8]
-                self.vjustify = temp[0]
-                if temp[1] == 'N':
-                    self.italic = False
-                else:
-                    self.italic = True
-                if temp[2] == 'N':
-                    self.bold = False
-                else:
-                    self.bold = True
                 item_names = ('text', 'pos_x', 'pos_y', 'diamension', \
                               'orientation', 'visibility', 'hjustify')
                 for item in range(len(item_names)):
-                    setattr(self, item_names[item], items[item])
+                    setattr(self, item_names[item], items[item + 1])
                 self.pos_x = int(self.pos_x)
                 self.pos_y = int(self.pos_y)
                 self.diamension = int(self.diamension)
@@ -1141,6 +1214,15 @@ class Library:
                     self.visibility = True
                 elif self.visibility == 'I':
                     self.visibility = False
+                self.vjustify = items[8][0]
+                if items[8][1] == 'N':
+                    self.italic = False
+                else:
+                    self.italic = True
+                if items[8][2] == 'N':
+                    self.bold = False
+                else:
+                    self.bold = True
 
             def save(self, lib_file):
                 """
@@ -1151,31 +1233,25 @@ class Library:
                     lib_file (file) - file for writing.
 
                 """
-                field_str = 'F'
-                field_str += str(self.number)
-                field_str += ' "' + self.text + '"'
-                field_str += ' ' + str(self.pos_x)
-                field_str += ' ' + str(self.pos_y)
-                field_str += ' ' + str(self.diamension)
-                field_str += ' ' + self.orientation
-                if self.visibility:
-                    field_str += ' V'
-                else:
-                    field_str += ' I'
-                field_str += ' ' + self.hjustify
-                field_str += ' ' + self.vjustify
-                if self.italic:
-                    field_str += 'I'
-                else:
-                    field_str += 'N'
-                if self.bold:
-                    field_str += 'B'
-                else:
-                    field_str += 'N'
+                name = ''
                 if hasattr(self, 'name'):
-                    field_str += ' "' + self.name + '"'
-                field_str += '\n'
+                    name = ' "{}"'.format(self.name)
+                field_str = 'F{number} "{text}" {pos_x} {pos_y} {size} {orient} {visibility} {hjustify} {vjustify}{italic}{bold}{name}\n'.format(
+                            number = self.number,
+                            text = self.text,
+                            pos_x = self.pos_x,
+                            pos_y = self.pos_y,
+                            size = self.diamension,
+                            orient = self.orientation,
+                            visibility = {True:'V', False:'I'}[self.visibility],
+                            hjustify = self.hjustify,
+                            vjustify = self.vjustify,
+                            italic = {True:'I', False:'N'}[self.italic],
+                            bold = {True:'B', False:'N'}[self.bold],
+                            name = name
+                            )
                 lib_file.write(field_str.decode('utf-8'))
+
 
         class Polygon:
             """
@@ -1222,16 +1298,17 @@ class Library:
                     lib_file (file) - file for writing.
 
                 """
-                polygon_str = 'P '
-                polygon_str += str(len(self.points))
-                polygon_str += ' ' + str(self.unit)
-                polygon_str += ' ' + str(self.convert)
-                polygon_str += ' ' + str(self.thickness)
+                polygon_str = 'P {p_count} {unit} {convert} {thickness}'.format(
+                              p_count = len(self.points),
+                              unit = self.unit,
+                              convert = self.convert,
+                              thickness = self.thickness
+                              )
                 for point in self.points:
-                    polygon_str += ' {} {}'.format(point[0], point[1])
-                polygon_str += ' ' + self.fill
-                polygon_str += '\n'
+                    polygon_str += '  {p[0]} {p[1]}'.format(p = point)
+                polygon_str += ' {}\n'.format(self.fill)
                 lib_file.write(polygon_str.decode('utf-8'))
+
 
         class Rectangle:
             """
@@ -1278,17 +1355,18 @@ class Library:
                     lib_file (file) - file for writing.
 
                 """
-                rectangle_str = 'S'
-                rectangle_str += ' ' + str(self.start_x)
-                rectangle_str += ' ' + str(self.start_y)
-                rectangle_str += ' ' + str(self.end_x)
-                rectangle_str += ' ' + str(self.end_y)
-                rectangle_str += ' ' + str(self.unit)
-                rectangle_str += ' ' + str(self.convert)
-                rectangle_str += ' ' + str(self.thickness)
-                rectangle_str += ' ' + self.fill
-                rectangle_str += '\n'
+                rectangle_str = 'S {start_x} {start_y} {end_x} {end_y} {unit} {convert} {thickness} {fill}\n'.format(
+                                start_x = self.start_x,
+                                start_y = self.start_y,
+                                end_x = self.end_x,
+                                end_y = self.end_y,
+                                unit = self.unit,
+                                convert = self.convert,
+                                thickness = self.thickness,
+                                fill = self.fill
+                                )
                 lib_file.write(rectangle_str.decode('utf-8'))
+
 
         class Circle:
             """
@@ -1333,16 +1411,17 @@ class Library:
                     lib_file (file) - file for writing.
 
                 """
-                circle_str = 'C'
-                circle_str += ' ' + str(self.pos_x)
-                circle_str += ' ' + str(self.pos_y)
-                circle_str += ' ' + str(self.radius)
-                circle_str += ' ' + str(self.unit)
-                circle_str += ' ' + str(self.convert)
-                circle_str += ' ' + str(self.thickness)
-                circle_str += ' ' + self.fill
-                circle_str += '\n'
+                circle_str = 'C {pos_x} {pos_y} {radius} {unit} {convert} {thickness} {fill}\n'.format(
+                             pos_x = self.pos_x,
+                             pos_y = self.pos_y,
+                             radius = self.radius,
+                             unit = self.unit,
+                             convert = self.convert,
+                             thickness = self.thickness,
+                             fill = self.fill
+                             )
                 lib_file.write(circle_str.decode('utf-8'))
+
 
         class Arc:
             """
@@ -1399,22 +1478,23 @@ class Library:
                     lib_file (file) - file for writing.
 
                 """
-                arc_str = 'A'
-                arc_str += ' ' + str(self.pos_x)
-                arc_str += ' ' + str(self.pos_y)
-                arc_str += ' ' + str(self.radius)
-                arc_str += ' ' + str(self.start)
-                arc_str += ' ' + str(self.end)
-                arc_str += ' ' + str(self.unit)
-                arc_str += ' ' + str(self.convert)
-                arc_str += ' ' + str(self.thickness)
-                arc_str += ' ' + self.fill
-                arc_str += ' ' + str(self.start_x)
-                arc_str += ' ' + str(self.start_y)
-                arc_str += ' ' + str(self.end_x)
-                arc_str += ' ' + str(self.end_y)
-                arc_str += '\n'
+                arc_str = 'A {pos_x} {pos_y} {radius} {start} {end} {unit} {convert} {thickness} {fill} {start_x} {start_y} {end_x} {end_y}\n'.format(
+                          pos_x = self.pos_x,
+                          pos_y = self.pos_y,
+                          radius = self.radius,
+                          start = self.start,
+                          end = self.end,
+                          unit = self.unit,
+                          convert = self.convert,
+                          thickness = self.thickness,
+                          fill = self.fill,
+                          start_x = self.start_x,
+                          start_y = self.start_y,
+                          end_x = self.end_x,
+                          end_y = self.end_y
+                          )
                 lib_file.write(arc_str.decode('utf-8'))
+
 
         class Text:
             """
@@ -1426,6 +1506,7 @@ class Library:
                 pos_x (int) - x coordinate of text position;
                 pos_y (int) - y coordinate of text position;
                 size (int) - size of text;
+                attr (int) - attributs of the text (visibility etc);
                 unit (int) - 0 if common to the parts; if not, number of part (1. .n);
                 convert (int) - 0 if common to the 2 representations, if not 1 or 2;
                 text (str) - text;
@@ -1435,7 +1516,7 @@ class Library:
                         'L' - left;
                         'C' - center;
                         'R' - right;
-                vjustify (str) - vertical justify;
+                vjustify (str) - vertical justify:
                         'B' - bottom;
                         'C' - center;
                         'T' - top.
@@ -1456,6 +1537,7 @@ class Library:
                 self.pos_x = int(items[2])
                 self.pos_y = int(items[3])
                 self.size = int(items[4])
+                self.attr = int(items[5])
                 self.unit = int(items[6])
                 self.convert = int(items[7])
                 self.text = items[8]
@@ -1479,27 +1561,25 @@ class Library:
                     lib_file (file) - file for writing.
 
                 """
-                text_str = 'T'
-                text_str += ' ' + str(self.angle)
-                text_str += ' ' + str(self.pos_x)
-                text_str += ' ' + str(self.pos_y)
-                text_str += ' ' + str(self.size)
-                text_str += ' 0'
-                text_str += ' ' + str(self.unit)
-                text_str += ' ' + str(self.convert)
-                text_str += ' "{}"'.format(self.text)
-                if self.italic:
-                    text_str += ' Italic'
-                else:
-                    text_str += ' Normal'
-                if self.bold:
-                    text_str += ' 1'
-                else:
-                    text_str += ' 0'
-                text_str += ' ' + self.hjustify
-                text_str += ' ' + self.vjustify
-                text_str += '\n'
+                text = self.text
+                if '~' in text or "''" in text:
+                    text = '"{}"'.format(text)
+                text_str = 'T {angle} {pos_x} {pos_y} {size} {attr} {unit} {convert} {text}  {italic} {bold} {hjustify} {vjustify}\n'.format(
+                           angle = self.angle,
+                           pos_x = self.pos_x,
+                           pos_y = self.pos_y,
+                           size = self.size,
+                           attr = self.attr,
+                           unit = self.unit,
+                           convert = self.convert,
+                           text = text,
+                           italic = {True:'Italic', False:'Normal'}[self.italic],
+                           bold = {True:1, False:0}[self.bold],
+                           hjustify = self.hjustify,
+                           vjustify = self.vjustify
+                           )
                 lib_file.write(text_str.decode('utf-8'))
+
 
         class Pin:
             """
@@ -1507,8 +1587,8 @@ class Library:
 
                 Attributes:
 
-                name (str) - name of the pin;
-                number (int) - number of the pin;
+                name (str) - name of the pin ("~" - if empty);
+                number (str) - number of the pin ("~" - if empty);
                 pos_x (int) - x coordinate of pin position;
                 pos_y (int) - y coordinate of pin position;
                 length (int) - length of the pin;
@@ -1534,15 +1614,13 @@ class Library:
                     'E' - open emitter;
                     'N' - not connected;
                 shape (str) - if present:
+                    'N' - invisible;
                     'I' - inverted;
                     'C' - clock;
-                    'CI' - inverted clock;
                     'L' - input low;
-                    'CL' - clock low;
                     'V' - output low;
                     'F' - falling adge low;
                     'X' - non logic;
-                    if invisible pin, the shape identifier starts by 'N'
 
             """
 
@@ -1557,7 +1635,7 @@ class Library:
                 """
                 items = split_line(str_pin)
                 self.name = items[1]
-                self.number = int(items[2])
+                self.number = items[2]
                 self.pos_x = int(items[3])
                 self.pos_y = int(items[4])
                 self.length = int(items[5])
@@ -1579,21 +1657,23 @@ class Library:
                     lib_file (file) - file for writing.
 
                 """
-                pin_str = 'X'
-                pin_str += ' ' + self.name
-                pin_str += ' ' + str(self.number)
-                pin_str += ' ' + str(self.pos_x)
-                pin_str += ' ' + str(self.pos_y)
-                pin_str += ' ' + str(self.length)
-                pin_str += ' ' + self.orientation
-                pin_str += ' ' + str(self.number_size)
-                pin_str += ' ' + str(self.name_size)
-                pin_str += ' ' + str(self.unit)
-                pin_str += ' ' + str(self.convert)
-                pin_str += ' ' + self.electric_type
+                shape = ''
                 if hasattr(self, 'shape'):
-                    pin_str += ' ' + self.shape
-                pin_str += '\n'
+                    shape = ' {}'.format(self.shape)
+                pin_str = 'X {name} {num} {pos_x} {pos_y} {length} {orient} {num_size} {name_size} {unit} {convert} {el_type}{shape}\n'.format(
+                          name = self.name,
+                          num = self.number,
+                          pos_x = self.pos_x,
+                          pos_y = self.pos_y,
+                          length = self.length,
+                          orient = self.orientation,
+                          num_size = self.number_size,
+                          name_size = self.name_size,
+                          unit = self.unit,
+                          convert = self.convert,
+                          el_type = self.electric_type,
+                          shape = shape
+                          )
                 lib_file.write(pin_str.decode('utf-8'))
 
 
@@ -1634,23 +1714,3 @@ def split_line(str_to_split):
             if item:
                 output.append(item)
     return output
-
-
-def add_trailing_spaces(value):
-    """
-    If value have the langth less than 4 they must be appended with trailing spaces.
-
-        Arguments:
-
-        value (int) - int value that must be converted to string and
-            appended with trailing spaces.
-
-        Returns:
-
-        str_value (str) - value as sring with trailing spaces if needed.
-
-    """
-    str_value = str(value)
-    if len(str_value) < 4:
-        str_value += (4 - len(str_value)) * ' '
-    return str_value
