@@ -545,8 +545,16 @@ class FindReplaceDialog ( wx.Dialog ):
 		
 		sizer_find_common.Add( sizer_find, 1, wx.EXPAND, 5 )
 		
+		sizer_options = wx.BoxSizer( wx.HORIZONTAL )
+		
 		self.checkbox_case_sensitive = wx.CheckBox( self.panel_find, wx.ID_ANY, u"С учетом регистра", wx.DefaultPosition, wx.DefaultSize, 0 )
-		sizer_find_common.Add( self.checkbox_case_sensitive, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_options.Add( self.checkbox_case_sensitive, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_whole_word = wx.CheckBox( self.panel_find, wx.ID_ANY, u"Слово целиком", wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_options.Add( self.checkbox_whole_word, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		sizer_find_common.Add( sizer_options, 1, wx.EXPAND, 5 )
 		
 		self.staticline = wx.StaticLine( self.panel_find, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		sizer_find_common.Add( self.staticline, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )

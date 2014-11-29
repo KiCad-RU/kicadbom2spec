@@ -15,7 +15,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-VERSION=3.3
+VERSION=3.4
 
 import os
 from os import path, remove, rename
@@ -1013,6 +1013,7 @@ class Window(gui.MainFrame):
             """
             find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
             case_sensitive = event.GetEventObject().GetGrandParent().checkbox_case_sensitive.GetValue()
+            whole_word = event.GetEventObject().GetGrandParent().checkbox_whole_word.GetValue()
             if not find_str:
                 return
 
@@ -1028,6 +1029,8 @@ class Window(gui.MainFrame):
                     if not case_sensitive:
                         cell_value = cell_value.lower()
                         find_str = find_str.lower()
+                    if whole_word:
+                        cell_value = cell_value.split()
                     if find_str in cell_value:
                         self.not_found = False
                         self.grid_components.SetGridCursor(row, col)
@@ -1072,6 +1075,8 @@ class Window(gui.MainFrame):
                     if not case_sensitive:
                         cell_value = cell_value.lower()
                         find_str = find_str.lower()
+                    if whole_word:
+                        cell_value = cell_value.split()
                     if find_str in cell_value:
                         self.not_found = False
                         self.grid_components.SetGridCursor(row, col)
