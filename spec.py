@@ -41,6 +41,7 @@ class Specification():
         self.pattern = odf.opendocument.load(path.join(path.dirname(path.realpath(__file__)), 'pattern.ods'))
         self.firstPagePattern = None
         self.otherPagesPattern = None
+        self.lastPagesPattern = None
         for sheet in self.pattern.spreadsheet.getElementsByType(Table):
             # Pattern for first page
             if sheet.getAttribute('name') == 'First':
@@ -48,6 +49,9 @@ class Specification():
             # Pattern for other pages
             elif sheet.getAttribute('name') == 'Other':
                 self.otherPagesPattern = sheet
+            # Pattern for last pages (the changes sheet)
+            elif sheet.getAttribute('name') == 'Last':
+                self.lastPagesPattern = sheet
 
         # Create specification file object
         self.specification = odf.opendocument.OpenDocumentSpreadsheet()
@@ -77,7 +81,7 @@ class Specification():
         self.cur_page = 1
         self.cur_table = self.firstPagePattern
 
-        # Some variables for stamp filling
+        # Some variables for spec filling
         self.developer = ''
         self.verifer = ''
         self.approver = ''
@@ -85,6 +89,7 @@ class Specification():
         self.title = ''
         self.comp = ''
         self.add_units = False
+        self.need_changes_sheet = True
 
     def replace_text(self, table, label, text, group=False):
         """
@@ -132,6 +137,16 @@ class Specification():
                         if p_data.tagName == 'Text':
                             if re.search(r'#\d+:\d+', p_data.data) != None:
                                 p_data.data = ''
+
+    def append_changes_sheet(self):
+        """
+        Add to the end of spec the changes sheet from template.
+
+        """
+        self.cur_table = self.lastPagesPattern
+        self.cur_page += 1
+        self.cur_table.setAttribute('name', u'стр. %d' % self.cur_page)
+        self.specification.spreadsheet.addElement(self.cur_table)
 
     def next_line(self):
         """
@@ -434,6 +449,9 @@ class Specification():
         Save created specification to the file.
 
         """
+        # If the sheet of changes is needed - append it
+        if self.need_changes_sheet:
+            self.append_changes_sheet()
         # Fill stamp fields on each page
         for index, table in enumerate(self.specification.spreadsheet.getElementsByType(Table)):
             # First page - big stamp

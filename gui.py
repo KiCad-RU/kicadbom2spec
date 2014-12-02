@@ -724,7 +724,7 @@ class SpecDialog ( wx.Dialog ):
 		self.panel_spec_dialog = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_spec = wx.BoxSizer( wx.VERTICAL )
 		
-		self.filepicker_spec = wx.FilePickerCtrl( self.panel_spec_dialog, wx.ID_ANY, wx.EmptyString, u"Выбор файла спецификации", u"Таблица (*.ods)|*.ods|Все файлы (*.*)|*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_USE_TEXTCTRL )
+		self.filepicker_spec = wx.FilePickerCtrl( self.panel_spec_dialog, wx.ID_ANY, wx.EmptyString, u"Выбор файла спецификации", u"Таблица (*.ods)|*.ods|Все файлы (*.*)|*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_OVERWRITE_PROMPT|wx.FLP_SAVE|wx.FLP_USE_TEXTCTRL )
 		sizer_spec.Add( self.filepicker_spec, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.staticline_1 = wx.StaticLine( self.panel_spec_dialog, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
@@ -739,6 +739,11 @@ class SpecDialog ( wx.Dialog ):
 		self.checkbox_all_components.SetToolTipString( u"Если данная функция включена, в перечень элементов будут включены все элементы, не зависимо от того установлен флажок для элемента или нет." )
 		
 		sizer_spec.Add( self.checkbox_all_components, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_changes_sheet = wx.CheckBox( self.panel_spec_dialog, wx.ID_ANY, u"Добавить лист регистрации изменений", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_changes_sheet.SetToolTipString( u"Если данная опция включена, то в конец перечня элементов будет добавлен лист регистрации изменений." )
+		
+		sizer_spec.Add( self.checkbox_changes_sheet, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_open = wx.CheckBox( self.panel_spec_dialog, wx.ID_ANY, u"Открыть перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_open.SetToolTipString( u"Если этот параметр установлен, то после создания перечня элементов он будет открыт в редакторе по умолчанию." )

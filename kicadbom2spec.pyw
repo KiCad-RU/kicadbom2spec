@@ -765,38 +765,45 @@ class Window(gui.MainFrame):
         all_components = False
         add_units = False
         open_spec = False
+        need_changes_sheet = True
         if self.settings.has_section('spec'):
             if self.settings.has_option('spec', 'all'):
                 all_components = self.settings.getboolean('spec', 'all')
             if self.settings.has_option('spec', 'units'):
                 add_units = self.settings.getboolean('spec', 'units')
+            if self.settings.has_option('spec', 'changes_sheet'):
+                need_changes_sheet = self.settings.getboolean('spec', 'changes_sheet')
             if self.settings.has_option('spec', 'open'):
                 open_spec = self.settings.getboolean('spec', 'open')
 
         spec_dialog.filepicker_spec.SetPath(self.specification_file)
         spec_dialog.checkbox_add_units.SetValue(add_units)
         spec_dialog.checkbox_all_components.SetValue(all_components)
+        spec_dialog.checkbox_changes_sheet.SetValue(need_changes_sheet)
         spec_dialog.checkbox_open.SetValue(open_spec)
 
         result = spec_dialog.ShowModal()
-
-        # Save settings from spec dialog
-        all_components = spec_dialog.checkbox_all_components.IsChecked()
-        add_units = spec_dialog.checkbox_add_units.IsChecked()
-        open_spec = spec_dialog.checkbox_open.GetValue()
-
-        if not self.settings.has_section('spec'):
-            self.settings.add_section('spec')
-        self.settings.set('spec', 'all', str(all_components))
-        self.settings.set('spec', 'units', str(add_units))
-        self.settings.set('spec', 'open', str(open_spec))
 
         if result == wx.ID_OK:
             # Set cursor to 'wait'
             wx.BeginBusyCursor()
             wx.SafeYield()
-            comp_fields = []
+
+            # Save settings from spec dialog
+            all_components = spec_dialog.checkbox_all_components.IsChecked()
+            add_units = spec_dialog.checkbox_add_units.IsChecked()
+            need_changes_sheet = spec_dialog.checkbox_changes_sheet.IsChecked()
+            open_spec = spec_dialog.checkbox_open.GetValue()
+
+            if not self.settings.has_section('spec'):
+                self.settings.add_section('spec')
+            self.settings.set('spec', 'all', str(all_components))
+            self.settings.set('spec', 'units', str(add_units))
+            self.settings.set('spec', 'changes_sheet', str(need_changes_sheet))
+            self.settings.set('spec', 'open', str(open_spec))
             self.specification_file = spec_dialog.filepicker_spec.GetPath()
+            self.specification_file = path.splitext(self.specification_file)[0] + '.ods'
+            comp_fields = []
             grid_values = self.get_grid_values()
             for row in grid_values:
                 if (row[0] == u'1') | all_components:
@@ -807,6 +814,7 @@ class Window(gui.MainFrame):
                     comp_fields.append(fields)
             spec = Specification()
             spec.add_units = add_units
+            spec.need_changes_sheet = need_changes_sheet
             spec.load(self.schematic_file, comp_fields)
             spec.save(self.specification_file)
             # Set cursor back to 'normal'
