@@ -567,6 +567,9 @@ class Window(gui.MainFrame):
         # Menu & Toolbar
         self.menuitem_spec.Enable(True)
         self.menuitem_save_sch.Enable(False)
+        self.menuitem_save_sch_as.Enable(True)
+        self.menuitem_save_lib.Enable(False)
+        self.menuitem_save_lib_as.Enable(False)
         self.menuitem_find.Enable(True)
         self.menuitem_replace.Enable(True)
 
@@ -592,6 +595,48 @@ class Window(gui.MainFrame):
                 wx.MessageBox(
                     u'При сохранении файла схемы:\n' +
                     sheet.sch_name + '\n' \
+                    u'возникла ошибка. Файл не сохранен.',
+                    u'Внимание!',
+                    wx.ICON_ERROR|wx.OK, self
+                    )
+
+    def on_save_sch_as(self, event):
+        """
+        Save changes in the fields of the components to the separate
+        schematic file(s).
+
+        """
+        comp_values = self.get_grid_values()
+        self.set_schematic_values(comp_values)
+        new_schematic_file = ''
+        for sheet in self.sheets:
+            try:
+                save_sch_dialog = wx.FileDialog(
+                    self,
+                    u'Сохранить схему как...',
+                    path.dirname(sheet.sch_name),
+                    path.basename(sheet.sch_name),
+                    u'Схема (*.sch)|*.sch|Все файлы (*.*)|*.*',
+                    wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
+                    )
+                if save_sch_dialog.ShowModal() == wx.ID_CANCEL:
+                    return
+                new_schematic_file = save_sch_dialog.GetPath()
+                if path.exists(new_schematic_file  + '.tmp'):
+                    remove(new_schematic_file + '.tmp')
+                sheet.save(new_schematic_file + '.tmp')
+                if path.exists(new_schematic_file):
+                    remove(new_schematic_file)
+                rename(new_schematic_file + '.tmp', new_schematic_file)
+                if new_schematic_file == sheet.sch_name:
+                    self.saved = True
+                    self.menuitem_save_sch.Enable(False)
+            except:
+                if path.exists(new_schematic_file + '.tmp'):
+                    remove(new_schematic_file + '.tmp')
+                wx.MessageBox(
+                    u'При сохранении файла схемы:\n' +
+                    new_schematic_file + '\n' \
                     u'возникла ошибка. Файл не сохранен.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
@@ -638,7 +683,9 @@ class Window(gui.MainFrame):
         # Menu & Toolbar
         self.menuitem_spec.Enable(False)
         self.menuitem_save_sch.Enable(False)
+        self.menuitem_save_sch_as.Enable(False)
         self.menuitem_save_lib.Enable(False)
+        self.menuitem_save_lib_as.Enable(True)
         self.menuitem_find.Enable(True)
         self.menuitem_replace.Enable(True)
 
@@ -660,6 +707,46 @@ class Window(gui.MainFrame):
         except:
             if path.exists(self.library_file + '.tmp'):
                 remove(self.library_file + '.tmp')
+            wx.MessageBox(
+                u'При сохранении файла библиотеки:\n' +
+                self.library_file + '\n' \
+                u'возникла ошибка. Файл не сохранен.',
+                u'Внимание!',
+                wx.ICON_ERROR|wx.OK, self
+                )
+
+    def on_save_lib_as(self, event):
+        """
+        Save changes in the fields of the components to the separate
+        library file.
+
+        """
+        comp_values = self.get_grid_values()
+        self.set_library_values(comp_values)
+        new_library_file = ''
+        try:
+            save_lib_dialog = wx.FileDialog(
+                self,
+                u'Сохранить библиотеку как...',
+                path.dirname(self.library_file),
+                path.basename(self.library_file),
+                u'Библиотека (*.lib)|*.lib|Все файлы (*.*)|*.*',
+                wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
+                )
+            if save_lib_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            new_library_file = save_lib_dialog.GetPath()
+            if path.exists(new_library_file + '.tmp'):
+                remove(new_library_file + '.tmp')
+            self.library.save(new_library_file + '.tmp')
+            if path.exists(new_library_file):
+                remove(new_library_file)
+            rename(new_library_file + '.tmp', new_library_file)
+            self.saved = True
+            self.menuitem_save_lib.Enable(False)
+        except:
+            if path.exists(new_library_file + '.tmp'):
+                remove(new_library_file + '.tmp')
             wx.MessageBox(
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
@@ -1236,12 +1323,12 @@ class Window(gui.MainFrame):
             for comp in spec.get_components(sheet.sch_name, True):
                 if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
                     continue
-                if comp.unit > 1:
-                    is_present = False
-                    for row in values:
-                        if row[2] == comp.ref:
-                            is_present = True
-                            break
+                is_present = False
+                for row in values:
+                    if comp.fields[0].text == row[2] and \
+                       sheet.sch_name == row[-1]:
+                           is_present = True
+                if is_present:
                     continue
                 row = [
                     u'1',  # Used
@@ -1249,7 +1336,7 @@ class Window(gui.MainFrame):
                     comp.fields[0].text,  # Reference
                     u'',  # Mark
                     comp.fields[1].text,  # Value
-                    u'',  # Acceracy
+                    u'',  # Accuracy
                     u'',  # Type
                     u'',  # GOST
                     u'',  # Comment

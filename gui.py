@@ -12,23 +12,25 @@ import wx.xrc
 
 ID_OPEN_SCH = 1000
 ID_SAVE_SCH = 1001
-ID_OPEN_LIB = 1002
-ID_SAVE_LIB = 1003
-ID_SPEC = 1004
-ID_EXIT = 1005
-ID_UNDO = 1006
-ID_REDO = 1007
-ID_COPY = 1008
-ID_CUT = 1009
-ID_PASTE = 1010
-ID_FIND = 1011
-ID_REPLACE = 1012
-ID_EDIT = 1013
-ID_CLEAR = 1014
-ID_SETTINGS = 1015
-ID_TOOL = 1016
-ID_HELP = 1017
-ID_ABOUT = 1018
+ID_SAVE_SCH_AS = 1002
+ID_OPEN_LIB = 1003
+ID_SAVE_LIB = 1004
+ID_SAVE_LIB_AS = 1005
+ID_SPEC = 1006
+ID_EXIT = 1007
+ID_UNDO = 1008
+ID_REDO = 1009
+ID_COPY = 1010
+ID_CUT = 1011
+ID_PASTE = 1012
+ID_FIND = 1013
+ID_REPLACE = 1014
+ID_EDIT = 1015
+ID_CLEAR = 1016
+ID_SETTINGS = 1017
+ID_TOOL = 1018
+ID_HELP = 1019
+ID_ABOUT = 1020
 
 ###########################################################################
 ## Class MainFrame
@@ -52,14 +54,26 @@ class MainFrame ( wx.Frame ):
 		self.menu_file.AppendItem( self.menuitem_save_sch )
 		self.menuitem_save_sch.Enable( False )
 		
+		self.menuitem_save_sch_as = wx.MenuItem( self.menu_file, ID_SAVE_SCH_AS, u"Сох&ранить схему как..."+ u"\t" + u"CTRL+SHIFT+W", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_save_sch_as.SetBitmap( wx.Bitmap( u"bitmaps/document-save-as.png", wx.BITMAP_TYPE_ANY ) )
+		self.menu_file.AppendItem( self.menuitem_save_sch_as )
+		self.menuitem_save_sch_as.Enable( False )
+		
+		self.menu_file.AppendSeparator()
+		
 		self.menuitem_open_lib = wx.MenuItem( self.menu_file, ID_OPEN_LIB, u"Открыть &библиотеку..."+ u"\t" + u"CTRL+L", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_open_lib.SetBitmap( wx.Bitmap( u"bitmaps/document-open.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_file.AppendItem( self.menuitem_open_lib )
 		
-		self.menuitem_save_lib = wx.MenuItem( self.menu_file, ID_SAVE_LIB, u"Со&хра&нить библиотеку", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_save_lib = wx.MenuItem( self.menu_file, ID_SAVE_LIB, u"Сохра&нить библиотеку", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_save_lib.SetBitmap( wx.Bitmap( u"bitmaps/document-save.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_file.AppendItem( self.menuitem_save_lib )
 		self.menuitem_save_lib.Enable( False )
+		
+		self.menuitem_save_lib_as = wx.MenuItem( self.menu_file, ID_SAVE_LIB_AS, u"Сохрани&ть библиотеку как...", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_save_lib_as.SetBitmap( wx.Bitmap( u"bitmaps/document-save-as.png", wx.BITMAP_TYPE_ANY ) )
+		self.menu_file.AppendItem( self.menuitem_save_lib_as )
+		self.menuitem_save_lib_as.Enable( False )
 		
 		self.menu_file.AppendSeparator()
 		
@@ -214,8 +228,10 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_CLOSE, self.on_exit )
 		self.Bind( wx.EVT_MENU, self.on_open_sch, id = self.menuitem_open_sch.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_save_sch, id = self.menuitem_save_sch.GetId() )
+		self.Bind( wx.EVT_MENU, self.on_save_sch_as, id = self.menuitem_save_sch_as.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_open_lib, id = self.menuitem_open_lib.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_save_lib, id = self.menuitem_save_lib.GetId() )
+		self.Bind( wx.EVT_MENU, self.on_save_lib_as, id = self.menuitem_save_lib_as.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_spec, id = self.menuitem_spec.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_exit, id = self.menuitem_exit.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_undo, id = self.menuitem_undo.GetId() )
@@ -246,10 +262,16 @@ class MainFrame ( wx.Frame ):
 	def on_save_sch( self, event ):
 		event.Skip()
 	
+	def on_save_sch_as( self, event ):
+		event.Skip()
+	
 	def on_open_lib( self, event ):
 		event.Skip()
 	
 	def on_save_lib( self, event ):
+		event.Skip()
+	
+	def on_save_lib_as( self, event ):
 		event.Skip()
 	
 	def on_spec( self, event ):

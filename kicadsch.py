@@ -59,13 +59,15 @@ class Schematic:
         first_line = sch_file.readline().encode('utf-8')
         first_line = first_line.replace('\n', '')
         if first_line.startswith(self.EESCHEMA_FILE_STAMP):
-            self.version = int(split_line(first_line)[-1])
+            first_line = first_line.replace(self.EESCHEMA_FILE_STAMP, '')
+            first_line = first_line.replace(self.SCHEMATIC_HEAD_STRING, '')
+            self.version = int(split_line(first_line)[0])
         else:
             return
         for sch_line in sch_file:
             sch_line = sch_line.encode('utf-8')
             if sch_line.startswith('$'):
-                if sch_line == '$EndSCHEMATC':
+                if sch_line.startswith('$EndSCHEMATC'):
                     return
                 else:
                     item = sch_line
@@ -88,43 +90,15 @@ class Schematic:
             elif sch_line.startswith('Text'):
                 sch_line += sch_file.readline().encode('utf-8')
                 self.items.append(self.Text(sch_line))
-#                if ' Notes ' in sch_line:
-#                    sch_line += sch_file.readline().encode('utf-8')
-#                    self.items.append(self.Text(sch_line))
-#                elif ' GLabel ' in sch_line:
-#                    sch_line += sch_file.readline().encode('utf-8')
-#                    self.items.append(self.Text(sch_line))
-#                elif ' HLabel ' in sch_line:
-#                    sch_line += sch_file.readline().encode('utf-8')
-#                    self.items.append(self.Text(sch_line))
-#                elif ' Label ' in sch_line:
-#                    sch_line += sch_file.readline().encode('utf-8')
-#                    self.items.append(self.Text(sch_line))
             elif sch_line.startswith('Wire'):
                 sch_line += sch_file.readline().encode('utf-8')
                 self.items.append(self.Wire(sch_line))
-#                if 'Wire Line' in sch_line:
-#                    sch_line += sch_file.readline().encode('utf-8')
-#                    self.items.append(self.Wire(sch_line))
-#                elif 'Bus Line' in sch_line:
-#                    sch_line += sch_file.readline().encode('utf-8')
-#                    self.items.append(self.Wire(sch_line))
-#                elif 'Notes Line' in sch_line:
-#                    sch_line += sch_file.readline().encode('utf-8')
-#                    self.items.append(self.Wire(sch_line))
             elif sch_line.startswith('Entry'):
                 sch_line += sch_file.readline().encode('utf-8')
                 self.items.append(self.Entry(sch_line))
-#                if 'Wire Line' in sch_line:
-#                    sch_line += sch_file.readline().encode('utf-8')
-#                    self.items.append(self.Entry(sch_line))
-#                elif 'Bus Bus' in sch_line:
-#                    sch_line += sch_file.readline().encode('utf-8')
-#                    self.items.append(self.Entry(sch_line))
             elif sch_line.startswith('LIBS:'):
                 self.libs.add(sch_line)
             elif sch_line.startswith('EELAYER') and not 'END' in sch_line:
-#                 sch_line.startswith('EELAYER END'):
                     self.eelayer.append(self.Eelayer(sch_line))
 
     def save(self, new_name=None):
@@ -155,7 +129,7 @@ class Schematic:
         for item in self.items:
             item.save(sch_file)
 
-        sch_file.write(u'$EndSCHEMATC')
+        sch_file.write(u'$EndSCHEMATC\n')
         sch_file.close()
 
 
@@ -556,13 +530,13 @@ class Schematic:
                 elif parts[0] == 'U':
                     self.timestamp = parts[1]
                 elif parts[0].startswith('F'):
-                    if int(parts[0][1]) == 0:
+                    if int(parts[0][1:]) == 0:
                         self.name = parts[1]
                         self.name_size = parts[2]
-                    elif int(parts[0][1]) == 1:
+                    elif int(parts[0][1:]) == 1:
                         self.file_name = parts[1]
                         self.file_name_size = parts[2]
-                    elif int(parts[0][1]) > 1:
+                    elif int(parts[0][1:]) > 1:
                         self.fields.append(self.Field(line))
 
         def save(self, sch_file):

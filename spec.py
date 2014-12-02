@@ -223,12 +223,13 @@ class Specification():
         """
         sheets = []
         exec_path = path.dirname(path.realpath(__file__))
-        chdir(path.dirname(sch_file_name))
+        cur_path = path.dirname(sch_file_name)
+        chdir(cur_path)
         sch = Schematic(sch_file_name)
         for item in sch.items:
             if item.__class__.__name__ == 'Sheet':
-                sheets.append(path.abspath(item.file_name.decode('utf-8')))
-                sheets.extend(self.get_sheets(path.abspath(item.file_name.decode('utf-8'))))
+                sheets.append(path.abspath(path.join(cur_path, item.file_name.decode('utf-8'))))
+                sheets.extend(self.get_sheets(path.abspath(path.join(cur_path, item.file_name.decode('utf-8')))))
         chdir(exec_path)
         return sheets
 

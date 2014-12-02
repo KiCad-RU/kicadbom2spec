@@ -26,7 +26,7 @@
         <property name="ui_table">UI</property>
         <property name="use_enum">0</property>
         <property name="use_microsoft_bom">0</property>
-        <object class="Frame" expanded="0">
+        <object class="Frame" expanded="1">
             <property name="aui_managed">0</property>
             <property name="aui_manager_style">wxAUI_MGR_DEFAULT</property>
             <property name="bg"></property>
@@ -88,7 +88,7 @@
             <event name="OnSetFocus"></event>
             <event name="OnSize"></event>
             <event name="OnUpdateUI"></event>
-            <object class="wxMenuBar" expanded="0">
+            <object class="wxMenuBar" expanded="1">
                 <property name="bg"></property>
                 <property name="context_help"></property>
                 <property name="context_menu">1</property>
@@ -133,7 +133,7 @@
                 <event name="OnSetFocus"></event>
                 <event name="OnSize"></event>
                 <event name="OnUpdateUI"></event>
-                <object class="wxMenu" expanded="0">
+                <object class="wxMenu" expanded="1">
                     <property name="label">&amp;Файл</property>
                     <property name="name">menu_file</property>
                     <property name="permission">protected</property>
@@ -167,6 +167,25 @@
                         <event name="OnMenuSelection">on_save_sch</event>
                         <event name="OnUpdateUI"></event>
                     </object>
+                    <object class="wxMenuItem" expanded="1">
+                        <property name="bitmap">Load From File; bitmaps/document-save-as.png</property>
+                        <property name="checked">0</property>
+                        <property name="enabled">0</property>
+                        <property name="help"></property>
+                        <property name="id">ID_SAVE_SCH_AS</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Сох&amp;ранить схему как...</property>
+                        <property name="name">menuitem_save_sch_as</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">CTRL+SHIFT+W</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">on_save_sch_as</event>
+                        <event name="OnUpdateUI"></event>
+                    </object>
+                    <object class="separator" expanded="0">
+                        <property name="name">separator0</property>
+                        <property name="permission">none</property>
+                    </object>
                     <object class="wxMenuItem" expanded="0">
                         <property name="bitmap">Load From File; bitmaps/document-open.png</property>
                         <property name="checked">0</property>
@@ -189,12 +208,27 @@
                         <property name="help"></property>
                         <property name="id">ID_SAVE_LIB</property>
                         <property name="kind">wxITEM_NORMAL</property>
-                        <property name="label">Со&amp;хра&amp;нить библиотеку</property>
+                        <property name="label">Сохра&amp;нить библиотеку</property>
                         <property name="name">menuitem_save_lib</property>
                         <property name="permission">none</property>
                         <property name="shortcut"></property>
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">on_save_lib</event>
+                        <event name="OnUpdateUI"></event>
+                    </object>
+                    <object class="wxMenuItem" expanded="1">
+                        <property name="bitmap">Load From File; bitmaps/document-save-as.png</property>
+                        <property name="checked">0</property>
+                        <property name="enabled">0</property>
+                        <property name="help"></property>
+                        <property name="id">ID_SAVE_LIB_AS</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Сохрани&amp;ть библиотеку как...</property>
+                        <property name="name">menuitem_save_lib_as</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">on_save_lib_as</event>
                         <event name="OnUpdateUI"></event>
                     </object>
                     <object class="separator" expanded="0">
@@ -216,7 +250,7 @@
                         <event name="OnMenuSelection">on_spec</event>
                         <event name="OnUpdateUI"></event>
                     </object>
-                    <object class="separator" expanded="0">
+                    <object class="separator" expanded="1">
                         <property name="name">separator2</property>
                         <property name="permission">none</property>
                     </object>

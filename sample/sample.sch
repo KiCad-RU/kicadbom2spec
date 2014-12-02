@@ -5,7 +5,7 @@ EELAYER END
 $Descr A4 8268 11693 portrait
 encoding utf-8
 Sheet 1 1
-Title "Однокаскадный транзисторный усилитель"
+Title "Однокаскадный транзисторный усилитель.\\nСхема электрическая принципиальная"
 Date "13 may 2013"
 Rev ""
 Comp "\"kicadbom2spec\""
@@ -133,22 +133,16 @@ Text GLabel 6800 4000 2    138  Output ~ 0
 Wire Wire Line
 	6800 4000 5950 4000
 Wire Wire Line
-	5500 4000 4800 4000
+	4350 4000 5500 4000
 Wire Wire Line
-	4800 4000 4350 4000
-Wire Wire Line
-	4800 3400 4800 4000
-Wire Wire Line
-	4800 4000 4800 4550
+	4800 3400 4800 4550
 Connection ~ 4800 4000
 Wire Wire Line
 	4800 2600 4800 1950
 Wire Wire Line
 	4800 1950 2000 1950
 Wire Wire Line
-	4350 4850 3350 4850
-Wire Wire Line
-	3350 4850 2900 4850
+	2900 4850 4350 4850
 Wire Wire Line
 	3550 4000 3350 4000
 Wire Wire Line
@@ -157,15 +151,9 @@ Connection ~ 3350 4850
 Wire Wire Line
 	2450 4850 2000 4850
 Wire Wire Line
-	4800 5150 4800 5750
+	4800 5150 4800 6250
 Wire Wire Line
-	4800 5750 4800 6250
-Wire Wire Line
-	2000 7650 4800 7650
-Wire Wire Line
-	4800 7650 5800 7650
-Wire Wire Line
-	5800 7650 7000 7650
+	2000 7650 7000 7650
 Wire Wire Line
 	5800 6900 5800 7650
 Connection ~ 5800 7650
