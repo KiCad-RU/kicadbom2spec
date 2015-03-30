@@ -15,7 +15,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-VERSION=3.4
+VERSION=3.5
 
 import os
 from os import path, remove, rename
@@ -30,8 +30,6 @@ from types import *
 from ConfigParser import SafeConfigParser
 from shutil import copyfile
 
-import wxversion
-wxversion.select('2.8')
 import wx
 import wx.grid
 
@@ -1536,14 +1534,17 @@ class Window(gui.MainFrame):
         Returns list of indexes of selected rows.
 
         """
-        top_left = self.grid_components.GetSelectionBlockTopLeft()
-        bottom_right =  self.grid_components.GetSelectionBlockBottomRight()
         selected_rows = []
-        for i in range(len(top_left)):
-            row_start, col_start = top_left[i]
-            row_end, col_end = bottom_right[i]
-            for row in range(row_start, row_end + 1):
-                selected_rows.append(row)
+        if int(wx.version().split(' ')[0].split('.')[0]) == 3:
+            selected_rows = self.grid_components.GetSelectedRows()
+        else:
+            top_left = self.grid_components.GetSelectionBlockTopLeft()
+            bottom_right =  self.grid_components.GetSelectionBlockBottomRight()
+            for i in range(len(top_left)):
+                row_start, col_start = top_left[i]
+                row_end, col_end = bottom_right[i]
+                for row in range(row_start, row_end + 1):
+                    selected_rows.append(row)
         return selected_rows
 
     def get_selected_cols(self):
