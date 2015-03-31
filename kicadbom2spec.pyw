@@ -42,7 +42,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 # Global
-settings_file_name = 'settings.ini'
+default_settings_file_name = 'settings.ini'
 settings_separator = ';;;'
 
 class Window(gui.MainFrame):
@@ -81,7 +81,7 @@ class Window(gui.MainFrame):
         self.load_settings()
         self.init_grid()
 
-    def load_settings(self):
+    def load_settings(self, settings_file_name=default_settings_file_name):
         """
         Loads setttings from configuration file.
 
@@ -124,6 +124,10 @@ class Window(gui.MainFrame):
 
             if self.settings.has_section('column sizes'):
                 self.save_col_size = True
+                if hasattr(self, 'grid_components'):
+                    for col in self.settings.options('column sizes'):
+                        col_size = self.settings.getint('column sizes', col)
+                        self.grid_components.SetColSize(int(col), col_size)
 
             if self.settings.has_section('values'):
                 for item in self.values_dict.keys():
@@ -141,6 +145,38 @@ class Window(gui.MainFrame):
                     value = self.settings.get('auto filling groups', param)
                     if value.startswith(u'1'):
                         self.auto_groups_dict[param.upper()] = value[1:]
+
+    def save_settings(self, settings_file_name=default_settings_file_name):
+        """
+        Save setttings to configuration file.
+
+        """
+        if self.save_window_size_pos:
+            if not self.settings.has_section('window'):
+                self.settings.add_section('window')
+            if self.IsMaximized():
+                self.settings.set('window', 'maximized', '1')
+            else:
+                self.settings.set('window', 'maximized', '0')
+                x, y = self.GetPosition()
+                width, height = self.GetSize()
+                self.settings.set('window', 'x', str(x))
+                self.settings.set('window', 'y', str(y))
+                self.settings.set('window', 'width', str(width))
+                self.settings.set('window', 'height', str(height))
+        else:
+            self.settings.remove_section('window')
+
+        if self.save_col_size:
+            if not self.settings.has_section('column sizes'):
+                self.settings.add_section('column sizes')
+            for col in range(self.grid_components.GetNumberCols()):
+                col_size = self.grid_components.GetColSize(col)
+                self.settings.set('column sizes', str(col), str(col_size))
+        else:
+            self.settings.remove_section('column sizes')
+
+        self.settings.write(codecs.open(settings_file_name, 'w', encoding='utf-8'))
 
     def init_grid(self):
         """
@@ -1037,6 +1073,60 @@ class Window(gui.MainFrame):
                         if value.startswith('1'):
                             self.auto_groups_dict[param] = value[1:]
 
+    def on_settings_import(self, event):
+        """
+        Import settings from specified file.
+
+        """
+        try:
+            settings_import_dialog = wx.FileDialog( self,
+                u'Загрузить параметры из файла...',
+                path.dirname(default_settings_file_name),
+                path.basename(default_settings_file_name),
+                u'Конфигурационный файл (*.ini)|*.ini|Все файлы (*.*)|*.*',
+                wx.FD_OPEN
+                )
+            if settings_import_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            settings_file_name = settings_import_dialog.GetPath()
+            self.load_settings(settings_file_name)
+        except:
+            wx.MessageBox(
+                u'При загрузке параметров из файла:\n' +
+                settings_file_name + '\n' \
+                u'возникла ошибка. Параметры не загружены\n' +
+                'или загружены не полностью.',
+                u'Внимание!',
+                wx.ICON_ERROR|wx.OK, self
+                )
+
+    def on_settings_export(self, event):
+        """
+        Export settings to specified file.
+
+        """
+        try:
+            settings_export_dialog = wx.FileDialog( self,
+                u'Сохранить параметры в файл...',
+                path.dirname(default_settings_file_name),
+                path.basename(default_settings_file_name),
+                u'Конфигурационный файл (*.ini)|*.ini|Все файлы (*.*)|*.*',
+                wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
+                )
+            if settings_export_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            settings_file_name = settings_export_dialog.GetPath()
+            self.save_settings(settings_file_name)
+        except:
+            wx.MessageBox(
+                u'При сохранении параметров в файл:\n' +
+                settings_file_name + '\n' \
+                u'возникла ошибка. Параметры не сохранены\n' +
+                'или сохранены не полностью.',
+                u'Внимание!',
+                wx.ICON_ERROR|wx.OK, self
+                )
+
     def on_exit(self, event):
         """
         Close the program.
@@ -1051,33 +1141,7 @@ class Window(gui.MainFrame):
 
                 return
 
-        if self.save_window_size_pos:
-            if not self.settings.has_section('window'):
-                self.settings.add_section('window')
-            if self.IsMaximized():
-                self.settings.set('window', 'maximized', '1')
-            else:
-                self.settings.set('window', 'maximized', '0')
-                x, y = self.GetPosition()
-                width, height = self.GetSize()
-                self.settings.set('window', 'x', str(x))
-                self.settings.set('window', 'y', str(y))
-                self.settings.set('window', 'width', str(width))
-                self.settings.set('window', 'height', str(height))
-        else:
-            self.settings.remove_section('window')
-
-        if self.save_col_size:
-            if not self.settings.has_section('column sizes'):
-                self.settings.add_section('column sizes')
-            for col in range(self.grid_components.GetNumberCols()):
-                col_size = self.grid_components.GetColSize(col)
-                self.settings.set('column sizes', str(col), str(col_size))
-        else:
-            self.settings.remove_section('column sizes')
-
-        self.settings.write(codecs.open(settings_file_name, 'w', encoding='utf-8'))
-
+        self.save_settings()
         self.Destroy()
 
     def on_clear_fields(self, event):

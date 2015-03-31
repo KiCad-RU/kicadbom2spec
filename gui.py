@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Jun  6 2014)
+## Python code generated with wxFormBuilder (version Mar 31 2015)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -28,9 +28,11 @@ ID_REPLACE = 1014
 ID_EDIT = 1015
 ID_CLEAR = 1016
 ID_SETTINGS = 1017
-ID_TOOL = 1018
-ID_HELP = 1019
-ID_ABOUT = 1020
+ID_SETTINGS_IMPORT = 1018
+ID_SETTINGS_EXPORT = 1019
+ID_TOOL = 1020
+ID_HELP = 1021
+ID_ABOUT = 1022
 
 ###########################################################################
 ## Class MainFrame
@@ -148,6 +150,14 @@ class MainFrame ( wx.Frame ):
 		self.menuItem_settings.SetBitmap( wx.Bitmap( u"bitmaps/document-properties.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_edit.AppendItem( self.menuItem_settings )
 		
+		self.menuItem_settings_import = wx.MenuItem( self.menu_edit, ID_SETTINGS_IMPORT, u"&Импорт параметров...", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuItem_settings_import.SetBitmap( wx.Bitmap( u"bitmaps/properties-import.png", wx.BITMAP_TYPE_ANY ) )
+		self.menu_edit.AppendItem( self.menuItem_settings_import )
+		
+		self.menuItem_settings_export = wx.MenuItem( self.menu_edit, ID_SETTINGS_EXPORT, u"&Экспорт параметров...", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuItem_settings_export.SetBitmap( wx.Bitmap( u"bitmaps/properties-export.png", wx.BITMAP_TYPE_ANY ) )
+		self.menu_edit.AppendItem( self.menuItem_settings_export )
+		
 		self.menubar.Append( self.menu_edit, u"&Правка" ) 
 		
 		self.menu_view = wx.Menu()
@@ -244,6 +254,8 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.on_edit_fields, id = self.menuitem_edit.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_clear_fields, id = self.menuitem_clear.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_settings, id = self.menuItem_settings.GetId() )
+		self.Bind( wx.EVT_MENU, self.on_settings_import, id = self.menuItem_settings_import.GetId() )
+		self.Bind( wx.EVT_MENU, self.on_settings_export, id = self.menuItem_settings_export.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_tool, id = self.menuitem_tool.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_help, id = self.menuitem_help.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_about, id = self.menuitem_about.GetId() )
@@ -304,6 +316,12 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 	
 	def on_settings( self, event ):
+		event.Skip()
+	
+	def on_settings_import( self, event ):
+		event.Skip()
+	
+	def on_settings_export( self, event ):
 		event.Skip()
 	
 	def on_tool( self, event ):
