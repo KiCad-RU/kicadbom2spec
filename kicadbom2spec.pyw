@@ -59,11 +59,8 @@ class Window(gui.MainFrame):
         gui.MainFrame.__init__(self,parent)
 
         if sys.platform == 'win32':
-            icon_bundle = wx.IconBundle()
-            for size in [16, 32, 48]:
-                icon = wx.Icon('bitmaps/icon.ico', wx.BITMAP_TYPE_ICO, size, size)
-                icon_bundle.AddIcon(icon)
-            self.SetIcons(icon_bundle)
+            icon = wx.Icon('bitmaps/icon.ico', wx.BITMAP_TYPE_ICO)
+            self.SetIcon(icon)
         else:
             icon = wx.Icon('bitmaps/icon.xpm', wx.BITMAP_TYPE_XPM)
             self.SetIcon(icon)
