@@ -29,11 +29,11 @@ spec.py           - модуль для работы с перечнем эле�
  2. Требования
 --------------------------------------------------------------------------------
 Для работы программы необходимы следующие элементы :
-* python 2      http://www.python.org/
-* wxPython      http://www.wxpython.org/
-* odfpy         https://pypi.python.org/pypi/odfpy
-· opengostfont  https://bitbucket.org/fat_angel/opengostfont
-· LibreOffice   http://www.libreoffice.org/
+* python 2      >= 2.7  http://www.python.org/
+* wxPython      >= 2.8  http://www.wxpython.org/
+* odfpy         0.9.6   https://pypi.python.org/pypi/odfpy
+· opengostfont          https://bitbucket.org/fat_angel/opengostfont
+· LibreOffice           http://www.libreoffice.org/
 
 Примечание: * - обязательные элементы; · - рекомендуемые элементы
 
