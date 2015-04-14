@@ -26,7 +26,7 @@
         <property name="ui_table">UI</property>
         <property name="use_enum">0</property>
         <property name="use_microsoft_bom">0</property>
-        <object class="Frame" expanded="1">
+        <object class="Frame" expanded="0">
             <property name="aui_managed">0</property>
             <property name="aui_manager_style">wxAUI_MGR_DEFAULT</property>
             <property name="bg"></property>
@@ -88,7 +88,7 @@
             <event name="OnSetFocus"></event>
             <event name="OnSize"></event>
             <event name="OnUpdateUI"></event>
-            <object class="wxMenuBar" expanded="1">
+            <object class="wxMenuBar" expanded="0">
                 <property name="bg"></property>
                 <property name="context_help"></property>
                 <property name="context_menu">1</property>
@@ -270,7 +270,7 @@
                         <event name="OnUpdateUI"></event>
                     </object>
                 </object>
-                <object class="wxMenu" expanded="1">
+                <object class="wxMenu" expanded="0">
                     <property name="label">&amp;Правка</property>
                     <property name="name">menu_edit</property>
                     <property name="permission">protected</property>
@@ -440,7 +440,7 @@
                         <event name="OnMenuSelection">on_settings</event>
                         <event name="OnUpdateUI"></event>
                     </object>
-                    <object class="wxMenuItem" expanded="1">
+                    <object class="wxMenuItem" expanded="0">
                         <property name="bitmap">Load From File; bitmaps/properties-import.png</property>
                         <property name="checked">0</property>
                         <property name="enabled">1</property>
@@ -455,7 +455,7 @@
                         <event name="OnMenuSelection">on_settings_import</event>
                         <event name="OnUpdateUI"></event>
                     </object>
-                    <object class="wxMenuItem" expanded="1">
+                    <object class="wxMenuItem" expanded="0">
                         <property name="bitmap">Load From File; bitmaps/properties-export.png</property>
                         <property name="checked">0</property>
                         <property name="enabled">1</property>
@@ -5233,7 +5233,7 @@
                                     <property name="permission">none</property>
                                     <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALL</property>
+                                        <property name="flag">wxALL|wxALIGN_CENTER_VERTICAL</property>
                                         <property name="proportion">0</property>
                                         <object class="wxStaticText" expanded="0">
                                             <property name="BottomDockable">1</property>
@@ -5370,7 +5370,7 @@
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
-                                            <property name="url">mailto:baranovskiykonstantin@gmail.com?subject=kicadbom2spec%20v3.0</property>
+                                            <property name="url">mailto:baranovskiykonstantin@gmail.com?subject=kicadbom2spec</property>
                                             <property name="visited_color"></property>
                                             <property name="window_extra_style"></property>
                                             <property name="window_name"></property>
@@ -5414,7 +5414,7 @@
                                     <property name="permission">none</property>
                                     <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALL</property>
+                                        <property name="flag">wxALL|wxALIGN_CENTER_VERTICAL</property>
                                         <property name="proportion">0</property>
                                         <object class="wxStaticText" expanded="0">
                                             <property name="BottomDockable">1</property>

@@ -680,9 +680,9 @@ class AboutDialog ( wx.Dialog ):
 		
 		self.statictext_email = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"Эл. почта:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.statictext_email.Wrap( -1 )
-		sizer_email.Add( self.statictext_email, 0, wx.ALL, 5 )
+		sizer_email.Add( self.statictext_email, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		self.hyperlink_email = wx.HyperlinkCtrl( self.panel_about_dialog, wx.ID_ANY, u"baranovskiykonstantin@gmail.com", u"mailto:baranovskiykonstantin@gmail.com?subject=kicadbom2spec%20v3.0", wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
+		self.hyperlink_email = wx.HyperlinkCtrl( self.panel_about_dialog, wx.ID_ANY, u"baranovskiykonstantin@gmail.com", u"mailto:baranovskiykonstantin@gmail.com?subject=kicadbom2spec", wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
 		sizer_email.Add( self.hyperlink_email, 0, wx.ALL, 5 )
 		
 		
@@ -692,7 +692,7 @@ class AboutDialog ( wx.Dialog ):
 		
 		self.statictext_homepage = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"Домашняя страница:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.statictext_homepage.Wrap( -1 )
-		sizer_homepage.Add( self.statictext_homepage, 0, wx.ALL, 5 )
+		sizer_homepage.Add( self.statictext_homepage, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.hyperlink_homepage = wx.HyperlinkCtrl( self.panel_about_dialog, wx.ID_ANY, u"https://launchpad.net/kicadbom2spec", u"https://launchpad.net/kicadbom2spec", wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
 		sizer_homepage.Add( self.hyperlink_homepage, 0, wx.ALL, 5 )
@@ -887,7 +887,7 @@ class SettingsDialog ( wx.Dialog ):
 		self.field1_panel.SetSizer( field1_sizer )
 		self.field1_panel.Layout()
 		field1_sizer.Fit( self.field1_panel )
-		self.value_notebook.AddPage( self.field1_panel, u"Группа", True )
+		self.value_notebook.AddPage( self.field1_panel, u"Группа", False )
 		self.field2_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		field2_sizer = wx.BoxSizer( wx.VERTICAL )
 		
@@ -909,7 +909,7 @@ class SettingsDialog ( wx.Dialog ):
 		self.field3_panel.SetSizer( field3_sizer )
 		self.field3_panel.Layout()
 		field3_sizer.Fit( self.field3_panel )
-		self.value_notebook.AddPage( self.field3_panel, u"Значение", False )
+		self.value_notebook.AddPage( self.field3_panel, u"Значение", True )
 		self.field4_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		field4_sizer = wx.BoxSizer( wx.VERTICAL )
 		

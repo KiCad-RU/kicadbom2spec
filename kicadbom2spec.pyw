@@ -1324,6 +1324,12 @@ class Window(gui.MainFrame):
                     ) + '\n' + \
                 'wxWidgets: {}'.format(wx.version())
                 )
+        about_dialog.hyperlink_email.SetURL(
+                '{}%20v{}'.format(
+                    about_dialog.hyperlink_email.GetURL(),
+                    VERSION
+                    )
+                )
         about_dialog.dialog_buttonOK.SetFocus()
         about_dialog.ShowModal()
 
