@@ -1339,9 +1339,9 @@ class Window(gui.MainFrame):
 
         """
         if sys.platform == 'linux2':
-            subprocess.call(["xdg-open", 'help_linux.pdf'])
+            subprocess.call(["xdg-open", 'doc/help_linux.pdf'])
         else:
-            os.startfile('help_windows.pdf')
+            os.startfile('doc/help_windows.pdf')
 
     def get_grid_values(self):
         """
