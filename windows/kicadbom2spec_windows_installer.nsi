@@ -22,8 +22,12 @@
 !include StrFunc.nsh
 ${StrRep}
 
+!system "python ..\kicadbom2spec.pyw -v >> version.txt"
+!define /file VERSION "version.txt"
+!delfile "version.txt"
+
 Name "kicadbom2spec"
-OutFile "..\..\kicadbom2spec_windows_installer.exe"
+OutFile "..\..\kicadbom2spec_v${VERSION}_windows_installer.exe"
 InstallDir "$PROGRAMFILES\kicadbom2spec"
 
 !insertmacro MUI_PAGE_WELCOME
