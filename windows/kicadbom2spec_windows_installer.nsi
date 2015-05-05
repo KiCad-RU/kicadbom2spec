@@ -180,11 +180,11 @@ Section "" sec_python
 	inetc::get "https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
-		SetDetailsView show
-		DetailPrint "Не удалось загрузить установочный файл интерпретатора языка Python."
-		Abort
+		Abort "Не удалось загрузить установочный файл интерпретатора языка Python."
 	success:
-		ExecWait 'msiexec /i "$1"'
+		ExecWait 'msiexec /i "$1"' $0
+		IntCmp $0 0 +2
+			Abort "Не удалось установить интерпретатор языка Python."
 		Delete $1
 
 	skip_install:
@@ -205,11 +205,11 @@ Section "" sec_wx
 	inetc::get "http://downloads.sourceforge.net/wxpython/wxPython3.0-win32-3.0.2.0-py27.exe" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
-		SetDetailsView show
-		DetailPrint "Не удалось загрузить установочный файл библиотеки wxWidgets для Python."
-		Abort
+		Abort "Не удалось загрузить установочный файл библиотеки wxWidgets для Python."
 	success:
-		ExecWait '"$1"'
+		ExecWait '"$1"' $0
+		IntCmp $0 0 +2
+			Abort "Не удалось установоить библиотеку wxWidgets для Python."
 		Delete $1
 
 	skip_install:
@@ -225,14 +225,22 @@ Section "" sec_odf
 	SectionGetText ${sec_odf} $0
 	StrCmp $0 "" skip_install
 
+	SectionGetText ${sec_python} $0
+	StrCmp $0 "" python_ok
+	nsExec::ExecToStack 'python -V'
+	Pop $1
+	StrCmp "error" $1 0 python_ok
+		MessageBox MB_OK|MB_ICONINFORMATION "Для установки odfpy и остальных элементов нужно заново запустить инсталятор.$\nЭто необходимо для того, чтобы изменения в переменную среды PATH, после установки Python, вступили в силу."
+		Quit
+	
+	python_ok:
+
 	Call ConnectInternet
 	StrCpy $1 "$TEMP\odfpy_sources.tar.gz"
 	inetc::get "https://pypi.python.org/packages/source/o/odfpy/odfpy-0.9.6.tar.gz" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
-		SetDetailsView show
-		DetailPrint "Не удалось загрузить файлы, необходимые для сборки и установки odfpy."
-		Abort
+		Abort "Не удалось загрузить файлы, необходимые для сборки и установки odfpy."
 	success:
 		StrCpy $0 "$TEMP\odfpy"
 		CreateDirectory $0
@@ -262,9 +270,7 @@ Section /o "" sec_font
 	inetc::get "https://bitbucket.org/fat_angel/opengostfont/downloads/opengostfont-ttf-0.3.zip" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
-		SetDetailsView show
-		DetailPrint "Не удалось загрузить чертежные шрифты."
-		Abort
+		Abort "Не удалось загрузить чертежные шрифты."
 	success:
 		nsisunz::Unzip /noextractpath /file "opengostfont-ttf-0.3\OpenGostTypeA-Regular.ttf" $1 "$FONTS"
 		nsisunz::Unzip /noextractpath /file "opengostfont-ttf-0.3\OpenGostTypeB-Regular.ttf" $1 "$FONTS"
@@ -288,11 +294,11 @@ Section /o "" sec_office
 	inetc::get "http://download.documentfoundation.org/libreoffice/stable/4.4.2/win/x86/LibreOffice_4.4.2_Win_x86.msi" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
-		SetDetailsView show
-		DetailPrint "Не удалось загрузить установочный файл офисный пакет LibreOffice."
-		Abort
+		Abort "Не удалось загрузить установочный файл офисный пакет LibreOffice."
 	success:
-		ExecWait 'msiexec /i "$1"'
+		ExecWait 'msiexec /i "$1"' $0
+		IntCmp $0 0 +2
+			Abort "Не удалось установить офисный пакет LibreOffice."
 		Delete $1
 
 	skip_install:
