@@ -1675,6 +1675,11 @@ def main():
         type=str,
         help=u'полное или относительное имя файла перечня элеменнтов'
         )
+    parser.add_argument(
+        '-v', '--version',
+        action='store_true',
+        help=u'отобразить версию программы и выйти'
+        )
     args = parser.parse_args()
     os.chdir(path.dirname(path.abspath(__file__)))
     app = wx.App(False)
@@ -1689,6 +1694,10 @@ def main():
 
     if args.spec:
         window.specification_file = path.splitext(path.abspath(args.spec))[0] + '.ods'
+
+    if args.version:
+        print VERSION
+        exit()
 
     window.Show(True)
     app.MainLoop()

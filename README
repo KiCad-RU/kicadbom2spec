@@ -64,6 +64,8 @@ python kicadbom2spec.pyw [-h] [schematic] [spec]
 
 -h, --help
     Получить помощь по работе со скриптом и выйти.
+-v, --version
+    Получить версию программы и выйти.
 
 позиционный параметр schematic
     Имя файла схемы в формате KiCAD.
