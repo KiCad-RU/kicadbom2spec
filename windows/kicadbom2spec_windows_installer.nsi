@@ -185,20 +185,7 @@ Section "" sec_python
 		Abort "Не удалось загрузить установочный файл \
 		интерпретатора языка Python."
 	success:
-		MessageBox MB_OK|MB_ICONINFORMATION \
-			"Для корректной работы программы kicadbom2spec \
-			нужно правильно установить интерпретатор языка \
-			Python.$\n$\n \
-			После закрытия этого сообщения запустится установка \
-			Python. На странице выбора компонентов (Customize \
-			Python ...) нужно убедиться что последний элемент \
-			(Add python.exe to Path) отмечен для установки.$\n$\n\
-			Если это не так - необходимо нажать на иконку слева \
-			и выбрать первый пункт (Will be installed on local \
-			hard drive).$\n$\n\
-			Все остальные элементы можно оставить без изменений."
-			 
-		ExecWait 'msiexec /i "$1"' $0
+		ExecWait 'msiexec /i "$1" ADDLOCAL=ALL' $0
 		IntCmp $0 0 +2
 			Abort "Не удалось установить интерпретатор \
 			языка Python."
@@ -245,18 +232,19 @@ Section "" sec_odf
 	StrCmp $0 "" skip_install
 
 	SectionGetText ${sec_python} $0
-	StrCmp $0 "" python_ok
+	StrCmp $0 "" path_ok
 	nsExec::ExecToStack 'python -V'
 	Pop $1
-	StrCmp "error" $1 0 python_ok
-		MessageBox MB_OK|MB_ICONINFORMATION \
-		"Для установки odfpy и остальных элементов нужно заново \
-		запустить инсталятор.$\n$\n\
-		Это необходимо для того, чтобы изменения в переменную среды \
-		PATH, после установки Python, вступили в силу."
-		Quit
+	StrCmp "error" $1 0 path_ok
+		ReadRegStr $1 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+		System::Call 'Kernel32::SetEnvironmentVariable(t "PATH", t "$1")i'
+		nsExec::ExecToStack 'python -V'
+		Pop $1
+		StrCmp "error" $1 0 path_ok
+			Abort "Невозможно установить odfpy, так как Python \
+			не установлен или установлен не верно."
 	
-	python_ok:
+	path_ok:
 
 	Call ConnectInternet
 	StrCpy $1 "$TEMP\odfpy_sources.tar.gz"
