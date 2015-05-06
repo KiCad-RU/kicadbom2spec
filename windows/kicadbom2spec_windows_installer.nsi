@@ -55,13 +55,15 @@ Function ConnectInternet
 
 	Pop $R0
 	StrCmp $R0 "online" connected
-		MessageBox MB_OK|MB_ICONSTOP "Невозможно подключиться к интернету."
+		MessageBox MB_OK|MB_ICONSTOP \
+		"Невозможно подключиться к интернету."
 		Quit
 
 	noie3:
 
 	; IE3 not installed
-	MessageBox MB_OK|MB_ICONINFORMATION "Пожалуйста, подключитесь к интернету."
+	MessageBox MB_OK|MB_ICONINFORMATION \
+	"Пожалуйста, подключитесь к интернету."
 
 	connected:
 
@@ -180,11 +182,26 @@ Section "" sec_python
 	inetc::get "https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
-		Abort "Не удалось загрузить установочный файл интерпретатора языка Python."
+		Abort "Не удалось загрузить установочный файл \
+		интерпретатора языка Python."
 	success:
+		MessageBox MB_OK|MB_ICONINFORMATION \
+			"Для корректной работы программы kicadbom2spec \
+			нужно правильно установить интерпретатор языка \
+			Python.$\n$\n \
+			После закрытия этого сообщения запустится установка \
+			Python. На странице выбора компонентов (Customize \
+			Python ...) нужно убедиться что последний элемент \
+			(Add python.exe to Path) отмечен для установки.$\n$\n\
+			Если это не так - необходимо нажать на иконку слева \
+			и выбрать первый пункт (Will be installed on local \
+			hard drive).$\n$\n\
+			Все остальные элементы можно оставить без изменений."
+			 
 		ExecWait 'msiexec /i "$1"' $0
 		IntCmp $0 0 +2
-			Abort "Не удалось установить интерпретатор языка Python."
+			Abort "Не удалось установить интерпретатор \
+			языка Python."
 		Delete $1
 
 	skip_install:
@@ -205,11 +222,13 @@ Section "" sec_wx
 	inetc::get "http://downloads.sourceforge.net/wxpython/wxPython3.0-win32-3.0.2.0-py27.exe" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
-		Abort "Не удалось загрузить установочный файл библиотеки wxWidgets для Python."
+		Abort "Не удалось загрузить установочный файл \
+		библиотеки wxWidgets для Python."
 	success:
 		ExecWait '"$1"' $0
 		IntCmp $0 0 +2
-			Abort "Не удалось установоить библиотеку wxWidgets для Python."
+			Abort "Не удалось установоить библиотеку \
+			wxWidgets для Python."
 		Delete $1
 
 	skip_install:
@@ -230,7 +249,11 @@ Section "" sec_odf
 	nsExec::ExecToStack 'python -V'
 	Pop $1
 	StrCmp "error" $1 0 python_ok
-		MessageBox MB_OK|MB_ICONINFORMATION "Для установки odfpy и остальных элементов нужно заново запустить инсталятор.$\nЭто необходимо для того, чтобы изменения в переменную среды PATH, после установки Python, вступили в силу."
+		MessageBox MB_OK|MB_ICONINFORMATION \
+		"Для установки odfpy и остальных элементов нужно заново \
+		запустить инсталятор.$\n$\n\
+		Это необходимо для того, чтобы изменения в переменную среды \
+		PATH, после установки Python, вступили в силу."
 		Quit
 	
 	python_ok:
@@ -240,7 +263,8 @@ Section "" sec_odf
 	inetc::get "https://pypi.python.org/packages/source/o/odfpy/odfpy-0.9.6.tar.gz" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
-		Abort "Не удалось загрузить файлы, необходимые для сборки и установки odfpy."
+		Abort "Не удалось загрузить файлы, необходимые для сборки \
+		и установки odfpy."
 	success:
 		StrCpy $0 "$TEMP\odfpy"
 		CreateDirectory $0
@@ -294,11 +318,13 @@ Section /o "" sec_office
 	inetc::get "http://download.documentfoundation.org/libreoffice/stable/4.4.2/win/x86/LibreOffice_4.4.2_Win_x86.msi" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
-		Abort "Не удалось загрузить установочный файл офисный пакет LibreOffice."
+		Abort "Не удалось загрузить установочный файл \
+		офисного пакета LibreOffice."
 	success:
 		ExecWait 'msiexec /i "$1"' $0
 		IntCmp $0 0 +2
-			Abort "Не удалось установить офисный пакет LibreOffice."
+			Abort "Не удалось установить офисный пакет \
+			LibreOffice."
 		Delete $1
 
 	skip_install:
@@ -330,9 +356,16 @@ SectionGroup /e "!kicadbom2spec" secgrp_main
 		File "..\doc\help_windows.pdf"
 		WriteUninstaller "uninstall.exe"
 		CreateDirectory "$SMPROGRAMS\kicadbom2spec"
-		CreateShortCut "$SMPROGRAMS\kicadbom2spec\Запустить kicadbom2spec.lnk" "$INSTDIR\kicadbom2spec.pyw" "" "$INSTDIR\bitmaps\icon.ico"
-		CreateShortCut "$SMPROGRAMS\kicadbom2spec\Руководство пользователя.lnk" "$INSTDIR\help_windows.pdf"
-		CreateShortCut "$SMPROGRAMS\kicadbom2spec\Удалить kicadbom2spec.lnk" "$INSTDIR\uninstall.exe"
+		CreateShortCut \
+			"$SMPROGRAMS\kicadbom2spec\Запустить kicadbom2spec.lnk" "$INSTDIR\kicadbom2spec.pyw" \
+			"" \
+			"$INSTDIR\bitmaps\icon.ico"
+		CreateShortCut \
+			"$SMPROGRAMS\kicadbom2spec\Руководство пользователя.lnk" \
+			"$INSTDIR\help_windows.pdf"
+		CreateShortCut \
+			"$SMPROGRAMS\kicadbom2spec\Удалить kicadbom2spec.lnk" \
+			"$INSTDIR\uninstall.exe"
 	SectionEnd
 	
 	Section /o "settings.ini" sec_settings
@@ -341,14 +374,26 @@ SectionGroup /e "!kicadbom2spec" secgrp_main
 	SectionEnd
 SectionGroupEnd
 
-LangString DESC_sec_python ${LANG_Russian} "Интерпретатор языка Python."
-LangString DESC_sec_wx ${LANG_Russian} "Обёртка библиотеки кросплатформенного графического интерфейса пользователя wxWidgets для Python."
-LangString DESC_sec_odf ${LANG_Russian} "Библиотека для записи и чтения документов в формате OpenDocument для Python."
-LangString DESC_sec_font ${LANG_Russian} "Чертежные шрифты."
-LangString DESC_sec_office ${LANG_Russian} "Пакет офисных пргорамм LibreOffice."
-LangString DESC_secgrp_main ${LANG_Russian} "Программа создания перечней элементов для схем выполненных в САПР KiCAD."
-LangString DESC_sec_main ${LANG_Russian} "Установить программу создания перечней элементов для схем выполненных в САПР KiCAD."
-LangString DESC_sec_settings ${LANG_Russian} "Установить файл параметров со значениями по умолчанию."
+LangString DESC_sec_python ${LANG_Russian} \
+	"Интерпретатор языка Python."
+LangString DESC_sec_wx ${LANG_Russian} \
+	"Обёртка библиотеки кроссплатформенного графического интерфейса \
+	пользователя wxWidgets для Python."
+LangString DESC_sec_odf ${LANG_Russian} \
+	"Библиотека для записи и чтения документов в формате OpenDocument \
+	для Python."
+LangString DESC_sec_font ${LANG_Russian} \
+	"Чертежные шрифты."
+LangString DESC_sec_office ${LANG_Russian} \
+	"Пакет офисных пргорамм LibreOffice."
+LangString DESC_secgrp_main ${LANG_Russian} \
+	"Программа создания перечней элементов для схем выполненных \
+	в САПР KiCAD."
+LangString DESC_sec_main ${LANG_Russian} \
+	"Установить программу создания перечней элементов для схем \
+	выполненных в САПР KiCAD."
+LangString DESC_sec_settings ${LANG_Russian} \
+	"Установить файл параметров со значениями по умолчанию."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${sec_python} $(DESC_sec_python)
@@ -440,7 +485,7 @@ Function .onInit
 	Pop $2
 FunctionEnd
 
-; ================================== Uninstaller ===============================
+; ================================= Uninstaller ===============================
 
 Section "un.kicadbom2spec" un_sec_main
 	Delete "$INSTDIR\*.pyc"
@@ -465,8 +510,10 @@ Section /o "un.settings.ini" un_sec_settings
 SectionEnd
 	
 
-LangString DESC_un_sec_main ${LANG_Russian} "Удалить файлы программы."
-LangString DESC_un_sec_settings ${LANG_Russian} "Удалить файл параметров программы."
+LangString DESC_un_sec_main ${LANG_Russian} \
+	"Удалить файлы программы."
+LangString DESC_un_sec_settings ${LANG_Russian} \
+	"Удалить файл параметров программы."
 
 !insertmacro MUI_UNFUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${un_sec_main} $(DESC_un_sec_main)
