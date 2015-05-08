@@ -30,6 +30,8 @@ Name "kicadbom2spec"
 OutFile "..\..\kicadbom2spec_v${VERSION}_windows_installer.exe"
 InstallDir "$PROGRAMFILES\kicadbom2spec"
 
+RequestExecutionLevel user
+
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\COPYING"
 !insertmacro MUI_PAGE_COMPONENTS
