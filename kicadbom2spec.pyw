@@ -21,6 +21,7 @@ import os
 from os import path, remove, rename
 import sys
 import subprocess
+import shutil
 import re
 import codecs
 import locale
@@ -58,13 +59,6 @@ class Window(gui.MainFrame):
         """
         gui.MainFrame.__init__(self,parent)
 
-        if sys.platform == 'win32':
-            icon = wx.Icon('bitmaps/icon.ico', wx.BITMAP_TYPE_ICO)
-            self.SetIcon(icon)
-        else:
-            icon = wx.Icon('bitmaps/icon.xpm', wx.BITMAP_TYPE_XPM)
-            self.SetIcon(icon)
-
         self.Bind(wx.EVT_UPDATE_UI, self.on_menu)
         self.schematic_file = ''
         self.library_file = ''
@@ -75,8 +69,40 @@ class Window(gui.MainFrame):
         self.not_found = False
         self.undo_buffer = []
         self.redo_buffer = []
-        self.load_settings()
         self.init_grid()
+
+        self.settings_file = ''
+
+        if sys.platform == 'win32':
+            icon = wx.Icon('bitmaps/icon.ico', wx.BITMAP_TYPE_ICO)
+            self.SetIcon(icon)
+
+            self.settings_file = path.join(
+                    os.environ['APPDATA'],
+                    'kicadbom2spec'
+                    )
+        else:
+            icon = wx.Icon('bitmaps/icon.xpm', wx.BITMAP_TYPE_XPM)
+            self.SetIcon(icon)
+
+            self.settings_file = path.join(
+                    path.expanduser('~/.config'),
+                    'kicadbom2spec'
+                    )
+
+        # At this moment in settings_file contain path only
+        if not path.exists(self.settings_file):
+            os.makedirs(self.settings_file)
+
+        self.settings_file = path.join(
+                self.settings_file,
+                default_settings_file_name
+                )
+
+        if not path.exists(self.settings_file):
+            shutil.copy2(default_settings_file_name, self.settings_file)
+
+        self.load_settings(self.settings_file)
 
     def load_settings(self, settings_file_name=default_settings_file_name):
         """
@@ -1138,7 +1164,7 @@ class Window(gui.MainFrame):
 
                 return
 
-        self.save_settings()
+        self.save_settings(self.settings_file)
         self.Destroy()
 
     def on_clear_fields(self, event):
