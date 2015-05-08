@@ -328,6 +328,10 @@ SectionGroup /e "!kicadbom2spec" secgrp_main
 		SetOutPath "$INSTDIR\bitmaps"
 		File "..\bitmaps\*.*"
 
+		CreateDirectory "$INSTDIR\doc"
+		SetOutPath "$INSTDIR\doc"
+		File "..\doc\help_windows.pdf"
+
 		CreateDirectory "$INSTDIR\sample"
 		SetOutPath "$INSTDIR\sample"
 		File "..\sample\*.*"
@@ -337,11 +341,11 @@ SectionGroup /e "!kicadbom2spec" secgrp_main
 		File "..\README"
 		File "..\CHANGELOG"
 		File "..\kicadsch.py"
+		File "..\settings.ini"
 		File "..\spec.py"
 		File "..\pattern.ods"
 		File "..\gui.py"
 		File "..\kicadbom2spec.pyw"
-		File "..\doc\help_windows.pdf"
 		WriteUninstaller "uninstall.exe"
 		CreateDirectory "$SMPROGRAMS\kicadbom2spec"
 		CreateShortCut \
@@ -350,14 +354,17 @@ SectionGroup /e "!kicadbom2spec" secgrp_main
 			"$INSTDIR\bitmaps\icon.ico"
 		CreateShortCut \
 			"$SMPROGRAMS\kicadbom2spec\Руководство пользователя.lnk" \
-			"$INSTDIR\help_windows.pdf"
+			"$INSTDIR\doc\help_windows.pdf"
 		CreateShortCut \
 			"$SMPROGRAMS\kicadbom2spec\Удалить kicadbom2spec.lnk" \
 			"$INSTDIR\uninstall.exe"
 	SectionEnd
 	
 	Section /o "settings.ini" sec_settings
-		SetOutPath "$INSTDIR"
+		SetOutPath "$APPDATA"
+		RMDir "kicadbom2spec"
+		CreateDirectory "kicadbom2spec"
+		SetOutPath "$APPDATA\kicadbom2spec"
 		File "..\settings.ini"
 	SectionEnd
 SectionGroupEnd
@@ -402,7 +409,7 @@ Function .onInit
 	IntOp $0 ${SF_RO} | ${SF_SELECTED}
 	SectionSetFlags ${sec_main} $0
 
-	IfFileExists "$INSTDIR\settings.ini" +2
+	IfFileExists "$APPDATA\kicadbom2spec\settings.ini" +2
 		SectionSetFlags ${sec_settings} ${SF_SELECTED}
 
 	Var /GLOBAL min_python_version
@@ -476,25 +483,12 @@ FunctionEnd
 ; ================================= Uninstaller ===============================
 
 Section "un.kicadbom2spec" un_sec_main
-	Delete "$INSTDIR\*.pyc"
-	RMDir /r "$INSTDIR\bitmaps"
-	RMDir /r "$INSTDIR\sample"
-	Delete "$INSTDIR\COPYING"
-	Delete "$INSTDIR\README"
-	Delete "$INSTDIR\CHANGELOG"
-	Delete "$INSTDIR\kicadsch.py"
-	Delete "$INSTDIR\spec.py"
-	Delete "$INSTDIR\pattern.ods"
-	Delete "$INSTDIR\gui.py"
-	Delete "$INSTDIR\kicadbom2spec.pyw"
-	Delete "$INSTDIR\help_windows.pdf"
-	Delete "$INSTDIR\uninstall.exe"
+	RMDir /r "$INSTDIR"
 	RMDir /r "$SMPROGRAMS\kicadbom2spec"
 SectionEnd
 
 Section /o "un.settings.ini" un_sec_settings
-	Delete "$INSTDIR\settings.ini"
-	RMDir /r "$INSTDIR"
+	RMDir /r "$APPDATA\kicadbom2spec"
 SectionEnd
 	
 
