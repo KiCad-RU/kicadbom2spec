@@ -30,7 +30,7 @@ Name "kicadbom2spec"
 OutFile "..\..\kicadbom2spec_v${VERSION}_windows_installer.exe"
 InstallDir "$PROGRAMFILES\kicadbom2spec"
 
-RequestExecutionLevel user
+RequestExecutionLevel admin
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\COPYING"
@@ -349,6 +349,8 @@ SectionGroup /e "!kicadbom2spec" secgrp_main
 		File "..\gui.py"
 		File "..\kicadbom2spec.pyw"
 		WriteUninstaller "uninstall.exe"
+
+		SetShellVarContext all
 		CreateDirectory "$SMPROGRAMS\kicadbom2spec"
 		CreateShortCut \
 			"$SMPROGRAMS\kicadbom2spec\Запустить kicadbom2spec.lnk" "$INSTDIR\kicadbom2spec.pyw" \
@@ -486,6 +488,7 @@ FunctionEnd
 
 Section "un.kicadbom2spec" un_sec_main
 	RMDir /r "$INSTDIR"
+	SetShellVarContext all
 	RMDir /r "$SMPROGRAMS\kicadbom2spec"
 SectionEnd
 
