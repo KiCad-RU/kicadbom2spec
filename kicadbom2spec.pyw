@@ -980,14 +980,25 @@ class Window(gui.MainFrame):
                     fields[2] = re.search(r'[0-9]+', fields[2]).group()
                     fields.append('1')
                     comp_fields.append(fields)
-            spec = Specification()
-            spec.add_units = add_units
-            spec.need_changes_sheet = need_changes_sheet
-            spec.load(self.schematic_file, comp_fields)
-            spec.save(self.specification_file)
-            # Set cursor back to 'normal'
-            if wx.IsBusy():
-                wx.EndBusyCursor()
+            try:
+                spec = Specification()
+                spec.add_units = add_units
+                spec.need_changes_sheet = need_changes_sheet
+                spec.load(self.schematic_file, comp_fields)
+                spec.save(self.specification_file)
+            except:
+                wx.MessageBox(
+                    u'При создании перечня элементов\n' +
+                    self.specification_file + '\n' \
+                    u'возникла ошибка:\n' + \
+                    str(sys.exc_info()[1]),
+                    u'Внимание!',
+                    wx.ICON_ERROR|wx.OK, self
+                    )
+                # Set cursor back to 'normal'
+                if wx.IsBusy():
+                    wx.EndBusyCursor()
+                return
 
             if open_spec:
                 if sys.platform == 'linux2':
@@ -1001,6 +1012,10 @@ class Window(gui.MainFrame):
                     wx.ICON_INFORMATION | wx.OK,
                     self
                     )
+
+            # Set cursor back to 'normal'
+            if wx.IsBusy():
+                wx.EndBusyCursor()
 
     def on_edit_fields(self, event):
         """
