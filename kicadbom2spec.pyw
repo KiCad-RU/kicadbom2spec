@@ -45,6 +45,7 @@ sys.setdefaultencoding('utf-8')
 # Global
 default_settings_file_name = 'settings.ini'
 settings_separator = ';;;'
+ID_RECENT = 2000
 
 class Window(gui.MainFrame):
     """
@@ -59,7 +60,7 @@ class Window(gui.MainFrame):
         """
         gui.MainFrame.__init__(self,parent)
 
-        self.Bind(wx.EVT_UPDATE_UI, self.on_menu)
+        self.Bind(wx.EVT_UPDATE_UI, self.on_update_toolbar)
         self.schematic_file = ''
         self.library_file = ''
         self.specification_file = ''
@@ -90,7 +91,7 @@ class Window(gui.MainFrame):
                     'kicadbom2spec'
                     )
 
-        # At this moment in settings_file contain path only
+        # At this moment in settings_file contains path only
         if not path.exists(self.settings_file):
             os.makedirs(self.settings_file)
 
@@ -126,7 +127,11 @@ class Window(gui.MainFrame):
 
         if path.isfile(settings_file_name):
             # Load settings from file
-            self.settings.readfp(codecs.open(settings_file_name, 'r', encoding='utf-8'))
+            self.settings.readfp(codecs.open(
+                settings_file_name,
+                'r',
+                encoding='utf-8'
+                ))
 
             if self.settings.has_section('window'):
                 self.save_window_size_pos = True
@@ -169,6 +174,18 @@ class Window(gui.MainFrame):
                     if value.startswith(u'1'):
                         self.auto_groups_dict[param.upper()] = value[1:]
 
+            if self.settings.has_section('recent sch'):
+                recent_files = []
+                for recent in self.settings.options('recent sch'):
+                    recent_files.append(self.settings.get('recent sch', recent))
+                self.build_recent_menu(recent_files, 'sch')
+
+            if self.settings.has_section('recent lib'):
+                recent_files = []
+                for recent in self.settings.options('recent lib'):
+                    recent_files.append(self.settings.get('recent lib', recent))
+                self.build_recent_menu(recent_files, 'lib')
+
     def save_settings(self, settings_file_name=default_settings_file_name):
         """
         Save setttings to configuration file.
@@ -198,6 +215,24 @@ class Window(gui.MainFrame):
                 self.settings.set('column sizes', str(col), str(col_size))
         else:
             self.settings.remove_section('column sizes')
+
+        self.settings.remove_section('recent sch')
+        self.settings.add_section('recent sch')
+        for index, menuitem in enumerate(self.submenu_recent_sch.GetMenuItems()):
+            self.settings.set(
+                    'recent sch',
+                    str(index),
+                    menuitem.GetItemLabel()
+                    )
+
+        self.settings.remove_section('recent lib')
+        self.settings.add_section('recent lib')
+        for index, menuitem in enumerate(self.submenu_recent_lib.GetMenuItems()):
+            self.settings.set(
+                    'recent lib',
+                    str(index),
+                    menuitem.GetItemLabel()
+                    )
 
         self.settings.write(codecs.open(settings_file_name, 'w', encoding='utf-8'))
 
@@ -323,6 +358,77 @@ class Window(gui.MainFrame):
         sizer_components.Fit(self.panel_components)
         self.Layout()
 
+    def add_to_recent(self, file_name, file_type):
+        """
+        Add file to the menu with list of the recent files.
+
+        """
+        menu = None
+        if file_type == 'sch':
+            menu = self.submenu_recent_sch
+        elif file_type == 'lib':
+            menu = self.submenu_recent_lib
+
+        recent_files = []
+        for recent_menuitem in menu.GetMenuItems():
+            recent_files.append(recent_menuitem.GetLabel())
+        if file_name in recent_files:
+            recent_files.remove(file_name)
+        recent_files.insert(0, file_name)
+        recent_files = recent_files[:10]
+        self.build_recent_menu(recent_files, file_type)
+
+    def build_recent_menu(self, file_names, file_type):
+        """
+        Fill submenu with recent files.
+
+        """
+        id_offset = 0
+        menu = None
+        event_handler = None
+        if file_type == 'sch':
+            id_offset += 0
+            menu = self.submenu_recent_sch
+            event_handler = self.on_recent_sch
+        elif file_type == 'lib':
+            id_offset += 10
+            menu = self.submenu_recent_lib
+            event_handler = self.on_recent_lib
+
+        for menuitem in menu.GetMenuItems():
+            menu.Delete(menuitem.GetId())
+        if file_names:
+            for index, file_name in enumerate(file_names):
+                menu.AppendItem(wx.MenuItem(
+                    menu,
+                    ID_RECENT + id_offset + index,
+                    file_name,
+                    wx.EmptyString,
+                    wx.ITEM_NORMAL
+                    ))
+            self.Bind(
+                    wx.EVT_MENU,
+                    event_handler,
+                    id = ID_RECENT + id_offset,
+                    id2 = ID_RECENT + id_offset + len(file_names) - 1
+                    )
+
+    def on_recent_sch(self, event):
+        """
+        Open recent schematic file.
+
+        """
+        file_name = self.submenu_recent_sch.GetLabel(event.GetId())
+        self.on_open_sch(sch_file_name=file_name)
+
+    def on_recent_lib(self, event):
+        """
+        Open recent library file.
+
+        """
+        file_name = self.submenu_recent_lib.GetLabel(event.GetId())
+        self.on_open_lib(lib_file_name=file_name)
+
     def on_grid_key_down(self, event):
         """
         Switch state of the checkbox in 0 column by pressing space key.
@@ -407,7 +513,7 @@ class Window(gui.MainFrame):
         self.last_sorted_col = sort_col
         event.Skip()
 
-    def on_menu(self, event):
+    def on_update_toolbar(self, event):
         """
         Change enable/disable future of the toolbar as same as menuitem.
 
@@ -576,19 +682,18 @@ class Window(gui.MainFrame):
         (include hierarchical sheets) to the table for editing.
 
         """
+        if not self.saved:
+            if wx.MessageBox(
+                u'Последние изменения в полях компонентов не были сохранены!\n' \
+                u'Продолжить?',
+                u'Внимание!',
+                wx.ICON_QUESTION|wx.YES_NO, self
+                ) == wx.NO:
 
+                return
         if sch_file_name:
             self.schematic_file = sch_file_name
         else:
-            if not self.saved:
-                if wx.MessageBox(
-                    u'Последние изменения в полях компонентов не были сохранены!\n' \
-                    u'Продолжить?',
-                    u'Внимание!',
-                    wx.ICON_QUESTION|wx.YES_NO, self
-                    ) == wx.NO:
-
-                    return
             open_sch_dialog = wx.FileDialog(
                 self,
                 u'Выбор файла схемы',
@@ -629,6 +734,7 @@ class Window(gui.MainFrame):
         self.menuitem_save_lib_as.Enable(False)
         self.menuitem_find.Enable(True)
         self.menuitem_replace.Enable(True)
+        self.add_to_recent(self.schematic_file, 'sch')
 
     def on_save_sch(self, event):
         """
@@ -699,7 +805,7 @@ class Window(gui.MainFrame):
                     wx.ICON_ERROR|wx.OK, self
                     )
 
-    def on_open_lib(self, event):
+    def on_open_lib(self, event=None, lib_file_name=''):
         """
         Load all components from selected schematic
         (include hierarchical sheets) to the table for editing.
@@ -714,19 +820,23 @@ class Window(gui.MainFrame):
                 ) == wx.NO:
 
                 return
-        open_lib_dialog = wx.FileDialog(
-            self,
-            u'Выбор файла библиотеки',
-            u'',
-            u'',
-            u'Библиотека (*.lib)|*.lib|Все файлы (*.*)|*.*',
-            wx.FD_OPEN|wx.FD_FILE_MUST_EXIST
-            )
-        if open_lib_dialog.ShowModal() == wx.ID_CANCEL:
-            return
+        if lib_file_name:
+            self.library_file = lib_file_name
+        else:
+            open_lib_dialog = wx.FileDialog(
+                self,
+                u'Выбор файла библиотеки',
+                u'',
+                u'',
+                u'Библиотека (*.lib)|*.lib|Все файлы (*.*)|*.*',
+                wx.FD_OPEN|wx.FD_FILE_MUST_EXIST
+                )
+            if open_lib_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            self.library_file = open_lib_dialog.GetPath()
+
         self.schematic_file = ''
         self.specification_file = ''
-        self.library_file = open_lib_dialog.GetPath()
         self.library = Library(self.library_file)
         self.init_grid()
         lib_values = self.get_library_values()
@@ -745,6 +855,7 @@ class Window(gui.MainFrame):
         self.menuitem_save_lib_as.Enable(True)
         self.menuitem_find.Enable(True)
         self.menuitem_replace.Enable(True)
+        self.add_to_recent(self.library_file, 'lib')
 
     def on_save_lib(self, event):
         """
@@ -1364,10 +1475,10 @@ class Window(gui.MainFrame):
         Shows help manual.
 
         """
-        if sys.platform == 'linux2':
-            subprocess.call(["xdg-open", 'doc/help_linux.pdf'])
-        else:
+        if sys.platform == 'win32':
             os.startfile('doc/help_windows.pdf')
+        else:
+            subprocess.call(["xdg-open", 'doc/help_linux.pdf'])
 
     def get_grid_values(self):
         """

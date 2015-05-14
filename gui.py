@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Mar 31 2015)
+## Python code generated with wxFormBuilder (version Dec 23 2014)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -51,6 +51,9 @@ class MainFrame ( wx.Frame ):
 		self.menuitem_open_sch.SetBitmap( wx.Bitmap( u"bitmaps/document-open.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_file.AppendItem( self.menuitem_open_sch )
 		
+		self.submenu_recent_sch = wx.Menu()
+		self.menu_file.AppendSubMenu( self.submenu_recent_sch, u"Нед&авние схемы" )
+		
 		self.menuitem_save_sch = wx.MenuItem( self.menu_file, ID_SAVE_SCH, u"Со&хранить схему"+ u"\t" + u"CTRL+W", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_save_sch.SetBitmap( wx.Bitmap( u"bitmaps/document-save.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_file.AppendItem( self.menuitem_save_sch )
@@ -66,6 +69,9 @@ class MainFrame ( wx.Frame ):
 		self.menuitem_open_lib = wx.MenuItem( self.menu_file, ID_OPEN_LIB, u"Открыть &библиотеку..."+ u"\t" + u"CTRL+L", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_open_lib.SetBitmap( wx.Bitmap( u"bitmaps/document-open.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_file.AppendItem( self.menuitem_open_lib )
+		
+		self.submenu_recent_lib = wx.Menu()
+		self.menu_file.AppendSubMenu( self.submenu_recent_lib, u"Н&едавние библиотеки" )
 		
 		self.menuitem_save_lib = wx.MenuItem( self.menu_file, ID_SAVE_LIB, u"Сохра&нить библиотеку", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_save_lib.SetBitmap( wx.Bitmap( u"bitmaps/document-save.png", wx.BITMAP_TYPE_ANY ) )
