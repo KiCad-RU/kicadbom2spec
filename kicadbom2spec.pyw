@@ -136,16 +136,17 @@ class Window(gui.MainFrame):
             if self.settings.has_section('window'):
                 self.save_window_size_pos = True
                 x, y = self.GetPosition()
-                width, height = self.GetSize()
+                width, height = self.GetClientSize()
                 if self.settings.has_option('window', 'x'):
                     x = self.settings.getint('window', 'x')
                 if self.settings.has_option('window', 'y'):
                     y = self.settings.getint('window', 'y')
+                self.SetPosition(wx.Point(x, y))
                 if self.settings.has_option('window', 'width'):
                     width = self.settings.getint('window', 'width')
                 if self.settings.has_option('window', 'height'):
                     height = self.settings.getint('window', 'height')
-                self.SetDimensions(x, y, width, height)
+                self.SetClientSize(wx.Size(width, height))
                 if self.settings.has_option('window', 'maximized'):
                     if self.settings.getint('window', 'maximized'):
                         self.Maximize()
@@ -199,7 +200,7 @@ class Window(gui.MainFrame):
             else:
                 self.settings.set('window', 'maximized', '0')
                 x, y = self.GetPosition()
-                width, height = self.GetSize()
+                width, height = self.GetClientSize()
                 self.settings.set('window', 'x', str(x))
                 self.settings.set('window', 'y', str(y))
                 self.settings.set('window', 'width', str(width))
