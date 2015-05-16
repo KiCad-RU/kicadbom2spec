@@ -828,7 +828,9 @@ class Window(gui.MainFrame):
                 wx.MessageBox(
                     u'При сохранении файла схемы:\n' +
                     sheet.sch_name + '\n' \
-                    u'возникла ошибка. Файл не сохранен.',
+                    u'возникла ошибка:\n' +
+                    str(sys.exc_info()[1]) + '\n' +
+                    u'Файл не сохранен.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
                     )
@@ -870,7 +872,9 @@ class Window(gui.MainFrame):
                 wx.MessageBox(
                     u'При сохранении файла схемы:\n' +
                     new_schematic_file + '\n' \
-                    u'возникла ошибка. Файл не сохранен.',
+                    u'возникла ошибка:\n' +
+                    str(sys.exc_info()[1]) + '\n' \
+                    u'Файл не сохранен.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
                     )
@@ -948,7 +952,9 @@ class Window(gui.MainFrame):
             wx.MessageBox(
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
-                u'возникла ошибка. Файл не сохранен.',
+                u'возникла ошибка:\n' +
+                str(sys.exc_info()[1]) + '\n' \
+                u'Файл не сохранен.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
@@ -988,7 +994,9 @@ class Window(gui.MainFrame):
             wx.MessageBox(
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
-                u'возникла ошибка. Файл не сохранен.',
+                u'возникла ошибка:\n' +
+                str(sys.exc_info()[1]) + '\n' \
+                u'Файл не сохранен.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
@@ -1058,10 +1066,11 @@ class Window(gui.MainFrame):
                 spec.save(self.specification_file)
             except:
                 wx.MessageBox(
-                    u'При создании перечня элементов\n' +
+                    u'При создании перечня элементов:\n' +
                     self.specification_file + '\n' \
                     u'возникла ошибка:\n' + \
-                    str(sys.exc_info()[1]),
+                    str(sys.exc_info()[1]) + '\n' \
+                    u'Не удалось создать перечень элементов.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
                     )
@@ -1313,8 +1322,9 @@ class Window(gui.MainFrame):
             wx.MessageBox(
                 u'При загрузке параметров из файла:\n' +
                 settings_file_name + '\n' \
-                u'возникла ошибка. Параметры не загружены\n' +
-                'или загружены не полностью.',
+                u'возникла ошибка:\n' +
+                str(sys.exc_info()[1]) + '\n' \
+                'Параметры не загружены или загружены не полностью.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
@@ -1340,8 +1350,9 @@ class Window(gui.MainFrame):
             wx.MessageBox(
                 u'При сохранении параметров в файл:\n' +
                 settings_file_name + '\n' \
-                u'возникла ошибка. Параметры не сохранены\n' +
-                'или сохранены не полностью.',
+                u'возникла ошибка:\n' +
+                str(sys.exc_info()[1]) + '\n' \
+                u'Параметры не сохранены или сохранены не полностью.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
