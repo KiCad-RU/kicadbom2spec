@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Dec 23 2014)
+## Python code generated with wxFormBuilder (version Mar 31 2015)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -893,7 +893,7 @@ class SettingsDialog ( wx.Dialog ):
 		self.field1_panel.SetSizer( field1_sizer )
 		self.field1_panel.Layout()
 		field1_sizer.Fit( self.field1_panel )
-		self.value_notebook.AddPage( self.field1_panel, u"Группа", False )
+		self.value_notebook.AddPage( self.field1_panel, u"Группа", True )
 		self.field2_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		field2_sizer = wx.BoxSizer( wx.VERTICAL )
 		
@@ -915,7 +915,7 @@ class SettingsDialog ( wx.Dialog ):
 		self.field3_panel.SetSizer( field3_sizer )
 		self.field3_panel.Layout()
 		field3_sizer.Fit( self.field3_panel )
-		self.value_notebook.AddPage( self.field3_panel, u"Значение", True )
+		self.value_notebook.AddPage( self.field3_panel, u"Значение", False )
 		self.field4_panel = wx.Panel( self.value_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		field4_sizer = wx.BoxSizer( wx.VERTICAL )
 		
@@ -983,6 +983,113 @@ class SettingsDialog ( wx.Dialog ):
 		
 		self.SetSizer( sizer_settings_dialog )
 		self.Layout()
+		
+		self.Centre( wx.BOTH )
+	
+	def __del__( self ):
+		pass
+	
+
+###########################################################################
+## Class SettingsSelector
+###########################################################################
+
+class SettingsSelector ( wx.Dialog ):
+	
+	def __init__( self, parent ):
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Выбор параметров", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.CAPTION|wx.CLOSE_BOX )
+		
+		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+		
+		sizer_settings_selector = wx.BoxSizer( wx.VERTICAL )
+		
+		self.panel_settings_selector = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		sizer_settings = wx.BoxSizer( wx.VERTICAL )
+		
+		self.statictext1 = wx.StaticText( self.panel_settings_selector, wx.ID_ANY, u"В выбраном файле найдены следующие\nпараметры:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.statictext1.Wrap( -1 )
+		sizer_settings.Add( self.statictext1, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_position = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Позиция окна", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_position.SetValue(True) 
+		self.checkbox_position.SetToolTipString( u"Положение окна программы на экране." )
+		
+		sizer_settings.Add( self.checkbox_position, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_size = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Размер окна", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_size.SetValue(True) 
+		self.checkbox_size.SetToolTipString( u"Размеры окна программы." )
+		
+		sizer_settings.Add( self.checkbox_size, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_column_sizes = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Размеры колонок таблицы элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_column_sizes.SetValue(True) 
+		self.checkbox_column_sizes.SetToolTipString( u"Размеры колонок таблицы элементов." )
+		
+		sizer_settings.Add( self.checkbox_column_sizes, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_values = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Стандартные значения полей элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_values.SetValue(True) 
+		self.checkbox_values.SetToolTipString( u"Наборы часто используемых значений для разных полей элементов." )
+		
+		sizer_settings.Add( self.checkbox_values, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_remember_selection = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Выбор элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_remember_selection.SetValue(True) 
+		self.checkbox_remember_selection.SetToolTipString( u"Сохранять инфорамацию о\nвыборе элементов в файл\nсхемы или нет." )
+		
+		sizer_settings.Add( self.checkbox_remember_selection, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_auto_filling_groups = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры автоматического\nзаполнения поля \"Группа\"", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_auto_filling_groups.SetValue(True) 
+		self.checkbox_auto_filling_groups.SetToolTipString( u"Наборы значений и их состояние для\nавтоматического заполенения поля\n\"Группа\" при отрытии файлов схем и\nбиблиотек." )
+		
+		sizer_settings.Add( self.checkbox_auto_filling_groups, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_spec = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры создания перечня\nэлементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_spec.SetValue(True) 
+		self.checkbox_spec.SetToolTipString( u"Параметры диалогового окна\nсоздания перечня элементов." )
+		
+		sizer_settings.Add( self.checkbox_spec, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_recent_sch = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Недавние схемы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_recent_sch.SetValue(True) 
+		self.checkbox_recent_sch.SetToolTipString( u"Список недавно используемых файлов схем." )
+		
+		sizer_settings.Add( self.checkbox_recent_sch, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_recent_lib = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Недавние библиотеки", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_recent_lib.SetValue(True) 
+		self.checkbox_recent_lib.SetToolTipString( u"Список недавно используемых файлов схем." )
+		
+		sizer_settings.Add( self.checkbox_recent_lib, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.panel_settings_selector.SetSizer( sizer_settings )
+		self.panel_settings_selector.Layout()
+		sizer_settings.Fit( self.panel_settings_selector )
+		sizer_settings_selector.Add( self.panel_settings_selector, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		self.staticline = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		sizer_settings_selector.Add( self.staticline, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		self.statictext2 = wx.StaticText( self, wx.ID_ANY, u"Укажите отметками какие параметры\nнужно применить к программе.", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.statictext2.Wrap( -1 )
+		sizer_settings_selector.Add( self.statictext2, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 5 )
+		
+		dialog_button = wx.StdDialogButtonSizer()
+		self.dialog_buttonOK = wx.Button( self, wx.ID_OK )
+		dialog_button.AddButton( self.dialog_buttonOK )
+		self.dialog_buttonCancel = wx.Button( self, wx.ID_CANCEL )
+		dialog_button.AddButton( self.dialog_buttonCancel )
+		dialog_button.Realize();
+		
+		sizer_settings_selector.Add( dialog_button, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.SetSizer( sizer_settings_selector )
+		self.Layout()
+		sizer_settings_selector.Fit( self )
 		
 		self.Centre( wx.BOTH )
 	
