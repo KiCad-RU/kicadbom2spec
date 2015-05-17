@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Mar 31 2015)
+## Python code generated with wxFormBuilder (version Dec 23 2014)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -1011,55 +1011,55 @@ class SettingsSelector ( wx.Dialog ):
 		sizer_settings.Add( self.statictext1, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_position = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Позиция окна", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_position.SetValue(True) 
+		self.checkbox_position.Hide()
 		self.checkbox_position.SetToolTipString( u"Положение окна программы на экране." )
 		
 		sizer_settings.Add( self.checkbox_position, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_size = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Размер окна", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_size.SetValue(True) 
+		self.checkbox_size.Hide()
 		self.checkbox_size.SetToolTipString( u"Размеры окна программы." )
 		
 		sizer_settings.Add( self.checkbox_size, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_column_sizes = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Размеры колонок таблицы элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_column_sizes.SetValue(True) 
+		self.checkbox_column_sizes.Hide()
 		self.checkbox_column_sizes.SetToolTipString( u"Размеры колонок таблицы элементов." )
 		
 		sizer_settings.Add( self.checkbox_column_sizes, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_values = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Стандартные значения полей элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_values.SetValue(True) 
+		self.checkbox_values.Hide()
 		self.checkbox_values.SetToolTipString( u"Наборы часто используемых значений для разных полей элементов." )
 		
 		sizer_settings.Add( self.checkbox_values, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_remember_selection = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Выбор элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_remember_selection.SetValue(True) 
+		self.checkbox_remember_selection.Hide()
 		self.checkbox_remember_selection.SetToolTipString( u"Сохранять инфорамацию о\nвыборе элементов в файл\nсхемы или нет." )
 		
 		sizer_settings.Add( self.checkbox_remember_selection, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_auto_filling_groups = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры автоматического\nзаполнения поля \"Группа\"", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_auto_filling_groups.SetValue(True) 
+		self.checkbox_auto_filling_groups.Hide()
 		self.checkbox_auto_filling_groups.SetToolTipString( u"Наборы значений и их состояние для\nавтоматического заполенения поля\n\"Группа\" при отрытии файлов схем и\nбиблиотек." )
 		
 		sizer_settings.Add( self.checkbox_auto_filling_groups, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_spec = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры создания перечня\nэлементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_spec.SetValue(True) 
+		self.checkbox_spec.Hide()
 		self.checkbox_spec.SetToolTipString( u"Параметры диалогового окна\nсоздания перечня элементов." )
 		
 		sizer_settings.Add( self.checkbox_spec, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_recent_sch = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Недавние схемы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_recent_sch.SetValue(True) 
+		self.checkbox_recent_sch.Hide()
 		self.checkbox_recent_sch.SetToolTipString( u"Список недавно используемых файлов схем." )
 		
 		sizer_settings.Add( self.checkbox_recent_sch, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_recent_lib = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Недавние библиотеки", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_recent_lib.SetValue(True) 
+		self.checkbox_recent_lib.Hide()
 		self.checkbox_recent_lib.SetToolTipString( u"Список недавно используемых файлов схем." )
 		
 		sizer_settings.Add( self.checkbox_recent_lib, 0, wx.ALL|wx.EXPAND, 5 )

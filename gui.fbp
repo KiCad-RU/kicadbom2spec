@@ -9151,7 +9151,7 @@
                                     <property name="caption"></property>
                                     <property name="caption_visible">1</property>
                                     <property name="center_pane">0</property>
-                                    <property name="checked">1</property>
+                                    <property name="checked">0</property>
                                     <property name="close_button">1</property>
                                     <property name="context_help"></property>
                                     <property name="context_menu">1</property>
@@ -9164,7 +9164,7 @@
                                     <property name="floatable">1</property>
                                     <property name="font"></property>
                                     <property name="gripper">0</property>
-                                    <property name="hidden">0</property>
+                                    <property name="hidden">1</property>
                                     <property name="id">wxID_ANY</property>
                                     <property name="label">Позиция окна</property>
                                     <property name="max_size"></property>
@@ -9239,7 +9239,7 @@
                                     <property name="caption"></property>
                                     <property name="caption_visible">1</property>
                                     <property name="center_pane">0</property>
-                                    <property name="checked">1</property>
+                                    <property name="checked">0</property>
                                     <property name="close_button">1</property>
                                     <property name="context_help"></property>
                                     <property name="context_menu">1</property>
@@ -9252,7 +9252,7 @@
                                     <property name="floatable">1</property>
                                     <property name="font"></property>
                                     <property name="gripper">0</property>
-                                    <property name="hidden">0</property>
+                                    <property name="hidden">1</property>
                                     <property name="id">wxID_ANY</property>
                                     <property name="label">Размер окна</property>
                                     <property name="max_size"></property>
@@ -9327,7 +9327,7 @@
                                     <property name="caption"></property>
                                     <property name="caption_visible">1</property>
                                     <property name="center_pane">0</property>
-                                    <property name="checked">1</property>
+                                    <property name="checked">0</property>
                                     <property name="close_button">1</property>
                                     <property name="context_help"></property>
                                     <property name="context_menu">1</property>
@@ -9340,7 +9340,7 @@
                                     <property name="floatable">1</property>
                                     <property name="font"></property>
                                     <property name="gripper">0</property>
-                                    <property name="hidden">0</property>
+                                    <property name="hidden">1</property>
                                     <property name="id">wxID_ANY</property>
                                     <property name="label">Размеры колонок таблицы элементов</property>
                                     <property name="max_size"></property>
@@ -9415,7 +9415,7 @@
                                     <property name="caption"></property>
                                     <property name="caption_visible">1</property>
                                     <property name="center_pane">0</property>
-                                    <property name="checked">1</property>
+                                    <property name="checked">0</property>
                                     <property name="close_button">1</property>
                                     <property name="context_help"></property>
                                     <property name="context_menu">1</property>
@@ -9428,7 +9428,7 @@
                                     <property name="floatable">1</property>
                                     <property name="font"></property>
                                     <property name="gripper">0</property>
-                                    <property name="hidden">0</property>
+                                    <property name="hidden">1</property>
                                     <property name="id">wxID_ANY</property>
                                     <property name="label">Стандартные значения полей элементов</property>
                                     <property name="max_size"></property>
@@ -9503,7 +9503,7 @@
                                     <property name="caption"></property>
                                     <property name="caption_visible">1</property>
                                     <property name="center_pane">0</property>
-                                    <property name="checked">1</property>
+                                    <property name="checked">0</property>
                                     <property name="close_button">1</property>
                                     <property name="context_help"></property>
                                     <property name="context_menu">1</property>
@@ -9516,7 +9516,7 @@
                                     <property name="floatable">1</property>
                                     <property name="font"></property>
                                     <property name="gripper">0</property>
-                                    <property name="hidden">0</property>
+                                    <property name="hidden">1</property>
                                     <property name="id">wxID_ANY</property>
                                     <property name="label">Выбор элементов</property>
                                     <property name="max_size"></property>
@@ -9591,7 +9591,7 @@
                                     <property name="caption"></property>
                                     <property name="caption_visible">1</property>
                                     <property name="center_pane">0</property>
-                                    <property name="checked">1</property>
+                                    <property name="checked">0</property>
                                     <property name="close_button">1</property>
                                     <property name="context_help"></property>
                                     <property name="context_menu">1</property>
@@ -9604,7 +9604,7 @@
                                     <property name="floatable">1</property>
                                     <property name="font"></property>
                                     <property name="gripper">0</property>
-                                    <property name="hidden">0</property>
+                                    <property name="hidden">1</property>
                                     <property name="id">wxID_ANY</property>
                                     <property name="label">Параметры автоматического&#x0A;заполнения поля &quot;Группа&quot;</property>
                                     <property name="max_size"></property>
@@ -9679,7 +9679,7 @@
                                     <property name="caption"></property>
                                     <property name="caption_visible">1</property>
                                     <property name="center_pane">0</property>
-                                    <property name="checked">1</property>
+                                    <property name="checked">0</property>
                                     <property name="close_button">1</property>
                                     <property name="context_help"></property>
                                     <property name="context_menu">1</property>
@@ -9692,7 +9692,7 @@
                                     <property name="floatable">1</property>
                                     <property name="font"></property>
                                     <property name="gripper">0</property>
-                                    <property name="hidden">0</property>
+                                    <property name="hidden">1</property>
                                     <property name="id">wxID_ANY</property>
                                     <property name="label">Параметры создания перечня&#x0A;элементов</property>
                                     <property name="max_size"></property>
@@ -9767,7 +9767,7 @@
                                     <property name="caption"></property>
                                     <property name="caption_visible">1</property>
                                     <property name="center_pane">0</property>
-                                    <property name="checked">1</property>
+                                    <property name="checked">0</property>
                                     <property name="close_button">1</property>
                                     <property name="context_help"></property>
                                     <property name="context_menu">1</property>
@@ -9780,7 +9780,7 @@
                                     <property name="floatable">1</property>
                                     <property name="font"></property>
                                     <property name="gripper">0</property>
-                                    <property name="hidden">0</property>
+                                    <property name="hidden">1</property>
                                     <property name="id">wxID_ANY</property>
                                     <property name="label">Недавние схемы</property>
                                     <property name="max_size"></property>
@@ -9855,7 +9855,7 @@
                                     <property name="caption"></property>
                                     <property name="caption_visible">1</property>
                                     <property name="center_pane">0</property>
-                                    <property name="checked">1</property>
+                                    <property name="checked">0</property>
                                     <property name="close_button">1</property>
                                     <property name="context_help"></property>
                                     <property name="context_menu">1</property>
@@ -9868,7 +9868,7 @@
                                     <property name="floatable">1</property>
                                     <property name="font"></property>
                                     <property name="gripper">0</property>
-                                    <property name="hidden">0</property>
+                                    <property name="hidden">1</property>
                                     <property name="id">wxID_ANY</property>
                                     <property name="label">Недавние библиотеки</property>
                                     <property name="max_size"></property>

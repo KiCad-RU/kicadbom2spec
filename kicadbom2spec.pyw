@@ -110,98 +110,153 @@ class Window(gui.MainFrame):
         Loads setttings from configuration file.
 
         """
-        self.settings = SafeConfigParser()
-        self.save_window_size_pos = False
-        self.save_selected_mark = False
-        self.save_col_size = False
-        self.auto_groups_dict = {}
-        self.values_dict = {
-            u'группа':[],
-            u'марка':[],
-            u'значение':[],
-            u'класс точности':[],
-            u'тип':[],
-            u'стандарт':[],
-            u'примечание':[]
+        import_settings= {
+            'position':False,
+            'size':False,
+            'column_sizes':False,
+            'values':False,
+            'remember_selection':False,
+            'auto_filling_groups':False,
+            'spec':False,
+            'recent_sch':False,
+            'recent_lib':False
             }
-        settings_dict = {
-                'position':True,
-                'size':True,
-                'column_sizes':True,
-                'values':True,
-                'remember_selection':True,
-                'auto_filling_groups':True,
-                'spec':True,
-                'recent_sch':True,
-                'recent_lib':True
-                }
 
         if path.isfile(settings_file_name):
-            # Load settings from file
-            self.settings.readfp(codecs.open(
-                settings_file_name,
-                'r',
-                encoding='utf-8'
-                ))
 
             # Select settings to loading
-            if select:
+            if select and hasattr(self, 'settings'):
+
+                # Load settings from file
+                temp_settings = SafeConfigParser()
+                temp_settings.readfp(codecs.open(
+                    settings_file_name,
+                    'r',
+                    encoding='utf-8'
+                    ))
+
                 selector = gui.SettingsSelector(self)
-                if not self.settings.has_section('window'):
-                    selector.checkbox_position.SetValue(False)
-                    selector.checkbox_position.Hide()
-                    selector.checkbox_size.SetValue(False)
-                    selector.checkbox_size.Hide()
-                else:
-                    if not self.settings.has_option('window', 'x') or \
-                            not self.settings.has_option('window', 'y'):
-                        selector.checkbox_position.SetValue(False)
-                        selector.checkbox_position.Hide()
-                    if not self.settings.has_option('window', 'width') or \
-                            not self.settings.has_option('window', 'height'):
-                        selector.checkbox_size.SetValue(False)
-                        selector.checkbox_size.Hide()
-                if not self.settings.has_section('column sizes'):
-                    selector.checkbox_column_sizes.SetValue(False)
-                    selector.checkbox_column_sizes.Hide()
-                if not self.settings.has_section('values'):
-                    selector.checkbox_values.SetValue(False)
-                    selector.checkbox_values.Hide()
-                if not self.settings.has_section('general') or \
-                        not self.settings.has_option('general', 'remember selection'):
-                    selector.checkbox_remember_selection.SetValue(False)
-                    selector.checkbox_remember_selection.Hide()
-                if not self.settings.has_section('auto filling groups'):
-                    selector.checkbox_auto_filling_groups.SetValue(False)
-                    selector.checkbox_auto_filling_groups.Hide()
-                if not self.settings.has_section('spec'):
-                    selector.checkbox_spec.SetValue(False)
-                    selector.checkbox_spec.Hide()
-                if not self.settings.has_section('recent sch'):
-                    selector.checkbox_recent_sch.SetValue(False)
-                    selector.checkbox_recent_sch.Hide()
-                if not self.settings.has_section('recent lib'):
-                    selector.checkbox_recent_lib.SetValue(False)
-                    selector.checkbox_recent_lib.Hide()
+                if temp_settings.has_section('window'):
+                    if temp_settings.has_option('window', 'x') and \
+                            temp_settings.has_option('window', 'y'):
+                        selector.checkbox_position.SetValue(True)
+                        selector.checkbox_position.Show()
+                    if temp_settings.has_option('window', 'width') and \
+                            temp_settings.has_option('window', 'height'):
+                        selector.checkbox_size.SetValue(True)
+                        selector.checkbox_size.Show()
+                if temp_settings.has_section('column sizes'):
+                    selector.checkbox_column_sizes.SetValue(True)
+                    selector.checkbox_column_sizes.Show()
+                if temp_settings.has_section('values'):
+                    selector.checkbox_values.SetValue(True)
+                    selector.checkbox_values.Show()
+                if temp_settings.has_section('general') and \
+                        temp_settings.has_option('general', 'remember selection'):
+                    selector.checkbox_remember_selection.SetValue(True)
+                    selector.checkbox_remember_selection.Show()
+                if temp_settings.has_section('auto filling groups'):
+                    selector.checkbox_auto_filling_groups.SetValue(True)
+                    selector.checkbox_auto_filling_groups.Show()
+                if temp_settings.has_section('spec'):
+                    selector.checkbox_spec.SetValue(True)
+                    selector.checkbox_spec.Show()
+                if temp_settings.has_section('recent sch'):
+                    selector.checkbox_recent_sch.SetValue(True)
+                    selector.checkbox_recent_sch.Show()
+                if temp_settings.has_section('recent lib'):
+                    selector.checkbox_recent_lib.SetValue(True)
+                    selector.checkbox_recent_lib.Show()
                 selector.Layout()
+                selector.Fit()
+                selector.Centre()
                 result = selector.ShowModal()
                 if result == wx.ID_OK:
-                    for key in settings_dict.keys():
-                        settings_dict[key] = getattr(selector, 'checkbox_' + key).IsChecked()
-                else:
-                    return
+                    for key in import_settings.keys():
+                        import_settings[key] = getattr(selector, 'checkbox_' + key).IsChecked()
+                    if import_settings['position']:
+                        self.save_window_size_pos = True
+                        x = temp_settings.getint('window', 'x')
+                        y = temp_settings.getint('window', 'y')
+                        self.SetPosition(wx.Point(x, y))
+                    if import_settings['size']:
+                        self.save_window_size_pos = True
+                        width = temp_settings.getint('window', 'width')
+                        height = temp_settings.getint('window', 'height')
+                        if temp_settings.has_option('window', 'maximized'):
+                            if temp_settings.getint('window', 'maximized'):
+                                self.Maximize()
+                        self.SetClientSize(wx.Size(width, height))
+                    if import_settings['column_sizes']:
+                        self.save_col_size = True
+                        if hasattr(self, 'grid_components'):
+                            for col in temp_settings.options('column sizes'):
+                                col_size = temp_settings.getint('column sizes', col)
+                                self.grid_components.SetColSize(int(col), col_size)
+                    if import_settings['values']:
+                        for item in self.values_dict.keys():
+                            if temp_settings.has_option('values', item):
+                                values_list = temp_settings.get('values', item)
+                                values_list = values_list.split(settings_separator)
+                                self.values_dict[item] = values_list
+                    if import_settings['remember_selection']:
+                        self.save_selected_mark = temp_settings.getboolean('general', 'remember selection')
+                    if import_settings['auto_filling_groups']:
+                        if not self.settings.has_section('auto filling groups'):
+                            self.settings.add_section('auto filling groups')
+                        for param in temp_settings.options('auto filling groups'):
+                            value = temp_settings.get('auto filling groups', param)
+                            if value.startswith(u'1'):
+                                self.auto_groups_dict[param.upper()] = value[1:]
+                            self.settings.set('auto filling groups', param, value)
+                    if import_settings['spec']:
+                        if not self.settings.has_section('spec'):
+                            self.settings.add_section('spec')
+                        for param in temp_settings.options('spec'):
+                            value = temp_settings.get('spec', param)
+                            self.settings.set('spec', param, value)
+                    if import_settings['recent_sch']:
+                        recent_files = []
+                        for recent in temp_settings.options('recent sch'):
+                            recent_files.append(temp_settings.get('recent sch', recent))
+                        self.build_recent_menu(recent_files, 'sch')
+                    if import_settings['recent_lib']:
+                        recent_files = []
+                        for recent in temp_settings.options('recent lib'):
+                            recent_files.append(temp_settings.get('recent lib', recent))
+                        self.build_recent_menu(recent_files, 'lib')
+            else:
+                self.settings = SafeConfigParser()
+                self.save_window_size_pos = False
+                self.save_selected_mark = False
+                self.save_col_size = False
+                self.auto_groups_dict = {}
+                self.values_dict = {
+                    u'группа':[],
+                    u'марка':[],
+                    u'значение':[],
+                    u'класс точности':[],
+                    u'тип':[],
+                    u'стандарт':[],
+                    u'примечание':[]
+                    }
+                # Load settings from file
+                self.settings.readfp(codecs.open(
+                    settings_file_name,
+                    'r',
+                    encoding='utf-8'
+                    ))
 
-            if self.settings.has_section('window'):
-                self.save_window_size_pos = True
-                x, y = self.GetPosition()
-                width, height = self.GetClientSize()
-                if settings_dict['position']:
+                if self.settings.has_section('window'):
+                    self.save_window_size_pos = True
+                    x, y = self.GetPosition()
+                    width, height = self.GetClientSize()
                     if self.settings.has_option('window', 'x'):
                         x = self.settings.getint('window', 'x')
                     if self.settings.has_option('window', 'y'):
                         y = self.settings.getint('window', 'y')
                     self.SetPosition(wx.Point(x, y))
-                if settings_dict['size']:
+
                     if self.settings.has_option('window', 'width'):
                         width = self.settings.getint('window', 'width')
                     if self.settings.has_option('window', 'height'):
@@ -211,50 +266,41 @@ class Window(gui.MainFrame):
                         if self.settings.getint('window', 'maximized'):
                             self.Maximize()
 
-            if self.settings.has_section('column sizes') and \
-                    settings_dict['column_sizes']:
-                self.save_col_size = True
-                if hasattr(self, 'grid_components'):
-                    for col in self.settings.options('column sizes'):
-                        col_size = self.settings.getint('column sizes', col)
-                        self.grid_components.SetColSize(int(col), col_size)
+                if self.settings.has_section('column sizes'):
+                    self.save_col_size = True
+                    if hasattr(self, 'grid_components'):
+                        for col in self.settings.options('column sizes'):
+                            col_size = self.settings.getint('column sizes', col)
+                            self.grid_components.SetColSize(int(col), col_size)
 
-            if self.settings.has_section('values') and \
-                    settings_dict['values']:
-                for item in self.values_dict.keys():
-                    if self.settings.has_option('values', item):
-                        values_list = self.settings.get('values', item)
-                        values_list = values_list.split(settings_separator)
-                        self.values_dict[item].extend(values_list)
+                if self.settings.has_section('values'):
+                    for item in self.values_dict.keys():
+                        if self.settings.has_option('values', item):
+                            values_list = self.settings.get('values', item)
+                            values_list = values_list.split(settings_separator)
+                            self.values_dict[item] = values_list
 
-            if self.settings.has_section('general'):
-                if self.settings.has_option('general', 'remember selection') and \
-                        settings_dict['remember_selection']:
-                    self.save_selected_mark = self.settings.getboolean('general', 'remember selection')
+                if self.settings.has_section('general'):
+                    if self.settings.has_option('general', 'remember selection'):
+                        self.save_selected_mark = self.settings.getboolean('general', 'remember selection')
 
-            if self.settings.has_section('auto filling groups') and \
-                    settings_dict['auto_filling_groups']:
-                for param in self.settings.options('auto filling groups'):
-                    value = self.settings.get('auto filling groups', param)
-                    if value.startswith(u'1'):
-                        self.auto_groups_dict[param.upper()] = value[1:]
+                if self.settings.has_section('auto filling groups'):
+                    for param in self.settings.options('auto filling groups'):
+                        value = self.settings.get('auto filling groups', param)
+                        if value.startswith(u'1'):
+                            self.auto_groups_dict[param.upper()] = value[1:]
 
-            if not settings_dict['spec']:
-                self.settings.remove_section('spec')
+                if self.settings.has_section('recent sch'):
+                    recent_files = []
+                    for recent in self.settings.options('recent sch'):
+                        recent_files.append(self.settings.get('recent sch', recent))
+                    self.build_recent_menu(recent_files, 'sch')
 
-            if self.settings.has_section('recent sch') and \
-                    settings_dict['recent_sch']:
-                recent_files = []
-                for recent in self.settings.options('recent sch'):
-                    recent_files.append(self.settings.get('recent sch', recent))
-                self.build_recent_menu(recent_files, 'sch')
-
-            if self.settings.has_section('recent lib') and \
-                    settings_dict['recent_lib']:
-                recent_files = []
-                for recent in self.settings.options('recent lib'):
-                    recent_files.append(self.settings.get('recent lib', recent))
-                self.build_recent_menu(recent_files, 'lib')
+                if self.settings.has_section('recent lib'):
+                    recent_files = []
+                    for recent in self.settings.options('recent lib'):
+                        recent_files.append(self.settings.get('recent lib', recent))
+                    self.build_recent_menu(recent_files, 'lib')
 
     def save_settings(self, settings_file_name=default_settings_file_name):
         """
@@ -285,6 +331,24 @@ class Window(gui.MainFrame):
                 self.settings.set('column sizes', str(col), str(col_size))
         else:
             self.settings.remove_section('column sizes')
+
+        if not self.settings.has_section('values'):
+            self.settings.add_section('values')
+        for field in self.values_dict.keys():
+            field_values = settings_separator.join(self.values_dict[field])
+            field_values = field_values.replace('%', '%%')
+            if field_values:
+                self.settings.set('values', field, field_values)
+        if not self.settings.options('values'):
+            self.settings.remove_section('values')
+
+        if not self.settings.has_section('general'):
+            self.settings.add_section('general')
+        self.settings.set(
+            'general',
+            'remember selection',
+            {True:'1', False:'0'}[self.save_selected_mark]
+            )
 
         self.settings.remove_section('recent sch')
         self.settings.add_section('recent sch')
@@ -1317,6 +1381,8 @@ class Window(gui.MainFrame):
             if settings_import_dialog.ShowModal() == wx.ID_CANCEL:
                 return
             settings_file_name = settings_import_dialog.GetPath()
+            self.save_settings(self.settings_file)
+            self.load_settings(self.settings_file)
             self.load_settings(settings_file_name, True)
         except:
             wx.MessageBox(
