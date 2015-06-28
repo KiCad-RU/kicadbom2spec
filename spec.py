@@ -231,8 +231,8 @@ class Specification():
         self.developer = sch.descr.comment2
         self.verifer = sch.descr.comment3
         self.approver = sch.descr.comment4
-        self.decimal_num = sch.descr.comment1
-        self.title = sch.descr.title
+        self.decimal_num = self.convert_decimal_num(sch.descr.comment1)
+        self.title = self.convert_title(sch.descr.title)
         self.comp = sch.descr.comp
 
     def get_sheets(self, sch_file_name):
@@ -486,3 +486,25 @@ class Specification():
 
         # Save specification file
         self.specification.save(spec_file_name)
+
+    def convert_decimal_num(self, num):
+        ss = num.rsplit('Э', 1)
+
+        if len(ss) < 2 or not (ss[1] >= '1' and ss[1] <= '7'):
+            return num + ' ПЭ3'
+        else:
+            return ss[0] + 'ПЭ' + ss[1]
+
+    def convert_title(self, title):
+        ss = title.rsplit('Схема электрическая ', 1)
+
+        if len(ss) < 2 or not (ss[1] == 'структурная' or
+                               ss[1] == 'функциональная' or
+                               ss[1] == 'принципиальная' or
+                               ss[1] == 'соединений' or
+                               ss[1] == 'подключения' or
+                               ss[1] == 'общая' or
+                               ss[1] == 'расположения'):
+            return title + '\\nПеречень элементов'
+        else:
+            return ss[0] + 'Перечень элементов'
