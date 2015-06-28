@@ -38,19 +38,19 @@ class Specification():
 
     def __init__(self):
         # Load the pattern
-        self.pattern = odf.opendocument.load(path.join(path.dirname(path.realpath(__file__)), 'pattern.ods'))
+        self.pattern = odf.opendocument.load(path.join(path.dirname(path.realpath(__file__)), u'pattern.ods'))
         self.firstPagePattern = None
         self.otherPagesPattern = None
         self.lastPagesPattern = None
         for sheet in self.pattern.spreadsheet.getElementsByType(Table):
             # Pattern for first page
-            if sheet.getAttribute('name') == 'First':
+            if sheet.getAttribute(u'name') == u'First':
                 self.firstPagePattern = sheet
             # Pattern for other pages
-            elif sheet.getAttribute('name') == 'Other':
+            elif sheet.getAttribute(u'name') == u'Other':
                 self.otherPagesPattern = sheet
             # Pattern for last pages (the changes sheet)
-            elif sheet.getAttribute('name') == 'Last':
+            elif sheet.getAttribute(u'name') == u'Last':
                 self.lastPagesPattern = sheet
 
         # Create specification file object
@@ -76,18 +76,18 @@ class Specification():
             self.specification.settings.addElement(setting)
 
         # Current state of filling the specification
-        self.cur_group = ''
+        self.cur_group = u''
         self.cur_line = 1
         self.cur_page = 1
         self.cur_table = self.firstPagePattern
 
         # Some variables for spec filling
-        self.developer = ''
-        self.verifer = ''
-        self.approver = ''
-        self.decimal_num = ''
-        self.title = ''
-        self.comp = ''
+        self.developer = u''
+        self.verifer = u''
+        self.approver = u''
+        self.decimal_num = u''
+        self.title = u''
+        self.comp = u''
         self.add_units = False
         self.need_changes_sheet = True
 
@@ -103,7 +103,7 @@ class Specification():
             for cell in cells:
                 for p in cell.getElementsByType(P):
                     for p_data in p.childNodes:
-                        if p_data.tagName == 'Text':
+                        if p_data.tagName == u'Text':
                             if p_data.data == label:
                                 # Decoding internal escapes
                                 text = text.decode('string_escape')
@@ -111,16 +111,20 @@ class Specification():
                                 p_data.data = text.decode('string_escape')
                                 if group == True:
                                     # Set center align and underline for ghoup name
-                                    curStyleName = cell.getAttribute('stylename')
-                                    groupStyle = self.specification.getStyleByName(curStyleName + 'g')
-                                    if groupStyle == None:
+                                    curStyleName = cell.getAttribute(u'stylename')
+                                    try:
+                                        groupStyle = self.specification.getStyleByName(curStyleName + u'g')
+                                        # Needed for backwards compatibility
+                                        if groupStyle == None:
+                                            raise
+                                    except:
                                         groupStyle = deepcopy(self.specification.getStyleByName(curStyleName))
-                                        groupStyle.setAttribute('name', curStyleName + 'g')
-                                        groupStyle.addElement(ParagraphProperties(textalignlast='center'))
-                                        groupStyle.addElement(TextProperties(textunderlinetype='single',
-                                                                             textunderlinestyle='solid',))
+                                        groupStyle.setAttribute(u'name', curStyleName + u'g')
+                                        groupStyle.addElement(ParagraphProperties(textalignlast=u'center'))
+                                        groupStyle.addElement(TextProperties(textunderlinetype=u'single',
+                                                                             textunderlinestyle=u'solid',))
                                         self.specification.styles.addElement(groupStyle)
-                                    cell.setAttribute('stylename', curStyleName + 'g')
+                                    cell.setAttribute(u'stylename', curStyleName + u'g')
                                 return
 
     def clear_table(self, table):
@@ -134,9 +138,9 @@ class Specification():
             for cell in cells:
                 for p in cell.getElementsByType(P):
                     for p_data in p.childNodes:
-                        if p_data.tagName == 'Text':
+                        if p_data.tagName == u'Text':
                             if re.search(r'#\d+:\d+', p_data.data) != None:
-                                p_data.data = ''
+                                p_data.data = u''
 
     def append_changes_sheet(self):
         """
@@ -145,7 +149,7 @@ class Specification():
         """
         self.cur_table = self.lastPagesPattern
         self.cur_page += 1
-        self.cur_table.setAttribute('name', u'стр. %d' % self.cur_page)
+        self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
         self.specification.spreadsheet.addElement(self.cur_table)
 
     def next_line(self):
@@ -161,7 +165,7 @@ class Specification():
         if (self.cur_page == 1 and self.cur_line > 29) or \
            (self.cur_page > 1 and self.cur_line > 32):
             # Table is full
-            self.cur_table.setAttribute('name', u'стр. %d' % self.cur_page)
+            self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
             self.specification.spreadsheet.addElement(self.cur_table)
 
             self.cur_table = deepcopy(self.otherPagesPattern)
@@ -174,33 +178,33 @@ class Specification():
 
         """
         # Reference
-        ref = ''
+        ref = u''
         if int(element[8]) > 1:
             # Reference number: '5, 6'; '25...28' etc.
             ref = re.search(r'(\d+)(\.+|,\s?)(\d+)', element[1]).groups()
             # Reference: 'VD1, 2'; 'C8...C11' etc.
-            ref = (element[0] + '%s%s' + element[0] + '%s') % ref
+            ref = (element[0] + u'%s%s' + element[0] + u'%s') % ref
         else:
             # Reference: 'R5'; 'VT13' etc.
             ref = element[0] + element[1]
-        self.replace_text(self.cur_table, '#1:%d' % self.cur_line, ref)
+        self.replace_text(self.cur_table, u'#1:%d' % self.cur_line, ref)
         # Value
         val = element[2] + element[3]
         if self.add_units:
-            if element[0] == 'C' and element[3][-1:] != u'Ф':
+            if element[0] == u'C' and element[3][-1:] != u'Ф':
                 if element[3].isdigit():
                     val += u'п'
                 val += u'Ф'
-            elif element[0] == 'L' and element[3][-2:] != u'Гн':
+            elif element[0] == u'L' and element[3][-2:] != u'Гн':
                 val += u'Гн'
-            elif element[0] == 'R' and element[3][-2:] != u'Ом':
+            elif element[0] == u'R' and element[3][-2:] != u'Ом':
                 val += u'Ом'
         val += element[4] + element[5] + element[6]
-        self.replace_text(self.cur_table, '#2:%d' % self.cur_line, val)
+        self.replace_text(self.cur_table, u'#2:%d' % self.cur_line, val)
         # Count
-        self.replace_text(self.cur_table, '#3:%d' % self.cur_line, element[8])
+        self.replace_text(self.cur_table, u'#3:%d' % self.cur_line, element[8])
         # Coment
-        self.replace_text(self.cur_table, '#4:%d' % self.cur_line, element[7])
+        self.replace_text(self.cur_table, u'#4:%d' % self.cur_line, element[7])
 
     def compare_ref(self, ref):
         """
@@ -242,7 +246,7 @@ class Specification():
         chdir(cur_path)
         sch = Schematic(sch_file_name)
         for item in sch.items:
-            if item.__class__.__name__ == 'Sheet':
+            if item.__class__.__name__ == u'Sheet':
                 sheets.append(path.abspath(path.join(cur_path, item.file_name.decode('utf-8'))))
                 sheets.extend(self.get_sheets(path.abspath(path.join(cur_path, item.file_name.decode('utf-8')))))
         chdir(exec_path)
@@ -258,10 +262,10 @@ class Specification():
         chdir(path.dirname(sch_file_name))
         sch = Schematic(sch_file_name)
         for item in sch.items:
-            if item.__class__.__name__ == 'Comp':
-                if not item.ref.startswith('#'):
+            if item.__class__.__name__ == u'Comp':
+                if not item.ref.startswith(u'#'):
                     components.append(item)
-            elif item.__class__.__name__ == 'Sheet' and not root_only:
+            elif item.__class__.__name__ == u'Sheet' and not root_only:
                 components.extend(self.get_components(path.abspath(item.file_name)))
         chdir(exec_path)
         return components
@@ -280,10 +284,10 @@ class Specification():
 
             """
             for field in comp.fields:
-                if hasattr(field, 'name'):
+                if hasattr(field, u'name'):
                     if field.name == field_name:
                         return field.text
-            return ''
+            return u''
 
         comp_array = []
         if comp_fields:
@@ -303,7 +307,7 @@ class Specification():
                 temp.append(get_text_from_field(comp, u'Тип'))
                 temp.append(get_text_from_field(comp, u'Стандарт'))
                 temp.append(get_text_from_field(comp, u'Примечание'))
-                temp.append('1')
+                temp.append(u'1')
                 comp_array.append(temp)
         comp_array = sorted(comp_array, key=itemgetter(0))
         self.get_descr(sch_file_name)
@@ -335,14 +339,14 @@ class Specification():
         # Sort grops by reference of first element
         comp_lines = sorted(comp_lines, key=lambda x: x[1][0][0])
         # Group with no name must be first
-        if comp_lines[-1][0] == '':
+        if comp_lines[-1][0] == u'':
             comp_lines.insert(0, comp_lines.pop(-1))
 
         temp_array = []
         # Combining the identical elements in one line
         for group in comp_lines:
-            first = ''
-            last = ''
+            first = u''
+            last = u''
             prev = []
             first_index = 0
             last_index = 0
@@ -368,9 +372,9 @@ class Specification():
                     if int(last) - int(first) > 0:
                         # several identical elements
                         count = int(last) - int(first) + 1
-                        separator = ', '
+                        separator = u', '
                         if count > 2:
-                            separator = '...'
+                            separator = u'...'
                         temp_element = group[1][last_index]
                         temp_element[1] = first + separator + last
                         temp_element[8] = str(count)
@@ -386,9 +390,9 @@ class Specification():
                     if int(last) - int(first) > 0:
                         # several identical elements
                         count = int(last) - int(first) + 1
-                        separator = ', '
+                        separator = u', '
                         if count > 2:
-                            separator = '...'
+                            separator = u'...'
                         temp_element = group[1][last_index]
                         temp_element[1] = first + separator + last
                         temp_element[8] = str(count)
@@ -412,12 +416,12 @@ class Specification():
                 else:
                     self.next_line() # Skip one line
 
-                self.replace_text(self.cur_table, '#2:%d' % self.cur_line, group[0], group=True)
+                self.replace_text(self.cur_table, u'#2:%d' % self.cur_line, group[0], group=True)
                 self.next_line() # Skip one line
                 self.next_line() # Moving to next line
 
             # Put all group lines to the table
-            if group[0] == '':
+            if group[0] == u'':
                 # Elements without group
                 prev = None
                 for element in group[1]:
@@ -441,7 +445,7 @@ class Specification():
 
         if self.cur_line != 1:
             # Current table not empty - save it
-            self.cur_table.setAttribute('name', u'стр. %d' % self.cur_page)
+            self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
             self.specification.spreadsheet.addElement(self.cur_table)
 
     def save(self, spec_file_name):
@@ -458,23 +462,23 @@ class Specification():
             if index == 0:
                 pg_cnt = len(self.specification.spreadsheet.getElementsByType(Table))
                 if pg_cnt == 1:
-                    pg_cnt = ''
+                    pg_cnt = u''
                 else:
                     pg_cnt = str(pg_cnt)
 
-                self.replace_text(table, '#5:1', self.developer)
-                self.replace_text(table, '#5:2', self.verifer)
-                self.replace_text(table, '#5:3', self.approver)
-                self.replace_text(table, '#5:4', self.decimal_num)
-                self.replace_text(table, '#5:5', self.title)
-                self.replace_text(table, '#5:6', str(index + 1))
-                self.replace_text(table, '#5:7', pg_cnt)
-                self.replace_text(table, '#5:8', self.comp)
+                self.replace_text(table, u'#5:1', self.developer)
+                self.replace_text(table, u'#5:2', self.verifer)
+                self.replace_text(table, u'#5:3', self.approver)
+                self.replace_text(table, u'#5:4', self.decimal_num)
+                self.replace_text(table, u'#5:5', self.title)
+                self.replace_text(table, u'#5:6', str(index + 1))
+                self.replace_text(table, u'#5:7', pg_cnt)
+                self.replace_text(table, u'#5:8', self.comp)
 
             # Other pages - smal stamp
             else:
-                self.replace_text(table, '#5:1', self.decimal_num)
-                self.replace_text(table, '#5:2', str(index + 1))
+                self.replace_text(table, u'#5:1', self.decimal_num)
+                self.replace_text(table, u'#5:2', str(index + 1))
 
         # Clear tables from labels
         for table in self.specification.spreadsheet.getElementsByType(Table):
