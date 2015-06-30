@@ -231,8 +231,8 @@ class Specification():
         self.developer = sch.descr.comment2
         self.verifer = sch.descr.comment3
         self.approver = sch.descr.comment4
-        self.decimal_num = sch.descr.comment1
-        self.title = sch.descr.title
+        self.decimal_num = self.convert_decimal_num(sch.descr.comment1)
+        self.title = self.convert_title(sch.descr.title)
         self.comp = sch.descr.comp
 
     def get_sheets(self, sch_file_name):
@@ -486,3 +486,35 @@ class Specification():
 
         # Save specification file
         self.specification.save(spec_file_name)
+
+    def convert_decimal_num(self, num):
+        """
+        The correction of the decimal number (adding symbol "П" before the code
+        of the schematic type).
+
+        """
+        num_parts = num.rsplit(' Э', 1)
+        if len(num_parts) > 1 and num_parts[1] in '1234567':
+            return ' ПЭ'.join(num_parts)
+        else:
+            return num
+
+    def convert_title(self, title):
+        """
+        The correction of the title.
+
+        """
+        title_parts = title.rsplit('Схема электрическая ', 1)
+        sch_types = (
+            'структурная',
+            'функциональная',
+            'принципиальная',
+            'соединений',
+            'подключения',
+            'общая',
+            'расположения'
+            )
+        if len(title_parts) > 1 and title_parts[1] in sch_types:
+            return title_parts[0] + 'Перечень элементов'
+        else:
+            return title + '\\nПеречень элементов'
