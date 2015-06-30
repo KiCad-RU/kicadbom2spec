@@ -840,35 +840,46 @@ class Window(gui.MainFrame):
                 return
             self.schematic_file = open_sch_dialog.GetPath()
 
-        self.library_file = ''
-        self.specification_file = path.splitext(self.schematic_file)[0] + '.ods'
-        self.sheets = []
-        self.library = None
-        spec = Specification()
-        sheet_names = [self.schematic_file]
-        sheet_names.extend(spec.get_sheets(self.schematic_file))
-        sheet_names = sorted(sheet_names)
-        self.sheets = []
-        for sheet_name in sheet_names:
-            self.sheets.append(Schematic(sheet_name))
-        self.init_grid()
-        sch_values = self.get_schematic_values()
-        self.grid_components.AppendRows(len(sch_values))
-        self.set_grid_values(sch_values)
-        self.undo_buffer = []
-        self.redo_buffer = []
-        self.on_grid_change()
-        self.saved = True
+        try:
+            self.library_file = ''
+            self.specification_file = path.splitext(self.schematic_file)[0] + '.ods'
+            self.sheets = []
+            self.library = None
+            spec = Specification()
+            sheet_names = [self.schematic_file]
+            sheet_names.extend(spec.get_sheets(self.schematic_file))
+            sheet_names = sorted(sheet_names)
+            self.sheets = []
+            for sheet_name in sheet_names:
+                self.sheets.append(Schematic(sheet_name))
+            self.init_grid()
+            sch_values = self.get_schematic_values()
+            self.grid_components.AppendRows(len(sch_values))
+            self.set_grid_values(sch_values)
+            self.undo_buffer = []
+            self.redo_buffer = []
+            self.on_grid_change()
+            self.saved = True
 
-        # Menu & Toolbar
-        self.menuitem_spec.Enable(True)
-        self.menuitem_save_sch.Enable(False)
-        self.menuitem_save_sch_as.Enable(True)
-        self.menuitem_save_lib.Enable(False)
-        self.menuitem_save_lib_as.Enable(False)
-        self.menuitem_find.Enable(True)
-        self.menuitem_replace.Enable(True)
-        self.add_to_recent(self.schematic_file, 'sch')
+            # Menu & Toolbar
+            self.menuitem_spec.Enable(True)
+            self.menuitem_save_sch.Enable(False)
+            self.menuitem_save_sch_as.Enable(True)
+            self.menuitem_save_lib.Enable(False)
+            self.menuitem_save_lib_as.Enable(False)
+            self.menuitem_find.Enable(True)
+            self.menuitem_replace.Enable(True)
+            self.add_to_recent(self.schematic_file, 'sch')
+
+        except:
+            wx.MessageBox(
+                u'При открытии файла схемы:\n' +
+                self.schematic_file + '\n' \
+                u'возникла ошибка:\n' + \
+                str(sys.exc_info()[1]),
+                u'Внимание!',
+                wx.ICON_ERROR|wx.OK, self
+                )
 
     def on_save_sch(self, event):
         """
@@ -973,27 +984,38 @@ class Window(gui.MainFrame):
                 return
             self.library_file = open_lib_dialog.GetPath()
 
-        self.schematic_file = ''
-        self.specification_file = ''
-        self.library = Library(self.library_file)
-        self.init_grid()
-        lib_values = self.get_library_values()
-        self.grid_components.AppendRows(len(lib_values))
-        self.set_grid_values(lib_values)
-        self.undo_buffer = []
-        self.redo_buffer = []
-        self.on_grid_change()
-        self.saved = True
+        try:
+            self.schematic_file = ''
+            self.specification_file = ''
+            self.library = Library(self.library_file)
+            self.init_grid()
+            lib_values = self.get_library_values()
+            self.grid_components.AppendRows(len(lib_values))
+            self.set_grid_values(lib_values)
+            self.undo_buffer = []
+            self.redo_buffer = []
+            self.on_grid_change()
+            self.saved = True
 
-        # Menu & Toolbar
-        self.menuitem_spec.Enable(False)
-        self.menuitem_save_sch.Enable(False)
-        self.menuitem_save_sch_as.Enable(False)
-        self.menuitem_save_lib.Enable(False)
-        self.menuitem_save_lib_as.Enable(True)
-        self.menuitem_find.Enable(True)
-        self.menuitem_replace.Enable(True)
-        self.add_to_recent(self.library_file, 'lib')
+            # Menu & Toolbar
+            self.menuitem_spec.Enable(False)
+            self.menuitem_save_sch.Enable(False)
+            self.menuitem_save_sch_as.Enable(False)
+            self.menuitem_save_lib.Enable(False)
+            self.menuitem_save_lib_as.Enable(True)
+            self.menuitem_find.Enable(True)
+            self.menuitem_replace.Enable(True)
+            self.add_to_recent(self.library_file, 'lib')
+
+        except:
+            wx.MessageBox(
+                u'При открытии файла библиотеки:\n' +
+                self.library_file + '\n' \
+                u'возникла ошибка:\n' + \
+                str(sys.exc_info()[1]),
+                u'Внимание!',
+                wx.ICON_ERROR|wx.OK, self
+                )
 
     def on_save_lib(self, event):
         """
