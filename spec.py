@@ -180,9 +180,9 @@ class Specification():
         # Reference
         ref = u''
         if int(element[8]) > 1:
-            # Reference number: '5, 6'; '25...28' etc.
-            ref = re.search(r'(\d+)(\.+|,\s?)(\d+)', element[1]).groups()
-            # Reference: 'VD1, 2'; 'C8...C11' etc.
+            # Reference number: '5, 6'; '25-28' etc.
+            ref = re.search(r'(\d+)(-|,\s?)(\d+)', element[1]).groups()
+            # Reference: 'VD1, 2'; 'C8-C11' etc.
             ref = (element[0] + u'%s%s' + element[0] + u'%s') % ref
         else:
             # Reference: 'R5'; 'VT13' etc.
@@ -313,7 +313,7 @@ class Specification():
         self.get_descr(sch_file_name)
 
         # Split elements into groups
-        # output - [['group',[[ref_type, ref_number, mark, value, accuracy, type, GOST, comment, couut], ... ]], ... ]
+        # output - [['group',[[ref_type, ref_number, mark, value, accuracy, type, GOST, comment, count], ... ]], ... ]
         temp_name = comp_array[0][0]
         temp_array = None
         comp_lines = None
@@ -374,7 +374,7 @@ class Specification():
                         count = int(last) - int(first) + 1
                         separator = u', '
                         if count > 2:
-                            separator = u'...'
+                            separator = u'-'
                         temp_element = group[1][last_index]
                         temp_element[1] = first + separator + last
                         temp_element[8] = str(count)
@@ -392,7 +392,7 @@ class Specification():
                         count = int(last) - int(first) + 1
                         separator = u', '
                         if count > 2:
-                            separator = u'...'
+                            separator = u'-'
                         temp_element = group[1][last_index]
                         temp_element[1] = first + separator + last
                         temp_element[8] = str(count)
