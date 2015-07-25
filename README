@@ -58,7 +58,7 @@ windows           - папка с файлами для генерации ин�
 Для работы программы необходимы следующие элементы :
 * python 2      >= 2.7  http://www.python.org/
 * wxPython      >= 2.8  http://www.wxpython.org/
-* odfpy         0.9.6   https://pypi.python.org/pypi/odfpy
+* odfpy         >=0.9.6 https://pypi.python.org/pypi/odfpy
 · opengostfont          https://bitbucket.org/fat_angel/opengostfont
 · LibreOffice           http://www.libreoffice.org/
 
