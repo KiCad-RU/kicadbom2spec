@@ -15,7 +15,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-VERSION=3.5
+VERSION=3.6
 
 import os
 from os import path, remove, rename
