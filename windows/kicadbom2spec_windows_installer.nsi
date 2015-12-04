@@ -14,7 +14,6 @@
 ;;; END LICENSE
 
 ; Plugins:
-; - UnTGZ
 ; - Inetc
 ; - NSISunzU
 
@@ -181,7 +180,7 @@ Section "" sec_python
 
 	Call ConnectInternet
 	StrCpy $1 "$TEMP\python_installer.msi"
-	inetc::get "https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi" $1 /END
+	inetc::get "https://www.python.org/ftp/python/2.7.10/python-2.7.10.msi" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
 		Abort "Не удалось загрузить установочный файл \
@@ -248,23 +247,18 @@ Section "" sec_odf
 	
 	path_ok:
 
-	Call ConnectInternet
-	StrCpy $1 "$TEMP\odfpy_sources.tar.gz"
-	inetc::get "https://pypi.python.org/packages/source/o/odfpy/odfpy-0.9.6.tar.gz" $1 /END
-	Pop $0
-	StrCmp $0 "OK" success
-		Abort "Не удалось загрузить файлы, необходимые для сборки \
-		и установки odfpy."
-	success:
-		StrCpy $0 "$TEMP\odfpy"
-		CreateDirectory $0
-		untgz::extract -d $0 $1
-		SetOutPath "$0\odfpy-0.9.6"
-		ExecWait "python setup.py build"
-		ExecWait "python setup.py install"
-		SetOutPath "$INSTDIR"
-		RMDir $0
-		Delete $1
+	nsExec::ExecToStack 'pip --version'
+	Pop $1
+	StrCmp "error" $1 0 pip_ok
+		Abort "Невозможно установить odfpy, так как Python \
+		установлен не верно (отсутствует модуль pip)."
+
+	pip_ok:
+
+	ExecWait "pip --disable-pip-version-check install odfpy" $1
+	IntCmp $1 0 +2
+		Abort "Не удалось установоить библиотеку \
+		odfpy для Python."
 
 	skip_install:
 
@@ -305,7 +299,7 @@ Section /o "" sec_office
 
 	Call ConnectInternet
 	StrCpy $1 "$TEMP\libreoffice_installer.msi"
-	inetc::get "http://download.documentfoundation.org/libreoffice/stable/4.4.2/win/x86/LibreOffice_4.4.2_Win_x86.msi" $1 /END
+	inetc::get "http://download.documentfoundation.org/libreoffice/stable/4.4.6/win/x86/LibreOffice_4.4.6_Win_x86.msi" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
 		Abort "Не удалось загрузить установочный файл \
@@ -434,7 +428,7 @@ Function .onInit
 	
 	enable_python:
 		SectionSetFlags ${sec_python} ${SF_SELECTED}
-		SectionSetText ${sec_python} "Python 2.7.9"
+		SectionSetText ${sec_python} "Python 2.7.10"
 	python_ok:
 
 	Var /GLOBAL min_wx_version
@@ -464,7 +458,7 @@ Function .onInit
 	
 	enable_odf:
 		SectionSetFlags ${sec_odf} ${SF_SELECTED}
-		SectionSetText ${sec_odf} "Odfpy 0.9.6"
+		SectionSetText ${sec_odf} "Odfpy 1.3.1"
 	odf_ok:
 
 	IfFileExists "$FONTS\OpenGostTypeB-Regular.*tf" font_ok enable_font
@@ -476,7 +470,7 @@ Function .onInit
 	ClearErrors
 	EnumRegKey $0 HKLM "SOFTWARE\LibreOffice" 0
 	IfErrors 0 office_ok
-		SectionSetText ${sec_office} "LibreOffice 4.4.2"
+		SectionSetText ${sec_office} "LibreOffice 4.4.6"
 	office_ok:
 
 	Pop $0
