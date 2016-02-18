@@ -15,7 +15,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-VERSION=3.7
+VERSION=3.8
 
 import os
 from os import path, remove, rename
@@ -119,7 +119,8 @@ class Window(gui.MainFrame):
             'auto_filling_groups':False,
             'spec':False,
             'recent_sch':False,
-            'recent_lib':False
+            'recent_lib':False,
+            'help_viewer':False
             }
 
         if path.isfile(settings_file_name):
@@ -167,6 +168,10 @@ class Window(gui.MainFrame):
                 if temp_settings.has_section('recent lib'):
                     selector.checkbox_recent_lib.SetValue(True)
                     selector.checkbox_recent_lib.Show()
+                if temp_settings.has_section('general') and \
+                        temp_settings.has_option('general', 'help viewer'):
+                    selector.checkbox_help_viewer.SetValue(True)
+                    selector.checkbox_help_viewer.Show()
                 selector.Layout()
                 selector.Fit()
                 selector.Centre()
@@ -225,6 +230,9 @@ class Window(gui.MainFrame):
                         for recent in temp_settings.options('recent lib'):
                             recent_files.append(temp_settings.get('recent lib', recent))
                         self.build_recent_menu(recent_files, 'lib')
+                    if import_settings['help_viewer']:
+                        value = temp_settings.get('general', 'help viewer')
+                        self.settings.set('general', 'help viewer', value)
             else:
                 self.settings = SafeConfigParser()
                 self.save_window_size_pos = False
@@ -1340,6 +1348,10 @@ class Window(gui.MainFrame):
                 index = settings_editor.auto_groups_checklistbox.Append(value)
                 settings_editor.auto_groups_checklistbox.Check(index, checked)
 
+        if self.settings.has_section('general') and self.settings.has_option('general', 'help viewer'):
+            help_viewer = self.settings.get('general', 'help viewer')
+            settings_editor.help_viewer_filepicker.SetPath(help_viewer);
+
         result = settings_editor.ShowModal()
         if result == wx.ID_OK:
             for i in range(len(field_names)):
@@ -1386,6 +1398,19 @@ class Window(gui.MainFrame):
                         self.settings.set('auto filling groups', param, value)
                         if value.startswith('1'):
                             self.auto_groups_dict[param] = value[1:]
+
+            help_viewer = settings_editor.help_viewer_filepicker.GetPath()
+            if help_viewer:
+                if not self.settings.has_section('general'):
+                    self.settings.add_section('general')
+                self.settings.set(
+                    'general',
+                    'help viewer',
+                    help_viewer
+                    )
+            else:
+                self.settings.remove_option('general', 'help viewer')
+
 
     def on_settings_import(self, event):
         """
@@ -1659,10 +1684,34 @@ class Window(gui.MainFrame):
         Shows help manual.
 
         """
-        if sys.platform == 'win32':
-            os.startfile('doc/help_windows.pdf')
+        help_viewer = ''
+        help_file = 'doc/help_linux.pdf'
+        if self.settings.has_section('general') and self.settings.has_option('general', 'help viewer'):
+            help_viewer = self.settings.get('general', 'help viewer')
+        if help_viewer:
+            if sys.platform == 'win32':
+                help_file = 'doc/help_windows.pdf'
+            subprocess.Popen([help_viewer, help_file])
         else:
-            subprocess.call(["xdg-open", 'doc/help_linux.pdf'])
+            wx.MessageBox(
+                u'Чтобы открыть справку нужно выбрать программу\n' +
+                u'просмотра PDF файлов.',
+                u'Справка',
+                wx.ICON_INFORMATION|wx.OK, self
+                )
+            help_viewer_dialog = wx.FileDialog(
+                self,
+                u'Выбор программы для просмотра справки',
+                u'',
+                u'',
+                u'Все файлы (*.*)|*.*',
+                wx.FD_OPEN|wx.FD_FILE_MUST_EXIST
+                )
+            if help_viewer_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            help_viewer = help_viewer_dialog.GetPath()
+            self.settings.set('general', 'help viewer', help_viewer)
+            self.on_help(None)
 
     def get_grid_values(self):
         """
