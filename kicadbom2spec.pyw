@@ -35,7 +35,6 @@ import wx.grid
 import gui
 from kicadsch import *
 from complist import *
-from version import *
 
 # Set default encoding
 reload(sys)
@@ -45,6 +44,12 @@ sys.setdefaultencoding('utf-8')
 default_settings_file_name = 'settings.ini'
 settings_separator = ';;;'
 ID_RECENT = 2000
+
+# Current version
+version_file = open('version', 'r')
+version = version_file.read()
+version = version.replace('\n', '')
+version_file.close()
 
 class Window(gui.MainFrame):
     """

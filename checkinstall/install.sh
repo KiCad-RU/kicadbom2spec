@@ -10,12 +10,13 @@ cp -f ../doc/help_linux.pdf $INSTDIR/doc
 cp -f ../sample/* $INSTDIR/sample
 cp -f ../CHANGELOG $INSTDIR
 cp -f ../COPYING $INSTDIR
+cp -f ../complist.py $INSTDIR
 cp -f ../gui.py $INSTDIR
 cp -f ../kicadbom2spec.pyw $INSTDIR
 cp -f ../kicadsch.py $INSTDIR
 cp -f ../pattern.ods $INSTDIR
 cp -f ../README $INSTDIR
 cp -f ../settings.ini $INSTDIR
-cp -f ../spec.py $INSTDIR
+cp -f ../version $INSTDIR
 cp -f kicadbom2spec.desktop /usr/share/applications/
 cp -f ../bitmaps/icon.svg /usr/share/icons/kicadbom2spec.svg

@@ -29,7 +29,6 @@ from odf.style import Style, ParagraphProperties, TextProperties
 from odf import dc, meta
 
 from kicadsch import *
-from version import *
 
 
 class CompList():
@@ -485,6 +484,10 @@ class CompList():
             self.clear_table(table)
 
         # Add meta data
+        version_file = open('version', 'r')
+        version = version_file.read()
+        version = version.replace('\n', '')
+        version_file.close()
         creation_time = time.localtime()
         creation_time_str = '{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{min:02d}:{sec:02d}'.format(
                 year = creation_time.tm_year,

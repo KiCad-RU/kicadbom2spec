@@ -8,7 +8,7 @@ url='http://launchpad.net/kicadbom2spec/'
 license='GPL3'
 depends=('python2>2.7.0' 'wxpython' 'python2-odfpy>=0.9.6')
 makedepends=('python2>2.7.0')
-optdepends=('libreoffice-fresh: *.ods spreadsheets viewing' 'opengostfont: GOST font')
+optdepends=('kicad: create schematics' 'libreoffice-fresh: *.ods spreadsheets viewing' 'opengostfont: GOST font')
 
 package() {
     cd ../..
@@ -24,13 +24,14 @@ package() {
     cp -f sample/* $INSTDIR/sample
     cp -f CHANGELOG $INSTDIR
     cp -f COPYING $INSTDIR
+    cp -f complist.py $INSTDIR
     cp -f gui.py $INSTDIR
     cp -f kicadbom2spec.pyw $INSTDIR
     cp -f kicadsch.py $INSTDIR
     cp -f pattern.ods $INSTDIR
     cp -f README $INSTDIR
     cp -f settings.ini $INSTDIR
-    cp -f spec.py $INSTDIR
+    cp -f version $INSTDIR
     cp -f checkinstall/kicadbom2spec.desktop $pkgdir/usr/share/applications/
     cp -f bitmaps/icon.svg $pkgdir/usr/share/icons/kicadbom2spec.svg
 }
