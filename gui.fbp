@@ -252,14 +252,14 @@
                         <property name="checked">0</property>
                         <property name="enabled">0</property>
                         <property name="help"></property>
-                        <property name="id">ID_SPEC</property>
+                        <property name="id">ID_COMPLIST</property>
                         <property name="kind">wxITEM_NORMAL</property>
                         <property name="label">&amp;Создать перечень элементов...</property>
-                        <property name="name">menuitem_spec</property>
+                        <property name="name">menuitem_complist</property>
                         <property name="permission">none</property>
                         <property name="shortcut">CTRL+S</property>
                         <property name="unchecked_bitmap"></property>
-                        <event name="OnMenuSelection">on_spec</event>
+                        <event name="OnMenuSelection">on_complist</event>
                         <event name="OnUpdateUI"></event>
                     </object>
                     <object class="separator" expanded="0">
@@ -670,10 +670,10 @@
                 <object class="tool" expanded="0">
                     <property name="bitmap">Load From File; bitmaps/document-export.png</property>
                     <property name="context_menu">0</property>
-                    <property name="id">ID_SPEC</property>
+                    <property name="id">ID_COMPLIST</property>
                     <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">Создать спецификацию</property>
-                    <property name="name">tool_spec</property>
+                    <property name="label">Создать перечень элементов</property>
+                    <property name="name">tool_complist</property>
                     <property name="permission">protected</property>
                     <property name="statusbar"></property>
                     <property name="tooltip">Создать перечень элементов</property>
@@ -5708,7 +5708,7 @@
                 </object>
             </object>
         </object>
-        <object class="Dialog" expanded="0">
+        <object class="Dialog" expanded="1">
             <property name="aui_managed">0</property>
             <property name="aui_manager_style">wxAUI_MGR_DEFAULT</property>
             <property name="bg"></property>
@@ -5724,7 +5724,7 @@
             <property name="id">wxID_ANY</property>
             <property name="maximum_size"></property>
             <property name="minimum_size">500,-1</property>
-            <property name="name">SpecDialog</property>
+            <property name="name">CompListDialog</property>
             <property name="pos"></property>
             <property name="size">-1,-1</property>
             <property name="style">wxCAPTION|wxCLOSE_BOX</property>
@@ -5770,16 +5770,16 @@
             <event name="OnSetFocus"></event>
             <event name="OnSize"></event>
             <event name="OnUpdateUI"></event>
-            <object class="wxBoxSizer" expanded="0">
+            <object class="wxBoxSizer" expanded="1">
                 <property name="minimum_size"></property>
                 <property name="name">sizer_spec_dialog</property>
                 <property name="orient">wxVERTICAL</property>
                 <property name="permission">none</property>
-                <object class="sizeritem" expanded="0">
+                <object class="sizeritem" expanded="1">
                     <property name="border">5</property>
                     <property name="flag">wxEXPAND</property>
                     <property name="proportion">1</property>
-                    <object class="wxPanel" expanded="0">
+                    <object class="wxPanel" expanded="1">
                         <property name="BottomDockable">1</property>
                         <property name="LeftDockable">1</property>
                         <property name="RightDockable">1</property>
@@ -5853,7 +5853,7 @@
                         <event name="OnSetFocus"></event>
                         <event name="OnSize"></event>
                         <event name="OnUpdateUI"></event>
-                        <object class="wxBoxSizer" expanded="0">
+                        <object class="wxBoxSizer" expanded="1">
                             <property name="minimum_size"></property>
                             <property name="name">sizer_spec</property>
                             <property name="orient">wxVERTICAL</property>
@@ -5893,12 +5893,12 @@
                                     <property name="max_size"></property>
                                     <property name="maximize_button">0</property>
                                     <property name="maximum_size"></property>
-                                    <property name="message">Выбор файла спецификации</property>
+                                    <property name="message">Выбор файла перечня элементов</property>
                                     <property name="min_size"></property>
                                     <property name="minimize_button">0</property>
                                     <property name="minimum_size"></property>
                                     <property name="moveable">1</property>
-                                    <property name="name">filepicker_spec</property>
+                                    <property name="name">filepicker_complist</property>
                                     <property name="pane_border">1</property>
                                     <property name="pane_position"></property>
                                     <property name="pane_size"></property>
@@ -7461,11 +7461,11 @@
                                 </object>
                             </object>
                         </object>
-                        <object class="notebookpage" expanded="0">
+                        <object class="notebookpage" expanded="1">
                             <property name="bitmap"></property>
                             <property name="label">Значения полей</property>
                             <property name="select">0</property>
-                            <object class="wxPanel" expanded="0">
+                            <object class="wxPanel" expanded="1">
                                 <property name="BottomDockable">1</property>
                                 <property name="LeftDockable">1</property>
                                 <property name="RightDockable">1</property>
@@ -7539,7 +7539,7 @@
                                 <event name="OnSetFocus"></event>
                                 <event name="OnSize"></event>
                                 <event name="OnUpdateUI"></event>
-                                <object class="wxBoxSizer" expanded="0">
+                                <object class="wxBoxSizer" expanded="1">
                                     <property name="minimum_size"></property>
                                     <property name="name">values_tab_sizer</property>
                                     <property name="orient">wxVERTICAL</property>
@@ -9960,7 +9960,7 @@
                                     <property name="minimize_button">0</property>
                                     <property name="minimum_size"></property>
                                     <property name="moveable">1</property>
-                                    <property name="name">checkbox_spec</property>
+                                    <property name="name">checkbox_complist</property>
                                     <property name="pane_border">1</property>
                                     <property name="pane_position"></property>
                                     <property name="pane_size"></property>

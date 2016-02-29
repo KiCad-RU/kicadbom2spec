@@ -16,7 +16,7 @@ ID_SAVE_SCH_AS = 1002
 ID_OPEN_LIB = 1003
 ID_SAVE_LIB = 1004
 ID_SAVE_LIB_AS = 1005
-ID_SPEC = 1006
+ID_COMPLIST = 1006
 ID_EXIT = 1007
 ID_UNDO = 1008
 ID_REDO = 1009
@@ -85,10 +85,10 @@ class MainFrame ( wx.Frame ):
 		
 		self.menu_file.AppendSeparator()
 		
-		self.menuitem_spec = wx.MenuItem( self.menu_file, ID_SPEC, u"&Создать перечень элементов..."+ u"\t" + u"CTRL+S", wx.EmptyString, wx.ITEM_NORMAL )
-		self.menuitem_spec.SetBitmap( wx.Bitmap( u"bitmaps/document-export.png", wx.BITMAP_TYPE_ANY ) )
-		self.menu_file.AppendItem( self.menuitem_spec )
-		self.menuitem_spec.Enable( False )
+		self.menuitem_complist = wx.MenuItem( self.menu_file, ID_COMPLIST, u"&Создать перечень элементов..."+ u"\t" + u"CTRL+S", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_complist.SetBitmap( wx.Bitmap( u"bitmaps/document-export.png", wx.BITMAP_TYPE_ANY ) )
+		self.menu_file.AppendItem( self.menuitem_complist )
+		self.menuitem_complist.Enable( False )
 		
 		self.menu_file.AppendSeparator()
 		
@@ -195,7 +195,7 @@ class MainFrame ( wx.Frame ):
 		
 		self.toolbar.AddSeparator()
 		
-		self.tool_spec = self.toolbar.AddLabelTool( ID_SPEC, u"Создать спецификацию", wx.Bitmap( u"bitmaps/document-export.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Создать перечень элементов", wx.EmptyString, None ) 
+		self.tool_complist = self.toolbar.AddLabelTool( ID_COMPLIST, u"Создать перечень элементов", wx.Bitmap( u"bitmaps/document-export.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Создать перечень элементов", wx.EmptyString, None ) 
 		
 		self.toolbar.AddSeparator()
 		
@@ -248,7 +248,7 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.on_open_lib, id = self.menuitem_open_lib.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_save_lib, id = self.menuitem_save_lib.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_save_lib_as, id = self.menuitem_save_lib_as.GetId() )
-		self.Bind( wx.EVT_MENU, self.on_spec, id = self.menuitem_spec.GetId() )
+		self.Bind( wx.EVT_MENU, self.on_complist, id = self.menuitem_complist.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_exit, id = self.menuitem_exit.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_undo, id = self.menuitem_undo.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_redo, id = self.menuitem_redo.GetId() )
@@ -292,7 +292,7 @@ class MainFrame ( wx.Frame ):
 	def on_save_lib_as( self, event ):
 		event.Skip()
 	
-	def on_spec( self, event ):
+	def on_complist( self, event ):
 		event.Skip()
 	
 	
@@ -733,10 +733,10 @@ class AboutDialog ( wx.Dialog ):
 	
 
 ###########################################################################
-## Class SpecDialog
+## Class CompListDialog
 ###########################################################################
 
-class SpecDialog ( wx.Dialog ):
+class CompListDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
 		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.CAPTION|wx.CLOSE_BOX )
@@ -748,8 +748,8 @@ class SpecDialog ( wx.Dialog ):
 		self.panel_spec_dialog = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_spec = wx.BoxSizer( wx.VERTICAL )
 		
-		self.filepicker_spec = wx.FilePickerCtrl( self.panel_spec_dialog, wx.ID_ANY, wx.EmptyString, u"Выбор файла спецификации", u"Таблица (*.ods)|*.ods|Все файлы (*.*)|*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_OVERWRITE_PROMPT|wx.FLP_SAVE|wx.FLP_USE_TEXTCTRL )
-		sizer_spec.Add( self.filepicker_spec, 0, wx.ALL|wx.EXPAND, 5 )
+		self.filepicker_complist = wx.FilePickerCtrl( self.panel_spec_dialog, wx.ID_ANY, wx.EmptyString, u"Выбор файла перечня элементов", u"Таблица (*.ods)|*.ods|Все файлы (*.*)|*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_OVERWRITE_PROMPT|wx.FLP_SAVE|wx.FLP_USE_TEXTCTRL )
+		sizer_spec.Add( self.filepicker_complist, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.staticline_1 = wx.StaticLine( self.panel_spec_dialog, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		sizer_spec.Add( self.staticline_1, 0, wx.EXPAND |wx.ALL, 5 )
@@ -1061,11 +1061,11 @@ class SettingsSelector ( wx.Dialog ):
 		
 		sizer_settings.Add( self.checkbox_auto_filling_groups, 0, wx.ALL|wx.EXPAND, 5 )
 		
-		self.checkbox_spec = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры создания перечня\nэлементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_spec.Hide()
-		self.checkbox_spec.SetToolTipString( u"Параметры диалогового окна\nсоздания перечня элементов." )
+		self.checkbox_complist = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры создания перечня\nэлементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_complist.Hide()
+		self.checkbox_complist.SetToolTipString( u"Параметры диалогового окна\nсоздания перечня элементов." )
 		
-		sizer_settings.Add( self.checkbox_spec, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_settings.Add( self.checkbox_complist, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.checkbox_recent_sch = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Недавние схемы", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_recent_sch.Hide()

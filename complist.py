@@ -20,18 +20,21 @@ import re
 import codecs
 from copy import deepcopy
 from operator import itemgetter
+import time
 
 import odf.opendocument
 from odf.text import P
 from odf.table import *
 from odf.style import Style, ParagraphProperties, TextProperties
+from odf import dc, meta
 
 from kicadsch import *
+from version import *
 
 
-class Specification():
+class CompList():
     """
-    Generating specification from KiCAD Schematic
+    Generating list of the components from KiCAD Schematic
     and save it to *.ods file.
 
     """
@@ -41,7 +44,7 @@ class Specification():
         self.pattern = odf.opendocument.load(path.join(path.dirname(path.realpath(__file__)), u'pattern.ods'))
         self.firstPagePattern = None
         self.otherPagesPattern = None
-        self.lastPagesPattern = None
+        self.lastPagePattern = None
         for sheet in self.pattern.spreadsheet.getElementsByType(Table):
             # Pattern for first page
             if sheet.getAttribute(u'name') == u'First':
@@ -51,37 +54,34 @@ class Specification():
                 self.otherPagesPattern = sheet
             # Pattern for last pages (the changes sheet)
             elif sheet.getAttribute(u'name') == u'Last':
-                self.lastPagesPattern = sheet
+                self.lastPagePattern = sheet
 
-        # Create specification file object
-        self.specification = odf.opendocument.OpenDocumentSpreadsheet()
+        # Create list of the components file object
+        self.complist = odf.opendocument.OpenDocumentSpreadsheet()
 
-        # Copy all parameters from pattern to the specification
-        for meta in self.pattern.meta.childNodes[:]:
-            self.specification.meta.addElement(meta)
-
+        # Copy all parameters from pattern to list of the components
         for font in self.pattern.fontfacedecls.childNodes[:]:
-            self.specification.fontfacedecls.addElement(font)
+            self.complist.fontfacedecls.addElement(font)
 
         for style in self.pattern.styles.childNodes[:]:
-            self.specification.styles.addElement(style)
+            self.complist.styles.addElement(style)
 
         for masterstyle in self.pattern.masterstyles.childNodes[:]:
-            self.specification.masterstyles.addElement(masterstyle)
+            self.complist.masterstyles.addElement(masterstyle)
 
         for autostyle in self.pattern.automaticstyles.childNodes[:]:
-            self.specification.automaticstyles.addElement(autostyle)
+            self.complist.automaticstyles.addElement(autostyle)
 
         for setting in self.pattern.settings.childNodes[:]:
-            self.specification.settings.addElement(setting)
+            self.complist.settings.addElement(setting)
 
-        # Current state of filling the specification
+        # Current state of filling list of the components
         self.cur_group = u''
         self.cur_line = 1
         self.cur_page = 1
         self.cur_table = self.firstPagePattern
 
-        # Some variables for spec filling
+        # Some variables for filling the list
         self.developer = u''
         self.verifer = u''
         self.approver = u''
@@ -113,17 +113,17 @@ class Specification():
                                     # Set center align and underline for ghoup name
                                     curStyleName = cell.getAttribute(u'stylename')
                                     try:
-                                        groupStyle = self.specification.getStyleByName(curStyleName + u'g')
+                                        groupStyle = self.complist.getStyleByName(curStyleName + u'g')
                                         # Needed for backwards compatibility
                                         if groupStyle == None:
                                             raise
                                     except:
-                                        groupStyle = deepcopy(self.specification.getStyleByName(curStyleName))
+                                        groupStyle = deepcopy(self.complist.getStyleByName(curStyleName))
                                         groupStyle.setAttribute(u'name', curStyleName + u'g')
                                         groupStyle.addElement(ParagraphProperties(textalignlast=u'center'))
                                         groupStyle.addElement(TextProperties(textunderlinetype=u'single',
                                                                              textunderlinestyle=u'solid',))
-                                        self.specification.styles.addElement(groupStyle)
+                                        self.complist.styles.addElement(groupStyle)
                                     cell.setAttribute(u'stylename', curStyleName + u'g')
                                 return
 
@@ -144,29 +144,29 @@ class Specification():
 
     def append_changes_sheet(self):
         """
-        Add to the end of spec the changes sheet from template.
+        Add to the end of list the changes sheet from template.
 
         """
-        self.cur_table = self.lastPagesPattern
+        self.cur_table = self.lastPagePattern
         self.cur_page += 1
         self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
-        self.specification.spreadsheet.addElement(self.cur_table)
+        self.complist.spreadsheet.addElement(self.cur_table)
 
     def next_line(self):
         """
         Moving to next line.
-        If table is full, save it in specification and create a new one.
+        If table is full, save it in list object and create a new one.
 
         """
         # Increment line counter
         self.cur_line += 1
 
-        # First page of specification has 29 lines, other pages has 32 lines
+        # First page of the list has 29 lines, other pages has 32 lines
         if (self.cur_page == 1 and self.cur_line > 29) or \
            (self.cur_page > 1 and self.cur_line > 32):
             # Table is full
             self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
-            self.specification.spreadsheet.addElement(self.cur_table)
+            self.complist.spreadsheet.addElement(self.cur_table)
 
             self.cur_table = deepcopy(self.otherPagesPattern)
             self.cur_page += 1
@@ -174,7 +174,7 @@ class Specification():
 
     def set_line(self, element):
         """
-        Fill the specification's line using element's fields.
+        Fill the line in list of the components using element's fields.
 
         """
         # Reference
@@ -274,7 +274,7 @@ class Specification():
         """
         Load all components from KiCAD Schematic file
         or get fields of the components directly
-        and then fills specification.
+        and then fills the list.
 
         """
 
@@ -403,7 +403,7 @@ class Specification():
                 prev = element[:]
         comp_lines = temp_array
 
-        # Fill the specification
+        # Fill list of the components
         for group in comp_lines:
             if self.cur_group != group[0]:
                 # New group title
@@ -446,21 +446,21 @@ class Specification():
         if self.cur_line != 1:
             # Current table not empty - save it
             self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
-            self.specification.spreadsheet.addElement(self.cur_table)
+            self.complist.spreadsheet.addElement(self.cur_table)
 
-    def save(self, spec_file_name):
+    def save(self, complist_file_name):
         """
-        Save created specification to the file.
+        Save created list of the components to the file.
 
         """
         # If the sheet of changes is needed - append it
         if self.need_changes_sheet:
             self.append_changes_sheet()
         # Fill stamp fields on each page
-        for index, table in enumerate(self.specification.spreadsheet.getElementsByType(Table)):
+        for index, table in enumerate(self.complist.spreadsheet.getElementsByType(Table)):
             # First page - big stamp
             if index == 0:
-                pg_cnt = len(self.specification.spreadsheet.getElementsByType(Table))
+                pg_cnt = len(self.complist.spreadsheet.getElementsByType(Table))
                 if pg_cnt == 1:
                     pg_cnt = u''
                 else:
@@ -481,11 +481,24 @@ class Specification():
                 self.replace_text(table, u'#5:2', str(index + 1))
 
         # Clear tables from labels
-        for table in self.specification.spreadsheet.getElementsByType(Table):
+        for table in self.complist.spreadsheet.getElementsByType(Table):
             self.clear_table(table)
 
-        # Save specification file
-        self.specification.save(spec_file_name)
+        # Add meta data
+        creation_time = time.localtime()
+        creation_time_str = '{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{min:02d}:{sec:02d}'.format(
+                year = creation_time.tm_year,
+                month = creation_time.tm_mon,
+                day = creation_time.tm_mday,
+                hour = creation_time.tm_hour,
+                min = creation_time.tm_min,
+                sec = creation_time.tm_sec
+                )
+        self.complist.meta.addElement(meta.CreationDate(text=creation_time_str))
+        self.complist.meta.addElement(meta.InitialCreator(text='kicadbom2spec v{}'.format(version)))
+
+        # Save file of list of the components
+        self.complist.save(complist_file_name)
 
     def convert_decimal_num(self, num):
         """
@@ -493,9 +506,9 @@ class Specification():
         of the schematic type).
 
         """
-        num_parts = num.rsplit(' Э', 1)
-        if len(num_parts) > 1 and num_parts[1] in '1234567':
-            return ' ПЭ'.join(num_parts)
+        num_parts = num.rsplit(u' Э', 1)
+        if len(num_parts) > 1 and num_parts[1] in u'1234567':
+            return u' ПЭ'.join(num_parts)
         else:
             return num
 
@@ -504,17 +517,17 @@ class Specification():
         The correction of the title.
 
         """
-        title_parts = title.rsplit('Схема электрическая ', 1)
+        title_parts = title.rsplit(u'Схема электрическая ', 1)
         sch_types = (
-            'структурная',
-            'функциональная',
-            'принципиальная',
-            'соединений',
-            'подключения',
-            'общая',
-            'расположения'
+            u'структурная',
+            u'функциональная',
+            u'принципиальная',
+            u'соединений',
+            u'подключения',
+            u'общая',
+            u'расположения'
             )
         if len(title_parts) > 1 and title_parts[1] in sch_types:
-            return title_parts[0] + 'Перечень элементов'
+            return title_parts[0] + u'Перечень элементов'
         else:
-            return title + '\\nПеречень элементов'
+            return title + u'\\nПеречень элементов'

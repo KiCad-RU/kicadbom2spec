@@ -15,8 +15,6 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-VERSION=3.8
-
 import os
 from os import path, remove, rename
 import sys
@@ -36,7 +34,8 @@ import wx.grid
 
 import gui
 from kicadsch import *
-from spec import *
+from complist import *
+from version import *
 
 # Set default encoding
 reload(sys)
@@ -63,7 +62,7 @@ class Window(gui.MainFrame):
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_toolbar)
         self.schematic_file = ''
         self.library_file = ''
-        self.specification_file = ''
+        self.complist_file = ''
         self.sheets = []
         self.library = None
         self.saved = True
@@ -117,7 +116,7 @@ class Window(gui.MainFrame):
             'values':False,
             'remember_selection':False,
             'auto_filling_groups':False,
-            'spec':False,
+            'complist':False,
             'recent_sch':False,
             'recent_lib':False,
             'help_viewer':False
@@ -159,9 +158,9 @@ class Window(gui.MainFrame):
                 if temp_settings.has_section('auto filling groups'):
                     selector.checkbox_auto_filling_groups.SetValue(True)
                     selector.checkbox_auto_filling_groups.Show()
-                if temp_settings.has_section('spec'):
-                    selector.checkbox_spec.SetValue(True)
-                    selector.checkbox_spec.Show()
+                if temp_settings.has_section('complist'):
+                    selector.checkbox_complist.SetValue(True)
+                    selector.checkbox_complist.Show()
                 if temp_settings.has_section('recent sch'):
                     selector.checkbox_recent_sch.SetValue(True)
                     selector.checkbox_recent_sch.Show()
@@ -214,12 +213,12 @@ class Window(gui.MainFrame):
                             if value.startswith(u'1'):
                                 self.auto_groups_dict[param.upper()] = value[1:]
                             self.settings.set('auto filling groups', param, value)
-                    if import_settings['spec']:
-                        if not self.settings.has_section('spec'):
-                            self.settings.add_section('spec')
-                        for param in temp_settings.options('spec'):
-                            value = temp_settings.get('spec', param)
-                            self.settings.set('spec', param, value)
+                    if import_settings['complist']:
+                        if not self.settings.has_section('complist'):
+                            self.settings.add_section('complist')
+                        for param in temp_settings.options('complist'):
+                            value = temp_settings.get('complist', param)
+                            self.settings.set('complist', param, value)
                     if import_settings['recent_sch']:
                         recent_files = []
                         for recent in temp_settings.options('recent sch'):
@@ -850,12 +849,12 @@ class Window(gui.MainFrame):
 
         try:
             self.library_file = ''
-            self.specification_file = path.splitext(self.schematic_file)[0] + '.ods'
+            self.complist_file = path.splitext(self.schematic_file)[0] + '.ods'
             self.sheets = []
             self.library = None
-            spec = Specification()
+            complist = CompList()
             sheet_names = [self.schematic_file]
-            sheet_names.extend(spec.get_sheets(self.schematic_file))
+            sheet_names.extend(complist.get_sheets(self.schematic_file))
             sheet_names = sorted(sheet_names)
             self.sheets = []
             for sheet_name in sheet_names:
@@ -870,7 +869,7 @@ class Window(gui.MainFrame):
             self.saved = True
 
             # Menu & Toolbar
-            self.menuitem_spec.Enable(True)
+            self.menuitem_complist.Enable(True)
             self.menuitem_save_sch.Enable(False)
             self.menuitem_save_sch_as.Enable(True)
             self.menuitem_save_lib.Enable(False)
@@ -994,7 +993,7 @@ class Window(gui.MainFrame):
 
         try:
             self.schematic_file = ''
-            self.specification_file = ''
+            self.complist_file = ''
             self.library = Library(self.library_file)
             self.init_grid()
             lib_values = self.get_library_values()
@@ -1006,7 +1005,7 @@ class Window(gui.MainFrame):
             self.saved = True
 
             # Menu & Toolbar
-            self.menuitem_spec.Enable(False)
+            self.menuitem_complist.Enable(False)
             self.menuitem_save_sch.Enable(False)
             self.menuitem_save_sch_as.Enable(False)
             self.menuitem_save_lib.Enable(False)
@@ -1095,54 +1094,54 @@ class Window(gui.MainFrame):
                 wx.ICON_ERROR|wx.OK, self
                 )
 
-    def on_spec(self, event):
+    def on_complist(self, event):
         """
-        Make specification.
+        Make list of the components.
 
         """
-        spec_dialog = gui.SpecDialog(self)
+        complist_dialog = gui.CompListDialog(self)
         # Load settings
         all_components = False
         add_units = False
-        open_spec = False
+        open_complist = False
         need_changes_sheet = True
-        if self.settings.has_section('spec'):
-            if self.settings.has_option('spec', 'all'):
-                all_components = self.settings.getboolean('spec', 'all')
-            if self.settings.has_option('spec', 'units'):
-                add_units = self.settings.getboolean('spec', 'units')
-            if self.settings.has_option('spec', 'changes_sheet'):
-                need_changes_sheet = self.settings.getboolean('spec', 'changes_sheet')
-            if self.settings.has_option('spec', 'open'):
-                open_spec = self.settings.getboolean('spec', 'open')
+        if self.settings.has_section('complist'):
+            if self.settings.has_option('complist', 'all'):
+                all_components = self.settings.getboolean('complist', 'all')
+            if self.settings.has_option('complist', 'units'):
+                add_units = self.settings.getboolean('complist', 'units')
+            if self.settings.has_option('complist', 'changes_sheet'):
+                need_changes_sheet = self.settings.getboolean('complist', 'changes_sheet')
+            if self.settings.has_option('complist', 'open'):
+                open_complist = self.settings.getboolean('complist', 'open')
 
-        spec_dialog.filepicker_spec.SetPath(self.specification_file)
-        spec_dialog.checkbox_add_units.SetValue(add_units)
-        spec_dialog.checkbox_all_components.SetValue(all_components)
-        spec_dialog.checkbox_changes_sheet.SetValue(need_changes_sheet)
-        spec_dialog.checkbox_open.SetValue(open_spec)
+        complist_dialog.filepicker_complist.SetPath(self.complist_file)
+        complist_dialog.checkbox_add_units.SetValue(add_units)
+        complist_dialog.checkbox_all_components.SetValue(all_components)
+        complist_dialog.checkbox_changes_sheet.SetValue(need_changes_sheet)
+        complist_dialog.checkbox_open.SetValue(open_complist)
 
-        result = spec_dialog.ShowModal()
+        result = complist_dialog.ShowModal()
 
         if result == wx.ID_OK:
             # Set cursor to 'wait'
             wx.BeginBusyCursor()
             wx.SafeYield()
 
-            # Save settings from spec dialog
-            all_components = spec_dialog.checkbox_all_components.IsChecked()
-            add_units = spec_dialog.checkbox_add_units.IsChecked()
-            need_changes_sheet = spec_dialog.checkbox_changes_sheet.IsChecked()
-            open_spec = spec_dialog.checkbox_open.GetValue()
+            # Save settings from complist dialog
+            all_components = complist_dialog.checkbox_all_components.IsChecked()
+            add_units = complist_dialog.checkbox_add_units.IsChecked()
+            need_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
+            open_complist = complist_dialog.checkbox_open.GetValue()
 
-            if not self.settings.has_section('spec'):
-                self.settings.add_section('spec')
-            self.settings.set('spec', 'all', str(all_components))
-            self.settings.set('spec', 'units', str(add_units))
-            self.settings.set('spec', 'changes_sheet', str(need_changes_sheet))
-            self.settings.set('spec', 'open', str(open_spec))
-            self.specification_file = spec_dialog.filepicker_spec.GetPath()
-            self.specification_file = path.splitext(self.specification_file)[0] + '.ods'
+            if not self.settings.has_section('complist'):
+                self.settings.add_section('complist')
+            self.settings.set('complist', 'all', str(all_components))
+            self.settings.set('complist', 'units', str(add_units))
+            self.settings.set('complist', 'changes_sheet', str(need_changes_sheet))
+            self.settings.set('complist', 'open', str(open_complist))
+            self.complist_file = complist_dialog.filepicker_complist.GetPath()
+            self.complist_file = path.splitext(self.complist_file)[0] + '.ods'
             comp_fields = []
             grid_values = self.get_grid_values()
             for row in grid_values:
@@ -1153,15 +1152,15 @@ class Window(gui.MainFrame):
                     fields.append('1')
                     comp_fields.append(fields)
             try:
-                spec = Specification()
-                spec.add_units = add_units
-                spec.need_changes_sheet = need_changes_sheet
-                spec.load(self.schematic_file, comp_fields)
-                spec.save(self.specification_file)
+                complist = CompList()
+                complist.add_units = add_units
+                complist.need_changes_sheet = need_changes_sheet
+                complist.load(self.schematic_file, comp_fields)
+                complist.save(self.complist_file)
             except:
                 wx.MessageBox(
                     u'При создании перечня элементов:\n' +
-                    self.specification_file + '\n' \
+                    self.complist_file + '\n' \
                     u'возникла ошибка:\n' + \
                     str(sys.exc_info()[1]) + '\n' \
                     u'Не удалось создать перечень элементов.',
@@ -1173,11 +1172,11 @@ class Window(gui.MainFrame):
                     wx.EndBusyCursor()
                 return
 
-            if open_spec:
+            if open_complist:
                 if sys.platform == 'linux2':
-                    subprocess.call(["xdg-open", self.specification_file])
+                    subprocess.call(["xdg-open", self.complist_file])
                 else:
-                    os.startfile(self.specification_file)
+                    os.startfile(self.complist_file)
             else:
                 wx.MessageBox(
                     u'Перечень элементов успешно создан и сохранен!',
@@ -1661,7 +1660,7 @@ class Window(gui.MainFrame):
         about_dialog = gui.AboutDialog(self)
         about_dialog.statictext_version.SetLabel(
                 about_dialog.statictext_version.GetLabel() + \
-                str(VERSION) + '\n' + \
+                str(version) + '\n' + \
                 'Python: {}.{}.{}-{}'.format(
                     sys.version_info[0],
                     sys.version_info[1],
@@ -1673,7 +1672,7 @@ class Window(gui.MainFrame):
         about_dialog.hyperlink_email.SetURL(
                 '{}%20v{}'.format(
                     about_dialog.hyperlink_email.GetURL(),
-                    VERSION
+                    version
                     )
                 )
         about_dialog.dialog_buttonOK.SetFocus()
@@ -1761,9 +1760,9 @@ class Window(gui.MainFrame):
 
         """
         values = []
-        spec = Specification()
+        complist = CompList()
         for sheet in self.sheets:
-            for comp in spec.get_components(sheet.sch_name, True):
+            for comp in complist.get_components(sheet.sch_name, True):
                 if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
                     continue
                 is_present = False
@@ -2039,7 +2038,7 @@ def main():
         help=u'полное или относительное имя файла схемы в формате KiCAD'
         )
     parser.add_argument(
-        'spec',
+        'complist',
         default='',
         nargs='?',
         type=str,
@@ -2062,11 +2061,11 @@ def main():
         else:
             window.on_open_sch()
 
-    if args.spec:
-        window.specification_file = path.splitext(path.abspath(args.spec))[0] + '.ods'
+    if args.complist:
+        window.complist_file = path.splitext(path.abspath(args.complist))[0] + '.ods'
 
     if args.version:
-        print VERSION
+        print version
         exit()
 
     window.Show(True)
