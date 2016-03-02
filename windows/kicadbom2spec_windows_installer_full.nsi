@@ -17,23 +17,26 @@
 ; - NSISunzU
 
 !include MUI2.nsh
+!include WinMessages.nsh
 !include StrFunc.nsh
 ${StrRep}
 
-!system "python ..\kicadbom2spec.pyw -v >> version.txt"
-!define /file VERSION "version.txt"
-!delfile "version.txt"
-!define DEPENDENCIES "..\..\kicadbom2spec_v${VERSION}_windows_installer_full_dependencies\"
-!define PYTHON "python-2.7.10.msi"
+!define /file VERSION "..\version"
+!define PROG_NAME "kicadbom2spec"
+!define DEPENDENCIES "..\..\windows_installer_dependencies\"
+!define PYTHON "python-2.7.11.msi"
 !define WXPYTHON "wxPython3.0-win32-3.0.2.0-py27.exe"
-!define ODFPY "odfpy-1.3.1.tar.gz"
+!define ODFPY "odfpy-1.3.2.tar.gz"
 !define FONT "opengostfont-ttf-0.3.zip"
+Var SETTINGS_DIR
 
 Name "kicadbom2spec"
-OutFile "..\..\kicadbom2spec_v${VERSION}_windows_installer_full.exe"
-InstallDir "$PROGRAMFILES\kicadbom2spec"
+OutFile "..\..\${PROG_NAME}_v${VERSION}_windows_installer_full.exe"
+InstallDir "$PROGRAMFILES\${PROG_NAME}"
 
 RequestExecutionLevel admin
+ShowInstDetails show
+ShowUninstDetails show
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\COPYING"
@@ -55,7 +58,7 @@ Function VersionCompare
 ;
 ; Syntax:
 ; ${VersionCompare} "[Version1]" "[Version2]" $var
-; 
+;
 ; "[Version1]"        ; First version
 ; "[Version2]"        ; Second version
 ; $var                ; Result:
@@ -64,14 +67,14 @@ Function VersionCompare
 ;                     ;    $var=2  Version2 is newer
 
 	!define VersionCompare `!insertmacro VersionCompareCall`
- 
+
 	!macro VersionCompareCall _VER1 _VER2 _RESULT
 		Push `${_VER1}`
 		Push `${_VER2}`
 		Call VersionCompare
 		Pop ${_RESULT}
 	!macroend
- 
+
 	Exch $1
 	Exch
 	Exch $0
@@ -82,7 +85,7 @@ Function VersionCompare
 	Push $5
 	Push $6
 	Push $7
- 
+
 	begin:
 	StrCpy $2 -1
 	IntOp $2 $2 + 1
@@ -92,7 +95,7 @@ Function VersionCompare
 	StrCpy $4 $0 $2
 	IntOp $2 $2 + 1
 	StrCpy $0 $0 '' $2
- 
+
 	StrCpy $2 -1
 	IntOp $2 $2 + 1
 	StrCpy $3 $1 1 $2
@@ -101,32 +104,32 @@ Function VersionCompare
 	StrCpy $5 $1 $2
 	IntOp $2 $2 + 1
 	StrCpy $1 $1 '' $2
- 
+
 	StrCmp $4$5 '' equal
- 
+
 	StrCpy $6 -1
 	IntOp $6 $6 + 1
 	StrCpy $3 $4 1 $6
 	StrCmp $3 '0' -2
 	StrCmp $3 '' 0 +2
 	StrCpy $4 0
- 
+
 	StrCpy $7 -1
 	IntOp $7 $7 + 1
 	StrCpy $3 $5 1 $7
 	StrCmp $3 '0' -2
 	StrCmp $3 '' 0 +2
 	StrCpy $5 0
- 
+
 	StrCmp $4 0 0 +2
 	StrCmp $5 0 begin newer2
 	StrCmp $5 0 newer1
 	IntCmp $6 $7 0 newer1 newer2
- 
+
 	StrCpy $4 '1$4'
 	StrCpy $5 '1$5'
 	IntCmp $4 $5 begin newer2 newer1
- 
+
 	equal:
 	StrCpy $0 0
 	goto end
@@ -135,7 +138,7 @@ Function VersionCompare
 	goto end
 	newer2:
 	StrCpy $0 2
- 
+
 	end:
 	Pop $7
 	Pop $6
@@ -210,7 +213,7 @@ Section "" sec_odf
 		StrCmp "error" $1 0 path_ok
 			Abort "Невозможно установить odfpy, так как Python \
 			не установлен или установлен не верно."
-	
+
 	path_ok:
 
 	nsExec::ExecToStack 'pip --version'
@@ -238,24 +241,48 @@ SectionEnd
 Section /o "" sec_font
 	Push $0
 	Push $1
+	Push $R0
+	Push $R1
 
 	SectionGetText ${sec_font} $0
 	StrCmp $0 "" skip_install
 
 	SetOutPath "$TEMP"
 	File "${DEPENDENCIES}${FONT}"
-		nsisunz::Unzip /noextractpath /file "opengostfont-ttf-0.3\OpenGostTypeA-Regular.ttf" ${FONT} "$FONTS"
-		nsisunz::Unzip /noextractpath /file "opengostfont-ttf-0.3\OpenGostTypeB-Regular.ttf" ${FONT} "$FONTS"
-		Delete ${FONT}
+	nsisunz::Unzip /noextractpath /file "opengostfont-ttf-0.3\OpenGostTypeA-Regular.ttf" ${FONT} "$FONTS"
+	nsisunz::Unzip /noextractpath /file "opengostfont-ttf-0.3\OpenGostTypeB-Regular.ttf" ${FONT} "$FONTS"
+
+	ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" "CurrentVersion"
+	IfErrors win-9x win-NT
+
+win-NT:
+	StrCpy $R1 "Software\Microsoft\Windows NT\CurrentVersion\Fonts"
+	goto font-add
+
+win-9x:
+	StrCpy $R1 "Software\Microsoft\Windows\CurrentVersion\Fonts"
+	goto font-add
+
+font-add:
+	StrCpy $0 "OpenGost Type A TT Regular (TrueType)"
+	StrCpy $1 "OpenGost Type B TT Regular (TrueType)"
+	System::Call "GDI32::AddFontResource(t '$FONTS\OpenGostTypeA-Regular.ttf')"
+	System::Call "GDI32::AddFontResource(t '$FONTS\OpenGostTypeB-Regular.ttf')"
+	WriteRegStr HKLM "$R1" "$0" "OpenGostTypeA-Regular.ttf"
+	WriteRegStr HKLM "$R1" "$1" "OpenGostTypeB-Regular.ttf"
+	SendMessage ${HWND_BROADCAST} ${WM_FONTCHANGE} 0 0 /TIMEOUT=5000
+	Delete ${FONT}
 
 	skip_install:
 
 	Pop $0
 	Pop $1
+	Pop $R0
+	Pop $R1
 SectionEnd
 
-SectionGroup /e "!kicadbom2spec" secgrp_main
-	Section "kicadbom2spec" sec_main
+SectionGroup /e "!${PROG_NAME}" secgrp_main
+	Section "${PROG_NAME}" sec_main
 
 		CreateDirectory "$INSTDIR\bitmaps"
 		SetOutPath "$INSTDIR\bitmaps"
@@ -273,33 +300,41 @@ SectionGroup /e "!kicadbom2spec" secgrp_main
 		File "..\COPYING"
 		File "..\README"
 		File "..\CHANGELOG"
+		File "..\complist.py"
 		File "..\kicadsch.py"
 		File "..\settings.ini"
-		File "..\spec.py"
 		File "..\pattern.ods"
 		File "..\gui.py"
 		File "..\kicadbom2spec.pyw"
-		WriteUninstaller "uninstall.exe"
+		File "..\version"
 
 		SetShellVarContext all
-		CreateDirectory "$SMPROGRAMS\kicadbom2spec"
+		CreateDirectory "$SMPROGRAMS\${PROG_NAME}"
 		CreateShortCut \
-			"$SMPROGRAMS\kicadbom2spec\Запустить kicadbom2spec.lnk" "$INSTDIR\kicadbom2spec.pyw" \
+			"$SMPROGRAMS\${PROG_NAME}\Запустить kicadbom2spec.lnk" "$INSTDIR\kicadbom2spec.pyw" \
 			"" \
 			"$INSTDIR\bitmaps\icon.ico"
 		CreateShortCut \
-			"$SMPROGRAMS\kicadbom2spec\Руководство пользователя.lnk" \
+			"$SMPROGRAMS\${PROG_NAME}\Руководство пользователя.lnk" \
 			"$INSTDIR\doc\help_windows.pdf"
 		CreateShortCut \
-			"$SMPROGRAMS\kicadbom2spec\Удалить kicadbom2spec.lnk" \
+			"$SMPROGRAMS\${PROG_NAME}\Удалить kicadbom2spec.lnk" \
 			"$INSTDIR\uninstall.exe"
+
+		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "DisplayName" "${PROG_NAME}"
+		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "DisplayVersion" "${VERSION}"
+		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "DisplayIcon" "$INSTDIR\bitmaps\icon.ico"
+		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "InstallLocation" "$INSTDIR"
+		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "UninstallString" "$INSTDIR\uninstall.exe"
+
+		WriteUninstaller "uninstall.exe"
 	SectionEnd
-	
+
 	Section /o "settings.ini" sec_settings
-		SetOutPath "$APPDATA"
-		RMDir "kicadbom2spec"
-		CreateDirectory "kicadbom2spec"
-		SetOutPath "$APPDATA\kicadbom2spec"
+		SetOutPath "$SETTINGS_DIR"
+		RMDir /r "${PROG_NAME}"
+		CreateDirectory "${PROG_NAME}"
+		SetOutPath "$SETTINGS_DIR\${PROG_NAME}"
 		File "..\settings.ini"
 	SectionEnd
 SectionGroupEnd
@@ -338,10 +373,12 @@ Function .onInit
 	Push $1
 	Push $2
 
+	StrCpy $SETTINGS_DIR "$APPDATA"
+
 	IntOp $0 ${SF_RO} | ${SF_SELECTED}
 	SectionSetFlags ${sec_main} $0
 
-	IfFileExists "$APPDATA\kicadbom2spec\settings.ini" +2
+	IfFileExists "$SETTINGS_DIR\${PROG_NAME}\settings.ini" +2
 		SectionSetFlags ${sec_settings} ${SF_SELECTED}
 
 	Var /GLOBAL min_python_version
@@ -359,10 +396,10 @@ Function .onInit
 	IntCmp $1 1 enable_python python_ok 0
 	${VersionCompare} $max_python_version $2 $1
 	IntCmp $1 1 python_ok enable_python enable_python
-	
+
 	enable_python:
 		SectionSetFlags ${sec_python} ${SF_SELECTED}
-		SectionSetText ${sec_python} "Python 2.7.10"
+		SectionSetText ${sec_python} "Python 2.7.11"
 	python_ok:
 
 	Var /GLOBAL min_wx_version
@@ -376,7 +413,7 @@ Function .onInit
 	StrCpy $2 $1
 	${VersionCompare} $min_wx_version $2 $1
 	IntCmp $1 1 enable_wx wx_ok wx_ok
-	
+
 	enable_wx:
 		SectionSetFlags ${sec_wx} ${SF_SELECTED}
 		SectionSetText ${sec_wx} "wxPython 3.0.2.0"
@@ -389,15 +426,28 @@ Function .onInit
 	StrCpy $1 $2 9
 	StrCmp "Traceback" $1 enable_odf
 	Goto odf_ok
-	
+
 	enable_odf:
 		SectionSetFlags ${sec_odf} ${SF_SELECTED}
-		SectionSetText ${sec_odf} "Odfpy 1.3.1"
+		SectionSetText ${sec_odf} "Odfpy 1.3.2"
 	odf_ok:
 
-	IfFileExists "$FONTS\OpenGostTypeB-Regular.*tf" font_ok enable_font
+	ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" "CurrentVersion"
+	IfErrors win-9x win-NT
 
-	enable_font:
+win-NT:
+	StrCpy $1 "Software\Microsoft\Windows NT\CurrentVersion\Fonts"
+	goto font-check
+
+win-9x:
+	StrCpy $1 "Software\Microsoft\Windows\CurrentVersion\Fonts"
+	goto font-check
+
+font-check:
+	ClearErrors
+	ReadRegStr $0 HKLM $1 "OpenGost Type A TT Regular (TrueType)"
+	ReadRegStr $0 HKLM $1 "OpenGost Type B TT Regular (TrueType)"
+	IfErrors 0 font_ok
 		SectionSetText ${sec_font} "OpenGostFont 0.3"
 	font_ok:
 
@@ -411,13 +461,14 @@ FunctionEnd
 Section "un.kicadbom2spec" un_sec_main
 	RMDir /r "$INSTDIR"
 	SetShellVarContext all
-	RMDir /r "$SMPROGRAMS\kicadbom2spec"
+	RMDir /r "$SMPROGRAMS\${PROG_NAME}"
+	DeleteRegKey "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}"
 SectionEnd
 
 Section /o "un.settings.ini" un_sec_settings
-	RMDir /r "$APPDATA\kicadbom2spec"
+	RMDir /r "$SETTINGS_DIR\${PROG_NAME}"
 SectionEnd
-	
+
 
 LangString DESC_un_sec_main ${LANG_Russian} \
 	"Удалить файлы программы."
@@ -431,6 +482,9 @@ LangString DESC_un_sec_settings ${LANG_Russian} \
 
 Function un.onInit
 	push $0
+
+	StrCpy $SETTINGS_DIR "$APPDATA"
+
 	IntOp $0 ${SF_RO} | ${SF_SELECTED}
 	SectionSetFlags ${un_sec_main} $0
 	pop $0

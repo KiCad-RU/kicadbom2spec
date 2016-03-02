@@ -18,18 +18,21 @@
 ; - NSISunzU
 
 !include MUI2.nsh
+!include WinMessages.nsh
 !include StrFunc.nsh
 ${StrRep}
 
-!system "python ..\kicadbom2spec.pyw -v >> version.txt"
-!define /file VERSION "version.txt"
-!delfile "version.txt"
+!define /file VERSION "..\version"
+!define PROG_NAME "kicadbom2spec"
+Var SETTINGS_DIR
 
-Name "kicadbom2spec"
-OutFile "..\..\kicadbom2spec_v${VERSION}_windows_installer.exe"
-InstallDir "$PROGRAMFILES\kicadbom2spec"
+Name "${PROG_NAME}"
+OutFile "..\..\${PROG_NAME}_v${VERSION}_windows_installer.exe"
+InstallDir "$PROGRAMFILES\${PROG_NAME}"
 
 RequestExecutionLevel admin
+ShowInstDetails show
+ShowUninstDetails show
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\COPYING"
@@ -77,7 +80,7 @@ Function VersionCompare
 ;
 ; Syntax:
 ; ${VersionCompare} "[Version1]" "[Version2]" $var
-; 
+;
 ; "[Version1]"        ; First version
 ; "[Version2]"        ; Second version
 ; $var                ; Result:
@@ -180,7 +183,7 @@ Section "" sec_python
 
 	Call ConnectInternet
 	StrCpy $1 "$TEMP\python_installer.msi"
-	inetc::get "https://www.python.org/ftp/python/2.7.10/python-2.7.10.msi" $1 /END
+	inetc::get "https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
 		Abort "Не удалось загрузить установочный файл \
@@ -269,25 +272,49 @@ SectionEnd
 Section /o "" sec_font
 	Push $0
 	Push $1
+	Push $R0
+	Push $R1
 
 	SectionGetText ${sec_font} $0
 	StrCmp $0 "" skip_install
 
 	Call ConnectInternet
-	StrCpy $1 "$TEMP\opengostfont.zip"
-	inetc::get "https://bitbucket.org/fat_angel/opengostfont/downloads/opengostfont-ttf-0.3.zip" $1 /END
+	StrCpy $R0 "$TEMP\opengostfont.zip"
+	inetc::get "https://bitbucket.org/fat_angel/opengostfont/downloads/opengostfont-ttf-0.3.zip" $R0 /END
 	Pop $0
 	StrCmp $0 "OK" success
 		Abort "Не удалось загрузить чертежные шрифты."
 	success:
-		nsisunz::Unzip /noextractpath /file "opengostfont-ttf-0.3\OpenGostTypeA-Regular.ttf" $1 "$FONTS"
-		nsisunz::Unzip /noextractpath /file "opengostfont-ttf-0.3\OpenGostTypeB-Regular.ttf" $1 "$FONTS"
-		Delete $1
+		nsisunz::Unzip /noextractpath /file "opengostfont-ttf-0.3\OpenGostTypeA-Regular.ttf" $R0 "$FONTS"
+		nsisunz::Unzip /noextractpath /file "opengostfont-ttf-0.3\OpenGostTypeB-Regular.ttf" $R0 "$FONTS"
+
+		ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" "CurrentVersion"
+		IfErrors win-9x win-NT
+
+	win-NT:
+		StrCpy $R1 "Software\Microsoft\Windows NT\CurrentVersion\Fonts"
+		goto font-add
+
+	win-9x:
+		StrCpy $R1 "Software\Microsoft\Windows\CurrentVersion\Fonts"
+		goto font-add
+
+	font-add:
+		StrCpy $0 "OpenGost Type A TT Regular (TrueType)"
+		StrCpy $1 "OpenGost Type B TT Regular (TrueType)"
+		System::Call "GDI32::AddFontResource(t '$FONTS\OpenGostTypeA-Regular.ttf')"
+		System::Call "GDI32::AddFontResource(t '$FONTS\OpenGostTypeB-Regular.ttf')"
+		WriteRegStr HKLM "$R1" "$0" "OpenGostTypeA-Regular.ttf"
+		WriteRegStr HKLM "$R1" "$1" "OpenGostTypeB-Regular.ttf"
+		SendMessage ${HWND_BROADCAST} ${WM_FONTCHANGE} 0 0 /TIMEOUT=5000
+		Delete $R0
 
 	skip_install:
 
 	Pop $0
 	Pop $1
+	Pop $R0
+	Pop $R1
 SectionEnd
 
 Section /o "" sec_office
@@ -299,7 +326,7 @@ Section /o "" sec_office
 
 	Call ConnectInternet
 	StrCpy $1 "$TEMP\libreoffice_installer.msi"
-	inetc::get "http://download.documentfoundation.org/libreoffice/stable/4.4.6/win/x86/LibreOffice_4.4.6_Win_x86.msi" $1 /END
+	inetc::get "http://download.documentfoundation.org/libreoffice/stable/5.1.0/win/x86/LibreOffice_5.1.0_Win_x86.msi" $1 /END
 	Pop $0
 	StrCmp $0 "OK" success
 		Abort "Не удалось загрузить установочный файл \
@@ -317,8 +344,8 @@ Section /o "" sec_office
 	Pop $1
 SectionEnd
 
-SectionGroup /e "!kicadbom2spec" secgrp_main
-	Section "kicadbom2spec" sec_main
+SectionGroup /e "!${PROG_NAME}" secgrp_main
+	Section "${PROG_NAME}" sec_main
 
 		CreateDirectory "$INSTDIR\bitmaps"
 		SetOutPath "$INSTDIR\bitmaps"
@@ -336,33 +363,41 @@ SectionGroup /e "!kicadbom2spec" secgrp_main
 		File "..\COPYING"
 		File "..\README"
 		File "..\CHANGELOG"
+		File "..\complist.py"
 		File "..\kicadsch.py"
 		File "..\settings.ini"
-		File "..\spec.py"
 		File "..\pattern.ods"
 		File "..\gui.py"
 		File "..\kicadbom2spec.pyw"
-		WriteUninstaller "uninstall.exe"
+		File "..\version"
 
 		SetShellVarContext all
-		CreateDirectory "$SMPROGRAMS\kicadbom2spec"
+		CreateDirectory "$SMPROGRAMS\${PROG_NAME}"
 		CreateShortCut \
-			"$SMPROGRAMS\kicadbom2spec\Запустить kicadbom2spec.lnk" "$INSTDIR\kicadbom2spec.pyw" \
+			"$SMPROGRAMS\${PROG_NAME}\Запустить kicadbom2spec.lnk" "$INSTDIR\kicadbom2spec.pyw" \
 			"" \
 			"$INSTDIR\bitmaps\icon.ico"
 		CreateShortCut \
-			"$SMPROGRAMS\kicadbom2spec\Руководство пользователя.lnk" \
+			"$SMPROGRAMS\${PROG_NAME}\Руководство пользователя.lnk" \
 			"$INSTDIR\doc\help_windows.pdf"
 		CreateShortCut \
-			"$SMPROGRAMS\kicadbom2spec\Удалить kicadbom2spec.lnk" \
+			"$SMPROGRAMS\${PROG_NAME}\Удалить kicadbom2spec.lnk" \
 			"$INSTDIR\uninstall.exe"
+
+		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "DisplayName" "${PROG_NAME}"
+		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "DisplayVersion" "${VERSION}"
+		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "DisplayIcon" "$INSTDIR\bitmaps\icon.ico"
+		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "InstallLocation" "$INSTDIR"
+		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "UninstallString" "$INSTDIR\uninstall.exe"
+
+		WriteUninstaller "uninstall.exe"
 	SectionEnd
 	
 	Section /o "settings.ini" sec_settings
-		SetOutPath "$APPDATA"
-		RMDir "kicadbom2spec"
-		CreateDirectory "kicadbom2spec"
-		SetOutPath "$APPDATA\kicadbom2spec"
+		SetOutPath "$SETTINGS_DIR"
+		RMDir /r "${PROG_NAME}"
+		CreateDirectory "${PROG_NAME}"
+		SetOutPath "$SETTINGS_DIR\${PROG_NAME}"
 		File "..\settings.ini"
 	SectionEnd
 SectionGroupEnd
@@ -404,10 +439,12 @@ Function .onInit
 	Push $1
 	Push $2
 
+	StrCpy $SETTINGS_DIR "$APPDATA"
+
 	IntOp $0 ${SF_RO} | ${SF_SELECTED}
 	SectionSetFlags ${sec_main} $0
 
-	IfFileExists "$APPDATA\kicadbom2spec\settings.ini" +2
+	IfFileExists "$SETTINGS_DIR\${PROG_NAME}\settings.ini" +2
 		SectionSetFlags ${sec_settings} ${SF_SELECTED}
 
 	Var /GLOBAL min_python_version
@@ -428,7 +465,7 @@ Function .onInit
 	
 	enable_python:
 		SectionSetFlags ${sec_python} ${SF_SELECTED}
-		SectionSetText ${sec_python} "Python 2.7.10"
+		SectionSetText ${sec_python} "Python 2.7.11"
 	python_ok:
 
 	Var /GLOBAL min_wx_version
@@ -458,19 +495,32 @@ Function .onInit
 	
 	enable_odf:
 		SectionSetFlags ${sec_odf} ${SF_SELECTED}
-		SectionSetText ${sec_odf} "Odfpy 1.3.1"
+		SectionSetText ${sec_odf} "Odfpy 1.3.2"
 	odf_ok:
 
-	IfFileExists "$FONTS\OpenGostTypeB-Regular.*tf" font_ok enable_font
+	ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" "CurrentVersion"
+	IfErrors win-9x win-NT
 
-	enable_font:
+win-NT:
+	StrCpy $1 "Software\Microsoft\Windows NT\CurrentVersion\Fonts"
+	goto font-check
+
+win-9x:
+	StrCpy $1 "Software\Microsoft\Windows\CurrentVersion\Fonts"
+	goto font-check
+
+font-check:
+	ClearErrors
+	ReadRegStr $0 HKLM $1 "OpenGost Type A TT Regular (TrueType)"
+	ReadRegStr $0 HKLM $1 "OpenGost Type B TT Regular (TrueType)"
+	IfErrors 0 font_ok
 		SectionSetText ${sec_font} "OpenGostFont 0.3"
 	font_ok:
 
 	ClearErrors
 	EnumRegKey $0 HKLM "SOFTWARE\LibreOffice" 0
 	IfErrors 0 office_ok
-		SectionSetText ${sec_office} "LibreOffice 4.4.6"
+		SectionSetText ${sec_office} "LibreOffice 5.1.0"
 	office_ok:
 
 	Pop $0
@@ -483,11 +533,12 @@ FunctionEnd
 Section "un.kicadbom2spec" un_sec_main
 	RMDir /r "$INSTDIR"
 	SetShellVarContext all
-	RMDir /r "$SMPROGRAMS\kicadbom2spec"
+	RMDir /r "$SMPROGRAMS\${PROG_NAME}"
+	DeleteRegKey "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}"
 SectionEnd
 
 Section /o "un.settings.ini" un_sec_settings
-	RMDir /r "$APPDATA\kicadbom2spec"
+	RMDir /r "$SETTINGS_DIR\${PROG_NAME}"
 SectionEnd
 	
 
@@ -503,6 +554,9 @@ LangString DESC_un_sec_settings ${LANG_Russian} \
 
 Function un.onInit
 	push $0
+
+	StrCpy $SETTINGS_DIR "$APPDATA"
+
 	IntOp $0 ${SF_RO} | ${SF_SELECTED}
 	SectionSetFlags ${un_sec_main} $0
 	pop $0
