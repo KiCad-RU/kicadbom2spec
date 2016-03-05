@@ -15,12 +15,11 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-from os import path, chdir
+import os
 import re
-import codecs
+import time
 from copy import deepcopy
 from operator import itemgetter
-import time
 
 import odf.opendocument
 from odf.text import P
@@ -40,7 +39,7 @@ class CompList():
 
     def __init__(self):
         # Load the pattern
-        self.pattern = odf.opendocument.load(path.join(path.dirname(path.realpath(__file__)), u'pattern.ods'))
+        self.pattern = odf.opendocument.load(os.path.join(os.path.dirname(os.path.realpath(__file__)), u'pattern.ods'))
         self.firstPagePattern = None
         self.otherPagesPattern = None
         self.lastPagePattern = None
@@ -240,15 +239,15 @@ class CompList():
 
         """
         sheets = []
-        exec_path = path.dirname(path.realpath(__file__))
-        cur_path = path.dirname(sch_file_name)
-        chdir(cur_path)
+        exec_path = os.path.dirname(os.path.realpath(__file__))
+        cur_path = os.path.dirname(sch_file_name)
+        os.chdir(cur_path)
         sch = Schematic(sch_file_name)
         for item in sch.items:
             if item.__class__.__name__ == u'Sheet':
-                sheets.append(path.abspath(path.join(cur_path, item.file_name.decode('utf-8'))))
-                sheets.extend(self.get_sheets(path.abspath(path.join(cur_path, item.file_name.decode('utf-8')))))
-        chdir(exec_path)
+                sheets.append(os.path.abspath(os.path.join(cur_path, item.file_name.decode('utf-8'))))
+                sheets.extend(self.get_sheets(os.path.abspath(os.path.join(cur_path, item.file_name.decode('utf-8')))))
+        os.chdir(exec_path)
         return sheets
 
     def get_components(self, sch_file_name, root_only=False):
@@ -257,16 +256,16 @@ class CompList():
 
         """
         components = []
-        exec_path = path.dirname(path.realpath(__file__))
-        chdir(path.dirname(sch_file_name))
+        exec_path = os.path.dirname(os.path.realpath(__file__))
+        os.chdir(os.path.dirname(sch_file_name))
         sch = Schematic(sch_file_name)
         for item in sch.items:
             if item.__class__.__name__ == u'Comp':
                 if not item.ref.startswith(u'#'):
                     components.append(item)
             elif item.__class__.__name__ == u'Sheet' and not root_only:
-                components.extend(self.get_components(path.abspath(item.file_name)))
-        chdir(exec_path)
+                components.extend(self.get_components(os.path.abspath(item.file_name)))
+        os.chdir(exec_path)
         return components
 
     def load(self, sch_file_name, comp_fields=None):

@@ -16,22 +16,21 @@
 ### END LICENSE
 
 import os
-from os import path, remove, rename
 import sys
 import subprocess
 import shutil
 import re
 import codecs
-import locale
 import argparse
 from operator import itemgetter
-from types import *
 from ConfigParser import SafeConfigParser
-from shutil import copyfile
 
 import wx
 import wx.grid
 
+from odf.opendocument import __version__ as odfpy_version
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import gui
 from kicadsch import *
 from complist import *
@@ -41,15 +40,11 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 # Global
+version = ''
 default_settings_file_name = 'settings.ini'
 settings_separator = ';;;'
 ID_RECENT = 2000
 
-# Current version
-version_file = open('version', 'r')
-version = version_file.read()
-version = version.replace('\n', '')
-version_file.close()
 
 class Window(gui.MainFrame):
     """
@@ -82,7 +77,7 @@ class Window(gui.MainFrame):
             icon = wx.Icon('bitmaps/icon.ico', wx.BITMAP_TYPE_ICO)
             self.SetIcon(icon)
 
-            self.settings_file = path.join(
+            self.settings_file = os.path.join(
                     os.environ['APPDATA'],
                     'kicadbom2spec'
                     )
@@ -90,21 +85,21 @@ class Window(gui.MainFrame):
             icon = wx.Icon('bitmaps/icon.xpm', wx.BITMAP_TYPE_XPM)
             self.SetIcon(icon)
 
-            self.settings_file = path.join(
-                    path.expanduser('~/.config'),
+            self.settings_file = os.path.join(
+                    os.path.expanduser('~/.config'),
                     'kicadbom2spec'
                     )
 
         # At this moment in settings_file contains path only
-        if not path.exists(self.settings_file):
+        if not os.path.exists(self.settings_file):
             os.makedirs(self.settings_file)
 
-        self.settings_file = path.join(
+        self.settings_file = os.path.join(
                 self.settings_file,
                 default_settings_file_name
                 )
 
-        if not path.exists(self.settings_file):
+        if not os.path.exists(self.settings_file):
             shutil.copy2(default_settings_file_name, self.settings_file)
 
         self.load_settings(self.settings_file)
@@ -127,7 +122,7 @@ class Window(gui.MainFrame):
             'help_viewer':False
             }
 
-        if path.isfile(settings_file_name):
+        if os.path.isfile(settings_file_name):
 
             # Select settings to loading
             if select and hasattr(self, 'settings'):
@@ -854,7 +849,7 @@ class Window(gui.MainFrame):
 
         try:
             self.library_file = ''
-            self.complist_file = path.splitext(self.schematic_file)[0] + '.ods'
+            self.complist_file = os.path.splitext(self.schematic_file)[0] + '.ods'
             self.sheets = []
             self.library = None
             complist = CompList()
@@ -902,16 +897,16 @@ class Window(gui.MainFrame):
         self.set_schematic_values(comp_values)
         for sheet in self.sheets:
             try:
-                if path.exists(sheet.sch_name + '.tmp'):
-                    remove(sheet.sch_name + '.tmp')
+                if os.path.exists(sheet.sch_name + '.tmp'):
+                    os.remove(sheet.sch_name + '.tmp')
                 sheet.save(sheet.sch_name + '.tmp')
-                remove(sheet.sch_name)
-                rename(sheet.sch_name + '.tmp', sheet.sch_name)
+                os.remove(sheet.sch_name)
+                os.rename(sheet.sch_name + '.tmp', sheet.sch_name)
                 self.saved = True
                 self.menuitem_save_sch.Enable(False)
             except:
-                if path.exists(sheet.sch_name + '.tmp'):
-                    remove(sheet.sch_name + '.tmp')
+                if os.path.exists(sheet.sch_name + '.tmp'):
+                    os.remove(sheet.sch_name + '.tmp')
                 wx.MessageBox(
                     u'При сохранении файла схемы:\n' +
                     sheet.sch_name + '\n' \
@@ -936,26 +931,26 @@ class Window(gui.MainFrame):
                 save_sch_dialog = wx.FileDialog(
                     self,
                     u'Сохранить схему как...',
-                    path.dirname(sheet.sch_name),
-                    path.basename(sheet.sch_name),
+                    os.path.dirname(sheet.sch_name),
+                    os.path.basename(sheet.sch_name),
                     u'Схема (*.sch)|*.sch|Все файлы (*.*)|*.*',
                     wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
                     )
                 if save_sch_dialog.ShowModal() == wx.ID_CANCEL:
                     return
                 new_schematic_file = save_sch_dialog.GetPath()
-                if path.exists(new_schematic_file  + '.tmp'):
-                    remove(new_schematic_file + '.tmp')
+                if os.path.exists(new_schematic_file  + '.tmp'):
+                    os.remove(new_schematic_file + '.tmp')
                 sheet.save(new_schematic_file + '.tmp')
-                if path.exists(new_schematic_file):
-                    remove(new_schematic_file)
-                rename(new_schematic_file + '.tmp', new_schematic_file)
+                if os.path.exists(new_schematic_file):
+                    os.remove(new_schematic_file)
+                os.rename(new_schematic_file + '.tmp', new_schematic_file)
                 if new_schematic_file == sheet.sch_name:
                     self.saved = True
                     self.menuitem_save_sch.Enable(False)
             except:
-                if path.exists(new_schematic_file + '.tmp'):
-                    remove(new_schematic_file + '.tmp')
+                if os.path.exists(new_schematic_file + '.tmp'):
+                    os.remove(new_schematic_file + '.tmp')
                 wx.MessageBox(
                     u'При сохранении файла схемы:\n' +
                     new_schematic_file + '\n' \
@@ -1037,16 +1032,16 @@ class Window(gui.MainFrame):
         comp_values = self.get_grid_values()
         self.set_library_values(comp_values)
         try:
-            if path.exists(self.library_file + '.tmp'):
-                remove(self.library_file + '.tmp')
+            if os.path.exists(self.library_file + '.tmp'):
+                os.remove(self.library_file + '.tmp')
             self.library.save(self.library_file + '.tmp')
-            remove(self.library_file)
-            rename(self.library_file + '.tmp', self.library_file)
+            os.remove(self.library_file)
+            os.rename(self.library_file + '.tmp', self.library_file)
             self.saved = True
             self.menuitem_save_lib.Enable(False)
         except:
-            if path.exists(self.library_file + '.tmp'):
-                remove(self.library_file + '.tmp')
+            if os.path.exists(self.library_file + '.tmp'):
+                os.remove(self.library_file + '.tmp')
             wx.MessageBox(
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
@@ -1070,25 +1065,25 @@ class Window(gui.MainFrame):
             save_lib_dialog = wx.FileDialog(
                 self,
                 u'Сохранить библиотеку как...',
-                path.dirname(self.library_file),
-                path.basename(self.library_file),
+                os.path.dirname(self.library_file),
+                os.path.basename(self.library_file),
                 u'Библиотека (*.lib)|*.lib|Все файлы (*.*)|*.*',
                 wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
                 )
             if save_lib_dialog.ShowModal() == wx.ID_CANCEL:
                 return
             new_library_file = save_lib_dialog.GetPath()
-            if path.exists(new_library_file + '.tmp'):
-                remove(new_library_file + '.tmp')
+            if os.path.exists(new_library_file + '.tmp'):
+                os.remove(new_library_file + '.tmp')
             self.library.save(new_library_file + '.tmp')
-            if path.exists(new_library_file):
-                remove(new_library_file)
-            rename(new_library_file + '.tmp', new_library_file)
+            if os.path.exists(new_library_file):
+                os.remove(new_library_file)
+            os.rename(new_library_file + '.tmp', new_library_file)
             self.saved = True
             self.menuitem_save_lib.Enable(False)
         except:
-            if path.exists(new_library_file + '.tmp'):
-                remove(new_library_file + '.tmp')
+            if os.path.exists(new_library_file + '.tmp'):
+                os.remove(new_library_file + '.tmp')
             wx.MessageBox(
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
@@ -1146,7 +1141,7 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'changes_sheet', str(need_changes_sheet))
             self.settings.set('complist', 'open', str(open_complist))
             self.complist_file = complist_dialog.filepicker_complist.GetPath()
-            self.complist_file = path.splitext(self.complist_file)[0] + '.ods'
+            self.complist_file = os.path.splitext(self.complist_file)[0] + '.ods'
             comp_fields = []
             grid_values = self.get_grid_values()
             for row in grid_values:
@@ -1424,8 +1419,8 @@ class Window(gui.MainFrame):
         try:
             settings_import_dialog = wx.FileDialog( self,
                 u'Загрузить параметры из файла...',
-                path.dirname(default_settings_file_name),
-                path.basename(default_settings_file_name),
+                os.path.dirname(default_settings_file_name),
+                os.path.basename(default_settings_file_name),
                 u'Конфигурационный файл (*.ini)|*.ini|Все файлы (*.*)|*.*',
                 wx.FD_OPEN
                 )
@@ -1454,8 +1449,8 @@ class Window(gui.MainFrame):
         try:
             settings_export_dialog = wx.FileDialog( self,
                 u'Сохранить параметры в файл...',
-                path.dirname(default_settings_file_name),
-                path.basename(default_settings_file_name),
+                os.path.dirname(default_settings_file_name),
+                os.path.basename(default_settings_file_name),
                 u'Конфигурационный файл (*.ini)|*.ini|Все файлы (*.*)|*.*',
                 wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
                 )
@@ -1672,7 +1667,8 @@ class Window(gui.MainFrame):
                     sys.version_info[2],
                     sys.version_info[3]
                     ) + '\n' + \
-                'wxWidgets: {}'.format(wx.version())
+                'wxWidgets: {}'.format(wx.version()) + '\n' + \
+                'odfpy: {}'.format(odfpy_version.split('/')[-1])
                 )
         about_dialog.hyperlink_email.SetURL(
                 '{}%20v{}'.format(
@@ -2055,23 +2051,31 @@ def main():
         help=u'отобразить версию программы и выйти'
         )
     args = parser.parse_args()
-    os.chdir(path.dirname(path.abspath(__file__)))
+
+    # Current version
+    version_file = open('version', 'r')
+    global version
+    version = version_file.read()
+    version = version.replace('\n', '')
+    version_file.close()
+
+    if args.version:
+        print version
+        exit()
+
     app = wx.App(False)
     window = Window(None)
+    app.SetTopWindow(window)
 
     if args.schematic:
-        sch_file_name = path.splitext(path.abspath(args.schematic))[0] + '.sch'
-        if path.isfile(sch_file_name):
+        sch_file_name = os.path.splitext(os.path.abspath(args.schematic))[0] + '.sch'
+        if os.path.isfile(sch_file_name):
             window.on_open_sch(sch_file_name=sch_file_name)
         else:
             window.on_open_sch()
 
     if args.complist:
-        window.complist_file = path.splitext(path.abspath(args.complist))[0] + '.ods'
-
-    if args.version:
-        print version
-        exit()
+        window.complist_file = os.path.splitext(os.path.abspath(args.complist))[0] + '.ods'
 
     window.Show(True)
     app.MainLoop()
