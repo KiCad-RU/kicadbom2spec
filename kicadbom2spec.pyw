@@ -1676,6 +1676,9 @@ class Window(gui.MainFrame):
                     version
                     )
                 )
+        about_dialog.Layout()
+        about_dialog.Fit()
+        about_dialog.Centre()
         about_dialog.dialog_buttonOK.SetFocus()
         about_dialog.ShowModal()
 
