@@ -30,6 +30,7 @@ import wx.grid
 
 from odf.opendocument import __version__ as odfpy_version
 
+EXEC_PATH = os.getcwd()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import gui
 from kicadsch import *
@@ -2071,14 +2072,27 @@ def main():
     app.SetTopWindow(window)
 
     if args.schematic:
+        os.chdir(os.path.abspath(EXEC_PATH))
         sch_file_name = os.path.splitext(os.path.abspath(args.schematic))[0] + '.sch'
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
         if os.path.isfile(sch_file_name):
             window.on_open_sch(sch_file_name=sch_file_name)
+            if args.complist:
+                os.chdir(os.path.abspath(EXEC_PATH))
+                window.complist_file = os.path.splitext(os.path.abspath(args.complist))[0] + '.ods'
+                os.chdir(os.path.dirname(os.path.abspath(__file__)))
         else:
-            window.on_open_sch()
-
-    if args.complist:
-        window.complist_file = os.path.splitext(os.path.abspath(args.complist))[0] + '.ods'
+            if wx.MessageBox(
+                u'Указанный файл схемы:\n' +
+                sch_file_name + '\n' \
+                u'не найден!\n' + \
+                u'Выбрать нужный файл вручную?',
+                u'Внимание!',
+                wx.ICON_QUESTION|wx.YES_NO, window
+                ) == wx.YES:
+                window.on_open_sch()
+            else:
+                exit()
 
     window.Show(True)
     app.MainLoop()
