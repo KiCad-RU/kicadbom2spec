@@ -42,6 +42,7 @@ ${StrRep}
 
 Var SETTINGS_DIR
 Var KICAD_DIR
+Var PYTHON_MODE
 
 Name "kicadbom2spec"
 OutFile "..\..\${PROG_NAME}_v${VERSION}_windows_installer.exe"
@@ -57,6 +58,7 @@ ShowUninstDetails show
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\COPYING"
+!define MUI_PAGE_CUSTOMFUNCTION_PRE InitComponents
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -81,12 +83,14 @@ SectionGroup /e "!Необходимые компоненты" secgrp_required
 		File "${DEPENDENCIES}${PYTHON}"
 		ExecWait 'msiexec /i "${PYTHON}" ADDLOCAL=ALL' $1
 		IntCmp $1 0 +2
-			Abort "Не удалось установить интерпретатор \
-			языка Python."
+			Abort "Не удалось установить интерпретатор языка Python."
 		Delete ${PYTHON}
 
 		Pop $0
 		Pop $1
+	SectionEnd
+
+	Section /o "Python из KiCad" sec_python_kicad
 	SectionEnd
 
 	Section /o "${WXPYTHON_NAME}" sec_wx
@@ -97,25 +101,27 @@ SectionGroup /e "!Необходимые компоненты" secgrp_required
 		File "${DEPENDENCIES}${WXPYTHON}"
 		ExecWait '"${WXPYTHON}"' $1
 		IntCmp $1 0 +2
-			Abort "Не удалось установоить библиотеку \
-			wxWidgets для Python."
+			Abort "Не удалось установоить библиотеку wxWidgets для Python."
 		Delete ${WXPYTHON}
 
 		Pop $0
 		Pop $1
 	SectionEnd
 
+	Section /o "wxPython из KiCad" sec_wx_kicad
+	SectionEnd
+
 	Section /o "${ODFPY_NAME}" sec_odf
 		Push $0
 		Push $1
-
-		StrCmp $KICAD_DIR "" 0 pip_ok
 
 		!insertmacro SectionFlagIsSet ${sec_python} ${SF_SELECTED} 0 path_ok
 		nsExec::ExecToStack 'python -V'
 		Pop $1
 		StrCmp "error" $1 0 path_ok
-			ReadRegStr $1 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+			ReadRegStr $1 HKLM \
+				"SYSTEM\CurrentControlSet\Control\Session Manager\Environment" \
+				"Path"
 			System::Call 'Kernel32::SetEnvironmentVariable(t "PATH", t "$1")i'
 			nsExec::ExecToStack 'python -V'
 			Pop $1
@@ -135,14 +141,24 @@ SectionGroup /e "!Необходимые компоненты" secgrp_required
 
 		SetOutPath "$TEMP"
 		File "${DEPENDENCIES}${ODFPY}"
-		StrCmp $KICAD_DIR "" 0 +3
-			StrCpy $0 "pip"
-			Goto +2
-			StrCpy $0 "$KICAD_DIR\bin\pip"
-		ExecWait "$0 --disable-pip-version-check install ./${ODFPY}" $1
+		ExecWait "pip --disable-pip-version-check install ./${ODFPY}" $1
 		IntCmp $1 0 +2
-			Abort "Не удалось установоить библиотеку \
-			odfpy для Python."
+			Abort "Не удалось установоить библиотеку odfpy для Python."
+		Delete ${ODFPY}
+
+		Pop $0
+		Pop $1
+	SectionEnd
+
+	Section /o "${ODFPY_NAME} для KiCad" sec_odf_kicad
+		Push $0
+		Push $1
+
+		SetOutPath "$TEMP"
+		File "${DEPENDENCIES}${ODFPY}"
+		ExecWait "$KICAD_DIR\bin\pip --disable-pip-version-check install ./${ODFPY}" $1
+		IntCmp $1 0 +2
+			Abort "Не удалось установоить библиотеку odfpy для Python из KiCad."
 		Delete ${ODFPY}
 
 		Pop $0
@@ -241,7 +257,7 @@ SectionGroup /e "!${PROG_NAME}" secgrp_main
 
 		SetShellVarContext all
 		CreateDirectory "$SMPROGRAMS\${PROG_NAME}"
-		StrCmp $KICAD_DIR "" 0 +3
+		StrCmp $PYTHON_MODE "SYSTEM" 0 +3
 			CreateShortCut \
 				"$SMPROGRAMS\${PROG_NAME}\Запустить kicadbom2spec.lnk" \
 				"$INSTDIR\kicadbom2spec.pyw" \
@@ -260,11 +276,26 @@ SectionGroup /e "!${PROG_NAME}" secgrp_main
 			"$SMPROGRAMS\${PROG_NAME}\Удалить kicadbom2spec.lnk" \
 			"$INSTDIR\uninstall.exe"
 
-		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "DisplayName" "${PROG_NAME}"
-		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "DisplayVersion" "${VERSION}"
-		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "DisplayIcon" "$INSTDIR\bitmaps\icon.ico"
-		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "InstallLocation" "$INSTDIR"
-		WriteRegStr "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" "UninstallString" "$INSTDIR\uninstall.exe"
+		WriteRegStr "HKLM" \
+			"Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" \
+			"DisplayName" \
+			"${PROG_NAME}"
+		WriteRegStr "HKLM" \
+			"Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" \
+			"DisplayVersion" \
+			"${VERSION}"
+		WriteRegStr "HKLM" \
+			"Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" \
+			"DisplayIcon" \
+			"$INSTDIR\bitmaps\icon.ico"
+		WriteRegStr "HKLM" \
+			"Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" \
+			"InstallLocation" \
+			"$INSTDIR"
+		WriteRegStr "HKLM" \
+			"Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" \
+			"UninstallString" \
+			"$INSTDIR\uninstall.exe"
 
 		WriteUninstaller "uninstall.exe"
 	SectionEnd
@@ -282,12 +313,20 @@ LangString DESC_secgrp_required ${LANG_Russian} \
 	"Перечисленные компоненты необходимы для работы программы kicadbom2spec."
 LangString DESC_sec_python ${LANG_Russian} \
 	"Интерпретатор языка Python."
+LangString DESC_sec_python_kicad ${LANG_Russian} \
+	"Интерпретатор языка Python из KiCad."
 LangString DESC_sec_wx ${LANG_Russian} \
 	"Обёртка библиотеки графического интерфейса пользователя \
 	wxWidgets для Python."
+LangString DESC_sec_wx_kicad ${LANG_Russian} \
+	"Обёртка библиотеки графического интерфейса пользователя \
+	wxWidgets для Python из KiCad."
 LangString DESC_sec_odf ${LANG_Russian} \
 	"Библиотека для записи и чтения документов в формате OpenDocument \
 	для Python."
+LangString DESC_sec_odf_kicad ${LANG_Russian} \
+	"Библиотека для записи и чтения документов в формате OpenDocument \
+	для Python из KiCad."
 LangString DESC_secgrp_optional ${LANG_Russian} \
 	"Перечисленные компоненты нужны для корректного отображения \
 	перечней элементов."
@@ -308,8 +347,11 @@ LangString DESC_sec_settings ${LANG_Russian} \
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${secgrp_required} $(DESC_secgrp_required)
 	!insertmacro MUI_DESCRIPTION_TEXT ${sec_python} $(DESC_sec_python)
+	!insertmacro MUI_DESCRIPTION_TEXT ${sec_python_kicad} $(DESC_sec_python_kicad)
 	!insertmacro MUI_DESCRIPTION_TEXT ${sec_wx} $(DESC_sec_wx)
+	!insertmacro MUI_DESCRIPTION_TEXT ${sec_wx_kicad} $(DESC_sec_wx_kicad)
 	!insertmacro MUI_DESCRIPTION_TEXT ${sec_odf} $(DESC_sec_odf)
+	!insertmacro MUI_DESCRIPTION_TEXT ${sec_odf_kicad} $(DESC_sec_odf_kicad)
 	!insertmacro MUI_DESCRIPTION_TEXT ${secgrp_optional} $(DESC_secgrp_optional)
 	!insertmacro MUI_DESCRIPTION_TEXT ${sec_font} $(DESC_sec_font)
 	!insertmacro MUI_DESCRIPTION_TEXT ${sec_office} $(DESC_sec_office)
@@ -322,6 +364,8 @@ Function .onInit
 	Push $0
 	Push $1
 	Push $2
+
+	StrCpy $SETTINGS_DIR "$APPDATA"
 
 	ClearErrors
 	ReadRegStr $0 HKLM \
@@ -345,36 +389,43 @@ Function .onInit
 				ExecWait '"$0" _?=$INSTDIR'
 	uninstalled:
 
+	Pop $0
+	Pop $1
+	Pop $2
+FunctionEnd
+
+Function InitComponents
+	Push $0
+	Push $1
+	Push $2
+
+	StrCpy $KICAD_DIR ""
 	ClearErrors
 	ReadRegStr $0 HKLM \
 		"Software\Microsoft\Windows\CurrentVersion\Uninstall\KiCad" \
 		"InstallLocation"
 	IfErrors kicad_no 0
 		IfFileExists "$0\bin\pythonw.exe" 0 kicad_no
+			StrCpy $KICAD_DIR $0
 			MessageBox MB_YESNO|MB_ICONQUESTION \
 			"На Вашем ПК установлен KiCad со встроенным интерпретатором \
-			языка Python и библиотекой ГПИ wxWidgets. Эти компоненты \
-			необходимы для работы программы kicadbom2spec и могут \
-			использоваться совместно. $\n\
+			языка Python и библиотекой графического пользовательского \
+			интерфейса wxWidgets. Эти компоненты необходимы для работы \
+			программы kicadbom2spec и могут использоваться совместно. $\n\
 			Хотите использовать эти компоненты из KiCad или установить их \
 			отдельно? \
 			$\n$\n \
 			Нажмите ''Да'' чтобы использовать необходимые компоненты из \
 			KiCad. \
 			$\n$\n \
-			Нажмите ''Нет'' чтобы установить необходимые компоненты отдельно. \
-			$\n$\n \
-			ВАЖНО: если Вы нажмете ''Нет'', то настроить kicadbom2spec для \
-			работы в качестве плагина Eeschema будет невозможно!" \
+			Нажмите ''Нет'' чтобы установить необходимые компоненты отдельно." \
 			IDYES kicad_yes IDNO kicad_no
 			kicad_yes:
-				StrCpy $KICAD_DIR $0
+				StrCpy $PYTHON_MODE "KICAD"
 				Goto kicad_end
 			kicad_no:
-				StrCpy $KICAD_DIR ""
+				StrCpy $PYTHON_MODE "SYSTEM"
 	kicad_end:
-
-	StrCpy $SETTINGS_DIR "$APPDATA"
 
 	IntOp $0 ${SF_RO} | ${SF_SELECTED}
 	!insertmacro SetSectionFlag ${sec_main} $0
@@ -383,82 +434,117 @@ Function .onInit
 		!insertmacro SetSectionFlag ${sec_settings} ${SF_SELECTED}
 	settings_exists:
 
-	StrCmp $KICAD_DIR "" python_check 0
-		SectionSetText ${sec_python} "Python из KiCad"
-		!insertmacro SetSectionFlag ${sec_python} ${SF_RO}
-		Goto python_ok
+	StrCmp $PYTHON_MODE "KICAD" check_required_kicad check_required_system
 
-	python_check:
-	Var /GLOBAL min_python_version
-	StrCpy $min_python_version "2.7.0"
-	Var /GLOBAL max_python_version
-	StrCpy $max_python_version "3.0.0"
+	check_required_kicad:
+		SectionSetText ${sec_python} ""
+		SectionSetText ${sec_wx} ""
+		SectionSetText ${sec_odf} ""
+		!insertmacro SetSectionFlag ${sec_python_kicad} ${SF_SELECTED}
+		!insertmacro SetSectionFlag ${sec_python_kicad} ${SF_RO}
+		!insertmacro SetSectionFlag ${sec_wx_kicad} ${SF_SELECTED}
+		!insertmacro SetSectionFlag ${sec_wx_kicad} ${SF_RO}
 
-	nsExec::ExecToStack 'python -V'
-	Pop $1 ; status
-	StrCmp "error" $1 enable_python
-	Pop $2 ; version
-	${StrRep} $1 $2 "Python " ""
-	StrCpy $2 $1
-	${VersionCompare} $min_python_version $2 $1
-	IntCmp $1 1 enable_python python_ok 0
-	${VersionCompare} $max_python_version $2 $1
-	IntCmp $1 1 python_ok enable_python enable_python
+		nsExec::ExecToStack '$KICAD_DIR\bin\python -c "import odf"'
+		Pop $1 ; status
+		StrCmp "error" $1 enable_odf_kicad
+		Pop $2 ; output
+		StrCpy $1 $2 9
+		StrCmp "Traceback" $1 enable_odf_kicad odf_python_ok
+		enable_odf_kicad:
+			!insertmacro SetSectionFlag ${sec_odf_kicad} ${SF_SELECTED}
+			!insertmacro SetSectionFlag ${sec_odf_kicad} ${SF_RO}
+		odf_python_ok:
 
-	enable_python:
-		!insertmacro SetSectionFlag ${sec_python} ${SF_SELECTED}
-	python_ok:
+		Goto check_required_done
 
-	StrCmp $KICAD_DIR "" wx_enable 0
-		SectionSetText ${sec_wx} "wxPython из KiCad"
-		!insertmacro SetSectionFlag ${sec_wx} ${SF_RO}
-		Goto wx_ok
+	check_required_system:
+		SectionSetText ${sec_python_kicad} ""
+		SectionSetText ${sec_wx_kicad} ""
 
-	wx_enable:
-	Var /GLOBAL min_wx_version
-	StrCpy $min_wx_version "2.8.0.0"
+		Var /GLOBAL min_python_version
+		StrCpy $min_python_version "2.7.0"
+		Var /GLOBAL max_python_version
+		StrCpy $max_python_version "3.0.0"
 
-	nsExec::ExecToStack 'python -c "import wx; print wx.version()"'
-	Pop $1 ; status
-	StrCmp "error" $1 enable_wx
-	Pop $2 ; version
-	StrCpy $1 $2 7
-	StrCpy $2 $1
-	${VersionCompare} $min_wx_version $2 $1
-	IntCmp $1 1 enable_wx wx_ok wx_ok
+		nsExec::ExecToStack 'python -V'
+		Pop $1 ; status
+		StrCmp "error" $1 enable_python
+		Pop $2 ; version
+		${StrRep} $1 $2 "Python " ""
+		StrCpy $2 $1
+		${VersionCompare} $min_python_version $2 $1
+		IntCmp $1 1 enable_python python_ok 0
+		${VersionCompare} $max_python_version $2 $1
+		IntCmp $1 1 python_ok enable_python enable_python
+		enable_python:
+			!insertmacro SetSectionFlag ${sec_python} ${SF_SELECTED}
+			!insertmacro SetSectionFlag ${sec_python} ${SF_RO}
+		python_ok:
 
-	enable_wx:
-		!insertmacro SetSectionFlag ${sec_wx} ${SF_SELECTED}
-	wx_ok:
+		Var /GLOBAL min_wx_version
+		StrCpy $min_wx_version "2.8.0.0"
 
-	StrCmp $KICAD_DIR "" 0 +3
-		StrCpy $0 "python"
-		Goto +2
-		StrCpy $0 "$KICAD_DIR\bin\python"
-	nsExec::ExecToStack '$0 -c "import odf"'
-	Pop $1 ; status
-	StrCmp "error" $1 enable_odf
-	Pop $2 ; output
-	StrCpy $1 $2 9
-	StrCmp "Traceback" $1 enable_odf
-	Goto odf_ok
+		nsExec::ExecToStack 'python -c "import wx; print wx.version()"'
+		Pop $1 ; status
+		StrCmp "error" $1 enable_wx
+		Pop $2 ; version
+		StrCpy $1 $2 7
+		StrCpy $2 $1
+		${VersionCompare} $min_wx_version $2 $1
+		IntCmp $1 1 enable_wx wx_ok wx_ok
+		enable_wx:
+			!insertmacro SetSectionFlag ${sec_wx} ${SF_SELECTED}
+			!insertmacro SetSectionFlag ${sec_wx} ${SF_RO}
+		wx_ok:
 
-	enable_odf:
-		!insertmacro SetSectionFlag ${sec_odf} ${SF_SELECTED}
-	odf_ok:
+		nsExec::ExecToStack 'pip -c "import odf"'
+		Pop $1 ; status
+		StrCmp "error" $1 enable_odf
+		Pop $2 ; output
+		StrCpy $1 $2 9
+		StrCmp "Traceback" $1 enable_odf odf_ok
+		enable_odf:
+			!insertmacro SetSectionFlag ${sec_odf} ${SF_SELECTED}
+			!insertmacro SetSectionFlag ${sec_odf} ${SF_RO}
+		odf_ok:
 
-	ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" "CurrentVersion"
+		# Если присутствует KiCad с интегрированным Pyhton и выбрана установка
+		# отдельной версией Python (PYTHON_MODE=SYSTEM) все равно нужно
+		# устновить ODFpy для встроенного в KiCad Python'a. Иначе будет
+		# невозможно использовать kicadbom2spec в качестве BOM плагина.
+		StrCmp KICAD_DIR "" disable_odf_bom 0
+			nsExec::ExecToStack '$KICAD_DIR\bin\python -c "import odf"'
+			Pop $1 ; status
+			StrCmp "error" $1 enable_odf_bom
+			Pop $2 ; output
+			StrCpy $1 $2 9
+			StrCmp "Traceback" $1 enable_odf_bom disable_odf_bom
+			enable_odf_bom:
+				MessageBox MB_OK|MB_ICONINFORMATION \
+					"Для работы программы ${PROG_NAME} в качестве BOM \
+					плагина нужно установить модуль ODFpy для Python из KiCad."
+				!insertmacro SetSectionFlag ${sec_odf_kicad} ${SF_SELECTED}
+				Goto odf_bom_end
+			disable_odf_bom:
+				SectionSetText ${sec_odf_kicad} ""
+			odf_bom_end:
+
+	check_required_done:
+
+	ClearErrors
+	ReadRegStr $0 HKLM \
+		"SOFTWARE\Microsoft\Windows NT\CurrentVersion" \
+		"CurrentVersion"
 	IfErrors win-9x win-NT
+	win-NT:
+		StrCpy $1 "Software\Microsoft\Windows NT\CurrentVersion\Fonts"
+		Goto win-ok
+	win-9x:
+		StrCpy $1 "Software\Microsoft\Windows\CurrentVersion\Fonts"
+		Goto win-ok
+	win-ok:
 
-win-NT:
-	StrCpy $1 "Software\Microsoft\Windows NT\CurrentVersion\Fonts"
-	Goto font-check
-
-win-9x:
-	StrCpy $1 "Software\Microsoft\Windows\CurrentVersion\Fonts"
-	Goto font-check
-
-font-check:
 	ClearErrors
 	ReadRegStr $0 HKLM $1 "OpenGost Type A TT Regular (TrueType)"
 	ReadRegStr $0 HKLM $1 "OpenGost Type B TT Regular (TrueType)"
