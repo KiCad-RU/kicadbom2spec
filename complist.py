@@ -32,7 +32,7 @@ from kicadsch import *
 
 class CompList():
     """
-    Generating list of the components from KiCAD Schematic
+    Generating list of the components from KiCad Schematic
     and save it to *.ods file.
 
     """
@@ -105,7 +105,7 @@ class CompList():
                             if p_data.data == label:
                                 # Decoding internal escapes
                                 text = text.decode('string_escape')
-                                # Decoding escapes from KiCAD
+                                # Decoding escapes from KiCad
                                 p_data.data = text.decode('string_escape')
                                 if group == True:
                                     # Set center align and underline for ghoup name
@@ -222,7 +222,7 @@ class CompList():
 
     def get_descr(self, sch_file_name):
         """
-        Open KiCAD Schematic file and get title block description.
+        Open KiCad Schematic file and get title block description.
 
         """
         sch = Schematic(sch_file_name)
@@ -252,7 +252,7 @@ class CompList():
 
     def get_components(self, sch_file_name, root_only=False):
         """
-        Open KiCAD Schematic file and get all components from it.
+        Open KiCad Schematic file and get all components from it.
 
         """
         components = []
@@ -270,7 +270,7 @@ class CompList():
 
     def load(self, sch_file_name, comp_fields=None):
         """
-        Load all components from KiCAD Schematic file
+        Load all components from KiCad Schematic file
         or get fields of the components directly
         and then fills the list.
 

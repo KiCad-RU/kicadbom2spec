@@ -664,7 +664,7 @@ class AboutDialog ( wx.Dialog ):
 		self.m_bitmap1 = wx.StaticBitmap( self.panel_about_dialog, wx.ID_ANY, wx.Bitmap( u"bitmaps/icon.png", wx.BITMAP_TYPE_ANY ), wx.DefaultPosition, wx.DefaultSize, 0 )
 		sizer_about.Add( self.m_bitmap1, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
 		
-		self.statictext_about = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"kicadbom2spec - приложение для создания\nперечня элементов, оформленного согласно ЕСКД, для схем,\nвыполненных с помощью САПР KiCAD.", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
+		self.statictext_about = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"kicadbom2spec - приложение для создания\nперечня элементов, оформленного согласно ЕСКД, для схем,\nвыполненных с помощью САПР KiCad.", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
 		self.statictext_about.Wrap( -1 )
 		sizer_about.Add( self.statictext_about, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5 )
 		

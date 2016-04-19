@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=kicadbom2spec
-Comment=Create lists of the components for KiCAD schematics.
-Comment[ru]=Построение переченей элементов для схем выполненных в САПР KiCAD.
+Comment=Create lists of the components for KiCad schematics.
+Comment[ru]=Построение переченей элементов для схем выполненных в САПР KiCad.
 Categories=Development;Electronics;
 Exec=/usr/share/kicadbom2spec/kicadbom2spec.pyw
 Icon=kicadbom2spec

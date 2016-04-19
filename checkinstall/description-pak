@@ -1,4 +1,4 @@
-Create lists of the components for KiCAD schematics.
+Create lists of the components for KiCad schematics.
  Program that creates the lists of the components as the table *.ods
  (Open Document Format), prepared according to the requirements of
- standard design documentation (GOST) from KiCAD Schematics.
+ standard design documentation (GOST) from KiCad Schematics.

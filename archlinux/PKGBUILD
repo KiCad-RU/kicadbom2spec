@@ -2,7 +2,7 @@
 pkgname=kicadbom2spec
 pkgver=$(python2 ../kicadbom2spec.pyw -v 2> /dev/null)
 pkgrel=1
-pkgdesc='Create lists of the components for KiCAD schematics.'
+pkgdesc='Create lists of the components for KiCad schematics.'
 arch=('any')
 url='http://launchpad.net/kicadbom2spec/'
 license='GPL3'

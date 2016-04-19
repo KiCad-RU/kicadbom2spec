@@ -20,7 +20,7 @@ import codecs
 
 class Schematic:
     """
-    Implementation of KiCAD Schematic diagram file.
+    Implementation of KiCad Schematic diagram file.
 
     """
     EESCHEMA_FILE_STAMP = 'EESchema'
@@ -29,11 +29,11 @@ class Schematic:
 
     def __init__(self, sch_name):
         """
-        Load all contents from KiCAD's Schematic file.
+        Load all contents from KiCad's Schematic file.
 
             Attributes:
 
-            sch_name (str) - full name of KiCAD Schematic file;
+            sch_name (str) - full name of KiCad Schematic file;
             version (int) - version of file format;
             libs (Libs) - list of used libraries;
             eelayer (list of Eelayer) - list of eelayer's information;
@@ -47,7 +47,7 @@ class Schematic:
 
     def load(self):
         """
-        Open KiCAD Schematic file and read all information from it.
+        Open KiCad Schematic file and read all information from it.
 
         """
         self.libs = self.Libs()
@@ -102,7 +102,7 @@ class Schematic:
 
     def save(self, new_name=None):
         """
-        Save all content to KiCAD Schematic file.
+        Save all content to KiCad Schematic file.
 
         """
         sch_file_name = self.sch_name
@@ -144,7 +144,7 @@ class Schematic:
 
                 Arguments:
 
-                str_lib (str) - text line read from KiCAD Schematic file.
+                str_lib (str) - text line read from KiCad Schematic file.
 
             """
             str_lib = str_lib.rstrip('\n')
@@ -153,7 +153,7 @@ class Schematic:
 
         def save(self, sch_file):
             """
-            Save current library name to KiCAD Schematic file.
+            Save current library name to KiCad Schematic file.
 
                 Arguments:
 
@@ -184,7 +184,7 @@ class Schematic:
 
                 Arguments:
 
-                str_eelayer (str) - text line read from KiCAD Schematic file.
+                str_eelayer (str) - text line read from KiCad Schematic file.
 
             """
             str_eelayer = str_eelayer.lstrip('EELAYER ')
@@ -194,7 +194,7 @@ class Schematic:
 
         def save(self, sch_file):
             """
-            Save EELAYER description to KiCAD Schematic file.
+            Save EELAYER description to KiCad Schematic file.
 
                 Arguments:
 
@@ -238,7 +238,7 @@ class Schematic:
 
                 Arguments:
 
-                str_descr (str) - text lines read from KiCAD Schematic file.
+                str_descr (str) - text lines read from KiCad Schematic file.
 
             """
             lines = str_descr.splitlines()
@@ -327,7 +327,7 @@ class Schematic:
 
                 Arguments:
 
-                str_comp (str) - text lines read from KiCAD Schematic file.
+                str_comp (str) - text lines read from KiCad Schematic file.
 
             """
             lines = str_comp.splitlines()
@@ -434,7 +434,7 @@ class Schematic:
 
                     Arguments:
 
-                    str_field (str) - text line from KiCAD Schematic file.
+                    str_field (str) - text line from KiCad Schematic file.
 
                 """
                 items = split_line(str_field)
@@ -514,7 +514,7 @@ class Schematic:
 
                 Arguments:
 
-                str_sheet (str) - text lines read from KiCAD Schematic file.
+                str_sheet (str) - text lines read from KiCad Schematic file.
 
             """
             lines = str_sheet.splitlines()
@@ -600,7 +600,7 @@ class Schematic:
 
                     Arguments:
 
-                    str_field (str) - text line from KiCAD Schematic file.
+                    str_field (str) - text line from KiCad Schematic file.
 
                 """
                 items = split_line(str_field)
@@ -652,7 +652,7 @@ class Schematic:
 
                 Arguments:
 
-                str_bitmap (str) - text lines read from KiCAD Schematic file.
+                str_bitmap (str) - text lines read from KiCad Schematic file.
 
             """
             lines = str_bitmap.splitlines()
@@ -730,7 +730,7 @@ class Schematic:
 
                 Arguments:
 
-                str_connect (str) - text line read from KiCAD Schematic.
+                str_connect (str) - text line read from KiCad Schematic.
 
             """
             str_connection.replace('\n', '')
@@ -781,7 +781,7 @@ class Schematic:
 
                 Arguments:
 
-                str_connect (str) - text line read from KiCAD Schematic.
+                str_connect (str) - text line read from KiCad Schematic.
 
             """
             lines = str_text.splitlines()
@@ -843,7 +843,7 @@ class Schematic:
 
                 Arguments:
 
-                str_connect (str) - text line read from KiCAD Schematic.
+                str_connect (str) - text line read from KiCad Schematic.
 
             """
             lines = str_wire.splitlines()
@@ -896,7 +896,7 @@ class Schematic:
 
                 Arguments:
 
-                str_connect (str) - text line read from KiCAD Schematic.
+                str_connect (str) - text line read from KiCad Schematic.
 
             """
             lines = str_entry.splitlines()
@@ -930,18 +930,18 @@ class Schematic:
 
 class Library:
     """
-    Implementation of KiCAD Schematic library.
+    Implementation of KiCad Schematic library.
 
     """
     LIBFILE_IDENT = 'EESchema-LIBRARY Version'
 
     def __init__(self, lib_name):
         """
-        Load all contents from KiCAD's Schematic library.
+        Load all contents from KiCad's Schematic library.
 
             Attributes:
 
-            lib_name (str) - full name of KiCAD Schematic library file;
+            lib_name (str) - full name of KiCad Schematic library file;
             version (float) - version of file format;
             encoding (srt) - encoding of text;
             components (list of Component) - list of components of library.
@@ -952,7 +952,7 @@ class Library:
 
     def load(self):
         """
-        Open KiCAD Schematic library file and read all information from it.
+        Open KiCad Schematic library file and read all information from it.
 
         """
         self.components = []
@@ -979,7 +979,7 @@ class Library:
 
     def save(self, new_name=None):
         """
-        Save all content to KiCAD Schematic library file.
+        Save all content to KiCad Schematic library file.
 
         """
         lib_file_name = self.lib_name
@@ -1029,7 +1029,7 @@ class Library:
 
                 Arguments:
 
-                str_component (str) - text lines read from KiCAD Schematic library file.
+                str_component (str) - text lines read from KiCad Schematic library file.
 
             """
             lines = str_component.splitlines()
@@ -1169,7 +1169,7 @@ class Library:
 
                     Arguments:
 
-                    str_field (str) - text line from KiCAD Schematic library file.
+                    str_field (str) - text line from KiCad Schematic library file.
 
                 """
                 items = split_line(str_field)
@@ -1246,7 +1246,7 @@ class Library:
 
                     Arguments:
 
-                    str_polygon (str) - text line from KiCAD Schematic library file.
+                    str_polygon (str) - text line from KiCad Schematic library file.
 
                 """
                 items = split_line(str_polygon)
@@ -1306,7 +1306,7 @@ class Library:
 
                     Arguments:
 
-                    str_rectangle (str) - text line from KiCAD Schematic library file.
+                    str_rectangle (str) - text line from KiCad Schematic library file.
 
                 """
                 items = split_line(str_rectangle)
@@ -1363,7 +1363,7 @@ class Library:
 
                     Arguments:
 
-                    str_circle (str) - text line from KiCAD Schematic library file.
+                    str_circle (str) - text line from KiCad Schematic library file.
 
                 """
                 items = split_line(str_circle)
@@ -1424,7 +1424,7 @@ class Library:
 
                     Arguments:
 
-                    str_arc (str) - text line from KiCAD Schematic library file.
+                    str_arc (str) - text line from KiCad Schematic library file.
 
                 """
                 items = split_line(str_arc)
@@ -1502,7 +1502,7 @@ class Library:
 
                     Arguments:
 
-                    str_text (str) - text line from KiCAD Schematic library file.
+                    str_text (str) - text line from KiCad Schematic library file.
 
                 """
                 items = split_line(str_text)
@@ -1603,7 +1603,7 @@ class Library:
 
                     Arguments:
 
-                    str_pin (str) - text line from KiCAD Schematic library file.
+                    str_pin (str) - text line from KiCad Schematic library file.
 
                 """
                 items = split_line(str_pin)

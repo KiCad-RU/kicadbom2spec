@@ -1791,7 +1791,7 @@ class Window(gui.MainFrame):
                     ]
                 for field in comp.fields:
                     if hasattr(field, 'name'):
-                        if field.name == u'Исключен из ПЭ':
+                        if field.name == u'Исключён из ПЭ':
                             row[0] = u'0'
                         elif field.name == u'Группа':
                             row[1] = field.text
@@ -1860,12 +1860,12 @@ class Window(gui.MainFrame):
                                     str_field += u' "" '
                                     str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
                                     str_field += u' 0001 C CNN'
-                                    str_field += u' "Исключен из ПЭ"'
+                                    str_field += u' "Исключён из ПЭ"'
                                     item.fields.append(sheet.Comp.Field(str_field.encode('utf-8')))
                                 else:
                                     for field_index, field in enumerate(item.fields):
                                         if hasattr(field, 'name'):
-                                            if field.name == u'Исключен из ПЭ':
+                                            if field.name == u'Исключён из ПЭ':
                                                 del item.fields[field_index]
                                                 break
 
@@ -2032,7 +2032,7 @@ def main():
     parser = argparse.ArgumentParser(
         description=(
             u'Приложение создает файл перечня элементов оформленный ' \
-            u'в соответствии с ЕСКД для схемы выполненой в САПР KiCAD.\n'
+            u'в соответствии с ЕСКД для схемы выполненой в САПР KiCad.\n'
             )
         )
     parser.add_argument(
@@ -2040,7 +2040,7 @@ def main():
         default='',
         nargs='?',
         type=str,
-        help=u'полное или относительное имя файла схемы в формате KiCAD'
+        help=u'полное или относительное имя файла схемы в формате KiCad'
         )
     parser.add_argument(
         'complist',
