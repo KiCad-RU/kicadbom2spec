@@ -1561,6 +1561,7 @@ class Window(gui.MainFrame):
             """
             find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
             case_sensitive = event.GetEventObject().GetGrandParent().checkbox_case_sensitive.GetValue()
+            whole_word = event.GetEventObject().GetGrandParent().checkbox_whole_word.GetValue()
             if not find_str:
                 return
             rows = self.grid_components.GetNumberRows()
