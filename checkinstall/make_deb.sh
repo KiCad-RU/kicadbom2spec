@@ -11,7 +11,7 @@ sudo checkinstall -D \
     --pkggroup=utils \
     --pkgsource=http://launchpad.net/kicadbom2spec \
     --pakdir=../../ \
-    --maintainer=baranovskiykonstantin@gmail.com \
+    --maintainer='"Baranovskiy Konstantin <baranovskiykonstantin@gmail.com>"' \
     --requires="python2.7",'"python-wxgtk2.8|python-wxgtk3.0"',"python-odf" \
     --nodoc \
     --backup=no \
