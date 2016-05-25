@@ -621,20 +621,25 @@ class Window(gui.MainFrame):
 
         """
 
-        def compare_ref(ref):
+        def compare_ref(row):
             """
             Returns integer equivalent value of reference
             fo comparison in sort() function.
 
             """
+            ref = row[2]
+            # Remove extra data from ref in comp like 'R123(R321)' or 'R321*'
+            ref = ref.split('(')[0]
+            ref = ref.rstrip('*')
+
             ref_val = 0
-            matches = re.search(r'^([A-Z]+)\d+', ref[2])
+            matches = re.search(r'^([A-Z]+)\d+', ref)
             if matches != None:
                 for ch in range(len(matches.group(1))):
                     #  Ref begins maximum of two letters, the first
                     #  is multiplied by 10^5, the second by 10^4
                     ref_val += ord(matches.group(1)[ch]) * 10 ** 5 / (10 ** ch)
-            matches = re.search(r'^[A-Z]+(\d+)', ref[2])
+            matches = re.search(r'^[A-Z]+(\d+)', ref)
             if matches != None:
                 ref_val += int(matches.group(1))
             return ref_val
@@ -851,7 +856,6 @@ class Window(gui.MainFrame):
         try:
             self.library_file = ''
             self.complist_file = os.path.splitext(self.schematic_file)[0] + '.ods'
-            self.sheets = []
             self.library = None
             complist = CompList()
             sheet_names = [self.schematic_file]
@@ -1146,6 +1150,9 @@ class Window(gui.MainFrame):
             comp_fields = []
             grid_values = self.get_grid_values()
             for row in grid_values:
+                # Remove extra data from ref in comp like 'R123(R321)' or 'R321*'
+                row[2] = row[2].split('(')[0]
+                row[2] = row[2].rstrip('*')
                 if (row[0] == u'1') | all_components:
                     fields = row[1:-1]
                     fields.insert(1, re.search(r'[A-Z]+', fields[1]).group())
@@ -1769,49 +1776,66 @@ class Window(gui.MainFrame):
         complist = CompList()
         for sheet in self.sheets:
             for comp in complist.get_components(sheet.sch_name, True):
+                # Skip unannotated components
                 if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
                     continue
-                is_present = False
+                # Skip parts of the same component
                 for row in values:
                     if comp.fields[0].text == row[2] and \
-                       sheet.sch_name == row[-1]:
-                           is_present = True
-                if is_present:
-                    continue
-                row = [
-                    u'1',  # Used
-                    u'',  # Group
-                    comp.fields[0].text,  # Reference
-                    u'',  # Mark
-                    comp.fields[1].text,  # Value
-                    u'',  # Accuracy
-                    u'',  # Type
-                    u'',  # GOST
-                    u'',  # Comment
-                    sheet.sch_name  # Sheet name
-                    ]
-                for field in comp.fields:
-                    if hasattr(field, 'name'):
-                        if field.name == u'Исключён из ПЭ':
-                            row[0] = u'0'
-                        elif field.name == u'Группа':
-                            row[1] = field.text
-                        elif field.name == u'Марка':
-                            row[3] = field.text
-                        elif field.name == u'Класс точности':
-                            row[5] = field.text
-                        elif field.name == u'Тип':
-                            row[6] = field.text
-                        elif field.name == u'Стандарт':
-                            row[7] = field.text
-                        elif field.name == u'Примечание':
-                            row[8] = field.text
-                if row[1] == u'':
-                    for sufix in self.auto_groups_dict.keys():
-                        if row[2].startswith(sufix):
-                            row[1] = self.auto_groups_dict[sufix]
-                            break
-                values.append(row)
+                       sheet.sch_name == row[9]:
+                        break
+                else:
+                    row = [
+                        u'1',  # Used
+                        u'',  # Group
+                        comp.fields[0].text,  # Reference
+                        u'',  # Mark
+                        comp.fields[1].text,  # Value
+                        u'',  # Accuracy
+                        u'',  # Type
+                        u'',  # GOST
+                        u'',  # Comment
+                        sheet.sch_name  # Sheet name
+                        ]
+                    for field in comp.fields:
+                        if hasattr(field, 'name'):
+                            if field.name == u'Исключён из ПЭ':
+                                row[0] = u'0'
+                            elif field.name == u'Группа':
+                                row[1] = field.text
+                            elif field.name == u'Марка':
+                                row[3] = field.text
+                            elif field.name == u'Класс точности':
+                                row[5] = field.text
+                            elif field.name == u'Тип':
+                                row[6] = field.text
+                            elif field.name == u'Стандарт':
+                                row[7] = field.text
+                            elif field.name == u'Примечание':
+                                row[8] = field.text
+                    if row[1] == u'':
+                        for sufix in self.auto_groups_dict.keys():
+                            if row[2].startswith(sufix):
+                                row[1] = self.auto_groups_dict[sufix]
+                                break
+                    if hasattr(comp, 'path_and_ref'):
+                        for ref in comp.path_and_ref:
+                            # Skip parts of the same comp from different sheets
+                            for value in values:
+                                tmp_ref = value[2]
+                                tmp_ref = tmp_ref.split('(')[0]
+                                tmp_ref = tmp_ref.rstrip('*')
+                                if tmp_ref == ref[1]:
+                                    break
+                            else:
+                                new_row = list(row)
+                                if ref[1] == comp.fields[0].text:
+                                    new_row[2] = comp.fields[0].text + '*'
+                                else:
+                                    new_row[2] = '{}({})'.format(ref[1], comp.fields[0].text)
+                                values.append(new_row)
+                    else:
+                        values.append(row)
         return values
 
     def set_schematic_values(self, values):
@@ -1833,7 +1857,10 @@ class Window(gui.MainFrame):
                 if item.__class__.__name__ == 'Comp':
                     if not item.ref.startswith('#'):
                         for value in sorted_values:
-                            if value[2] == item.ref and value[-1] == sheet.sch_name:
+                            # Skip copies of the one component (see 'path_and_ref' in Comp)
+                            if ('(' in value[2]) and (')' in value[2]):
+                                continue
+                            if value[2].rstrip('*') == item.ref and value[-1] == sheet.sch_name:
                                 item.fields[1].text = value[4]
                                 for ind, field_name in field_names.items():
                                     if value[ind] != u'':

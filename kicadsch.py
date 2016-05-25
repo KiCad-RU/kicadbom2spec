@@ -252,16 +252,17 @@ class Schematic:
                     self.sheet_format = parts[1]
                     self.sheet_size_x = int(parts[2])
                     self.sheet_size_y = int(parts[3])
-                if parts[0] == 'encoding':
+                elif parts[0] == 'encoding':
                     self.encoding = parts[1]
-                if parts[0] == 'Sheet':
+                elif parts[0] == 'Sheet':
                     self.sheet_number = int(parts[1])
                     self.sheet_count = int(parts[2])
-                items = ('Title', 'Date', 'Rev', 'Comp', \
-                         'Comment1', 'Comment2', 'Comment3', 'Comment4')
-                for item in items:
-                    if parts[0] == item:
-                        setattr(self, item.lower(), parts[1])
+                else:
+                    items = ('Title', 'Date', 'Rev', 'Comp', \
+                             'Comment1', 'Comment2', 'Comment3', 'Comment4')
+                    for item in items:
+                        if parts[0] == item:
+                            setattr(self, item.lower(), parts[1])
 
         def save(self, sch_file):
             """
@@ -312,6 +313,8 @@ class Schematic:
             name (str) - name of the component;
             ref (str) - reference of the component;
             unit (int) - part of the component;
+            path_and_ref (list of ["path", "ref", "part"]) - references of
+                the components from complex hierarchy;
             convert (boot) - True - show as De Morgan convert, False - normal;
             timestamp (str) - timestamp of component;
             pos_x (int) - horizontal position of component;
@@ -344,6 +347,14 @@ class Schematic:
                 elif parts[0] == 'P':
                     self.pos_x = int(parts[1])
                     self.pos_y = int(parts[2])
+                elif parts[0] == 'AR':
+                    if not hasattr(self, 'path_and_ref'):
+                        self.path_and_ref = []
+                    item = []
+                    for part in (1, 2, 3):
+                        value = parts[part].split('"')[1]
+                        item.append(value)
+                    self.path_and_ref.append(item)
                 elif parts[0] == 'F':
                     self.fields.append(self.Field(line))
                 elif parts[0].startswith('\t'):
@@ -382,6 +393,14 @@ class Schematic:
                        pos_y = self.pos_y
                        )
             sch_file.write(comp_str.decode('utf-8'))
+            if hasattr(self, 'path_and_ref'):
+                for item in (self.path_and_ref):
+                    path_and_ref_str = 'AR Path="{path}" Ref="{ref}"  Part="{part}" \n'.format(
+                            path = item[0],
+                            ref = item[1],
+                            part = item[2]
+                            )
+                    sch_file.write(path_and_ref_str.decode('utf-8'))
             for field in self.fields:
                 field.save(sch_file)
             comp_str = '\t{unit:<4} {pos_x:<4} {pos_y:<4}\n' \
