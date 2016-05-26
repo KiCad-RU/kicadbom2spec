@@ -504,7 +504,7 @@
                     </object>
                 </object>
                 <object class="wxMenu" expanded="0">
-                    <property name="label">Справка</property>
+                    <property name="label">&amp;Справка</property>
                     <property name="name">menu_help</property>
                     <property name="permission">protected</property>
                     <object class="wxMenuItem" expanded="0">

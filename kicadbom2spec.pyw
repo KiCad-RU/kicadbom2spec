@@ -409,37 +409,20 @@ class Window(gui.MainFrame):
         self.grid_components.EnableEditing(True)
         self.grid_components.SetSelectionMode(wx.grid.Grid.SelectRows)
 
-        attr = wx.grid.GridCellAttr()
-        attr.SetReadOnly()
-        attr.SetRenderer(wx.grid.GridCellBoolRenderer())
-        self.grid_components.SetColAttr(0, attr)
-        attr = wx.grid.GridCellAttr()
-        attr.SetReadOnly()
-        attr.SetAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
-        self.grid_components.SetColAttr(2, attr)
-        if self.library:
-            self.grid_components.SetColAttr(4, attr.Clone())
-        else:
-            attr = self.grid_components.GetOrCreateCellAttr(0, 1)
-            self.grid_components.SetColAttr(4, attr)
-
         # Events
-        self.grid_components.Bind(
-            wx.grid.EVT_GRID_CELL_LEFT_CLICK,
-            self.on_grid_left_click
-            )
-        self.grid_components.Bind(
-            wx.EVT_KEY_DOWN,
-            self.on_grid_key_down
-            )
-        if self.library:
-            self.grid_components.Unbind(
+        if not self.library:
+            self.grid_components.Bind(
                 wx.grid.EVT_GRID_CELL_LEFT_CLICK,
                 handler=self.on_grid_left_click
                 )
-            self.grid_components.Unbind(
+            self.grid_components.Bind(
                 wx.EVT_KEY_DOWN,
                 handler=self.on_grid_key_down
+                )
+            # For copies of the component (like "R123(R321)")
+            self.grid_components.Bind(
+                wx.grid.EVT_GRID_CELL_LEFT_DCLICK,
+                handler=self.on_grid_left_dclick
                 )
         self.grid_components.Bind(
             wx.grid.EVT_GRID_LABEL_LEFT_CLICK,
@@ -578,12 +561,15 @@ class Window(gui.MainFrame):
         """
         cur_col = self.grid_components.GetGridCursorCol()
         cur_row = self.grid_components.GetGridCursorRow()
-        if event.GetKeyCode() == wx.WXK_SPACE and cur_col == 0:
+        # Copies of the component (like "R123(R321)") is read only
+        ref = self.grid_components.GetCellValue(cur_row, 2)
+        if event.GetKeyCode() == wx.WXK_SPACE and cur_col == 0 and \
+                not ('(' in ref and ')' in ref):
             cell_value = self.grid_components.GetCellValue(cur_row, cur_col)
             if cell_value == '1':
-                self.grid_components.SetCellValue(cur_row, cur_col, '0')
+                self.grid_components_set_value(cur_row, cur_col, '0')
             else:
-                self.grid_components.SetCellValue(cur_row, cur_col, '1')
+                self.grid_components_set_value(cur_row, cur_col, '1')
             self.on_grid_change()
         else:
             event.Skip()
@@ -594,24 +580,63 @@ class Window(gui.MainFrame):
         by clicking left button of the mouse.
 
         """
-        if event.GetCol() == 0:
+        # Copies of the component (like "R123(R321)") is read only
+        ref = self.grid_components.GetCellValue(event.GetRow(), 2)
+        if event.GetCol() == 0 and \
+                not ('(' in ref and ')' in ref):
+
             cell_value = self.grid_components.GetCellValue(
                 event.GetRow(),
                 event.GetCol()
                 )
             if cell_value == '1':
-                self.grid_components.SetCellValue(
+                self.grid_components_set_value(
                     event.GetRow(),
                     event.GetCol(),
                     '0'
                     )
             else:
-                self.grid_components.SetCellValue(
+                self.grid_components_set_value(
                     event.GetRow(),
                     event.GetCol(),
                     '1'
                     )
             self.on_grid_change()
+        else:
+            event.Skip()
+
+    def on_grid_left_dclick(self, event):
+        """
+        Show info abut editing copies of the component like "R123(R321)".
+
+        """
+        # Copies of the component (like "R123(R321)") is read only
+        ref = self.grid_components.GetCellValue(event.GetRow(), 2)
+        if '(' in ref and ')' in ref:
+            matches = re.search(r'(.+)\((.+)\)', ref)
+            ref_copy = matches.groups()[0]
+            ref_orig = matches.groups()[1]
+            if wx.MessageBox(
+                    u'Компонент "{copy}" является копией компонента "{orig}"\n' \
+                    u'и доступен только для чтения. Поля компонентов копий\n' \
+                    u'всегда равны полям оригинального компонента.\n\n' \
+                    u'Перейти к редактированию оригинального компонента ' \
+                    u'"{orig}"?'.format(
+                        copy = ref_copy,
+                        orig = ref_orig
+                        ),
+                    u'Внимание!',
+                    wx.ICON_QUESTION|wx.YES_NO, self
+                    ) == wx.YES:
+                rows = self.grid_components.GetNumberRows()
+                for row in range(rows):
+                    row_ref = self.grid_components.GetCellValue(row, 2)
+                    if row_ref == ref_orig + '*':
+                        self.grid_components.SetGridCursor(row, event.GetCol())
+                        self.grid_components.SelectRow(row)
+                        self.grid_components.MakeCellVisible(row, event.GetCol())
+                        self.grid_components.SetFocus()
+                        return
         else:
             event.Skip()
 
@@ -720,6 +745,21 @@ class Window(gui.MainFrame):
         Put the grid data into undo buffer if changes made.
 
         """
+        # If changed original comp (like "C111*") also apply changes to copies
+        # of it (like "C222(C111)")
+        if event:
+            ref_orig = self.grid_components.GetCellValue(event.GetRow(), 2)
+            if ref_orig.endswith('*'):
+                ref_orig = ref_orig.rstrip('*')
+                row = event.GetRow()
+                col = event.GetCol()
+                value = self.grid_components.GetCellValue(event.GetRow(), event.GetCol())
+                rows = self.grid_components.GetNumberRows()
+                for cur_row in range(rows):
+                    cur_row_ref = self.grid_components.GetCellValue(cur_row, 2)
+                    if cur_row_ref.endswith('(' + ref_orig + ')'):
+                        self.grid_components.SetCellValue(cur_row, col, value)
+
         self.undo_buffer.append(self.get_grid_values())
         self.redo_buffer = []
         self.menuitem_redo.Enable(False)
@@ -765,14 +805,14 @@ class Window(gui.MainFrame):
         """
         if len(self.get_selected_rows()) > 1:
             if wx.MessageBox(
-                u'В таблице выделено несколько элементов!\n' \
-                u'Будут вырезаны поля только из первого выделеного элемента.\n' \
-                u'Продолжить?',
-                u'Внимание!',
-                wx.ICON_QUESTION|wx.YES_NO, self
-                ) == wx.NO:
-
+                    u'В таблице выделено несколько элементов!\n' \
+                    u'Будут вырезаны поля только из первого выделеного элемента.\n' \
+                    u'Продолжить?',
+                    u'Внимание!',
+                    wx.ICON_QUESTION|wx.YES_NO, self
+                    ) == wx.NO:
                 return
+
         self.buffer = []
         selected_cols = self.get_selected_cols()
         row = self.get_selected_rows()[0]
@@ -782,7 +822,7 @@ class Window(gui.MainFrame):
                 continue
             self.buffer.append(self.grid_components.GetCellValue(row, col))
             if col in selected_cols:
-                self.grid_components.SetCellValue(row, col, u'')
+                self.grid_components_set_value(row, col, u'')
         self.menuitem_paste.Enable(True)
         if self.is_grid_chaged():
             self.on_grid_change()
@@ -792,13 +832,14 @@ class Window(gui.MainFrame):
         Paste values to the fields of the selected components from buffer.
 
         """
-        rows = self.get_selected_rows()
-        cols = self.get_selected_cols()
-        for row in rows:
-            for col in cols:
+        sel_rows = self.get_selected_rows()
+        sel_cols = self.get_selected_cols()
+        for row in sel_rows:
+            for col in sel_cols:
+                # Ref is read only
                 if col == 2:
                     continue
-                self.grid_components.SetCellValue(
+                self.grid_components_set_value(
                     row,
                     col,
                     self.buffer[col - 1]
@@ -854,6 +895,10 @@ class Window(gui.MainFrame):
             self.schematic_file = open_sch_dialog.GetPath()
 
         try:
+            # Set cursor to 'wait'
+            wx.BeginBusyCursor()
+            wx.SafeYield()
+
             self.library_file = ''
             self.complist_file = os.path.splitext(self.schematic_file)[0] + '.ods'
             self.library = None
@@ -883,7 +928,14 @@ class Window(gui.MainFrame):
             self.menuitem_replace.Enable(True)
             self.add_to_recent(self.schematic_file, 'sch')
 
+            # Set cursor back to 'normal'
+            wx.EndBusyCursor()
+
         except:
+            # Set cursor back to 'normal'
+            if wx.IsBusy():
+                wx.EndBusyCursor()
+
             wx.MessageBox(
                 u'При открытии файла схемы:\n' +
                 self.schematic_file + '\n' \
@@ -997,6 +1049,10 @@ class Window(gui.MainFrame):
             self.library_file = open_lib_dialog.GetPath()
 
         try:
+            # Set cursor to 'wait'
+            wx.BeginBusyCursor()
+            wx.SafeYield()
+
             self.schematic_file = ''
             self.complist_file = ''
             self.library = Library(self.library_file)
@@ -1019,7 +1075,14 @@ class Window(gui.MainFrame):
             self.menuitem_replace.Enable(True)
             self.add_to_recent(self.library_file, 'lib')
 
+            # Set cursor back to 'normal'
+            wx.EndBusyCursor()
+
         except:
+            # Set cursor back to 'normal'
+            if wx.IsBusy():
+                wx.EndBusyCursor()
+
             wx.MessageBox(
                 u'При открытии файла библиотеки:\n' +
                 self.library_file + '\n' \
@@ -1202,6 +1265,24 @@ class Window(gui.MainFrame):
         Open specialized window for editing fields of selected components.
 
         """
+        def on_combobox_set_focus(event):
+            """
+            Set flag for selecting all text on activating combobox.
+
+            """
+            combobox = event.GetEventObject()
+            combobox.select_all = True
+
+        def on_combobox_idle(event):
+            """
+            Select all text in combobox after activating.
+
+            """
+            combobox = event.GetEventObject()
+            if combobox.select_all:
+                combobox.select_all = False
+                combobox.SelectAll()
+
         editor = gui.EditorDialog(self)
         selected_rows = self.get_selected_rows()
         col_num = self.grid_components.GetNumberCols()
@@ -1221,8 +1302,12 @@ class Window(gui.MainFrame):
         for i in range(1, col_num):
             if i == 2:
                 continue
+            cur_combobox = getattr(editor, 'combobox_' + str(i))
             for choice in all_choices[i - 1]:
-                getattr(editor, 'combobox_' + str(i)).Append(choice)
+                cur_combobox.Append(choice)
+            cur_combobox.select_all = False
+            cur_combobox.Bind(wx.EVT_SET_FOCUS, on_combobox_set_focus)
+            cur_combobox.Bind(wx.EVT_IDLE, on_combobox_idle)
         if self.library:
             editor.checkbox.Hide()
             editor.statictext_4.Hide()
@@ -1233,9 +1318,9 @@ class Window(gui.MainFrame):
         if result == wx.ID_OK:
             for row in selected_rows:
                 if editor.checkbox.IsChecked():
-                    self.grid_components.SetCellValue(row, 0, '1')
+                    self.grid_components_set_value(row, 0, '1')
                 else:
-                    self.grid_components.SetCellValue(row, 0, '0')
+                    self.grid_components_set_value(row, 0, '0')
                 for col in range(1, 9):
                     if col == 2:
                         continue
@@ -1243,7 +1328,7 @@ class Window(gui.MainFrame):
                     if new_value == u'<не изменять>':
                         continue
                     else:
-                        self.grid_components.SetCellValue(row, col, new_value)
+                        self.grid_components_set_value(row, col, new_value)
             if self.is_grid_chaged():
                 self.on_grid_change()
 
@@ -1503,7 +1588,7 @@ class Window(gui.MainFrame):
         selected_cols = self.get_selected_cols()
         for row in selected_rows:
             for col in selected_cols:
-                self.grid_components.SetCellValue(row, col, u'')
+                self.grid_components_set_value(row, col, u'')
         if self.is_grid_chaged():
             self.on_grid_change()
 
@@ -1632,7 +1717,7 @@ class Window(gui.MainFrame):
                     )
                 return
             new_cell_value = cell_value.replace(find_str, replace_str, 1)
-            self.grid_components.SetCellValue(cur_row, cur_col, new_cell_value)
+            self.grid_components_set_value(cur_row, cur_col, new_cell_value)
             self.on_grid_change()
 
         def on_find_replace_close(event):
@@ -1644,10 +1729,23 @@ class Window(gui.MainFrame):
             self.menuitem_replace.Enable(True)
             event.Skip()
 
+        def on_esc_key(event):
+            """
+            Close find/replace dialog if ESK key pressed.
+
+            """
+            key_code = event.GetKeyCode()
+            if key_code == wx.WXK_ESCAPE:
+                find_replace_dialog = event.GetEventObject().GetGrandParent()
+                find_replace_dialog.Close()
+            else:
+                event.Skip()
+
         self.menuitem_find.Enable(False)
         self.menuitem_replace.Enable(False)
         find_dialog = gui.FindReplaceDialog(self)
         find_dialog.Bind(wx.EVT_CLOSE, on_find_replace_close)
+        find_dialog.Bind(wx.EVT_CHAR_HOOK, on_esc_key)
         find_dialog.button_find_next.Bind(wx.EVT_BUTTON, on_find_next)
         find_dialog.textctrl_find.Bind(wx.EVT_TEXT_ENTER, on_find_next)
         find_dialog.button_find_prev.Bind(wx.EVT_BUTTON, on_find_prev)
@@ -1760,10 +1858,25 @@ class Window(gui.MainFrame):
                     comp1 = self.grid_components.GetCellValue(row, 2)
                     comp2 = values_row[2]
                 if (comp1 == comp2 or not comp1) | (not accordingly):
+                    # Reset attributes of the row to default
+                    self.grid_components.SetRowAttr(row, wx.grid.GridCellAttr())
                     for col in range(cols):
-                        value = values[values_index][col].replace(u'\\"', u'"')
+                        value = values_row[col].replace(u'\\"', u'"')
+                        # Checkboxes
+                        if col == 0:
+                            self.grid_components.SetReadOnly(row, col)
+                            self.grid_components.SetCellRenderer(row, col, wx.grid.GridCellBoolRenderer())
+                        # Ref is read only
+                        # Value of the component from library is read only
+                        elif col == 2 or \
+                                (col == 4 and self.library):
+                            self.grid_components.SetReadOnly(row, col)
+                            self.grid_components.SetCellAlignment(row, col, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+                        # Copies of the component (like "R123(R321)") is read only
+                        if '(' in values_row[2] and ')' in values_row[2]:
+                            self.grid_components.SetReadOnly(row, col)
                         self.grid_components.SetCellValue(row, col, value)
-                    self.grid_components.SetRowLabelValue(row, values[values_index][-1])
+                    self.grid_components.SetRowLabelValue(row, values_row[-1])
                     del values[values_index]
                     break
 
@@ -1819,6 +1932,14 @@ class Window(gui.MainFrame):
                                 row[1] = self.auto_groups_dict[sufix]
                                 break
                     if hasattr(comp, 'path_and_ref'):
+                        prefix = '*'
+                        # Do net mark components that only has parts (not copies)
+                        # on different sheets.
+                        for ref in comp.path_and_ref:
+                            if ref[1] != comp.fields[0].text:
+                                break
+                        else:
+                            prefix = ''
                         for ref in comp.path_and_ref:
                             # Skip parts of the same comp from different sheets
                             for value in values:
@@ -1830,7 +1951,7 @@ class Window(gui.MainFrame):
                             else:
                                 new_row = list(row)
                                 if ref[1] == comp.fields[0].text:
-                                    new_row[2] = comp.fields[0].text + '*'
+                                    new_row[2] = comp.fields[0].text + prefix
                                 else:
                                     new_row[2] = '{}({})'.format(ref[1], comp.fields[0].text)
                                 values.append(new_row)
@@ -2049,6 +2170,26 @@ class Window(gui.MainFrame):
                 if getattr(selector, 'checkbox_' + str(i)).IsChecked():
                     selected_cols.append(i)
         return selected_cols
+
+    def grid_components_set_value(self, row, col, value):
+        """
+        Set value to cell of the grid_components and sync fields of the
+        current component if needed (for comp like "R123*")
+
+        """
+        cur_ref = self.grid_components.GetCellValue(row, 2)
+        # Copies of the component (like "R123(R321)") is read only
+        if '(' in cur_ref and ')' in cur_ref:
+            return
+        self.grid_components.SetCellValue(row, col, value)
+        # Find copies and changes it too.
+        if cur_ref.endswith('*'):
+            ref_orig = cur_ref.rstrip('*')
+            rows = self.grid_components.GetNumberRows()
+            for cur_row in range(rows):
+                cur_row_ref = self.grid_components.GetCellValue(cur_row, 2)
+                if cur_row_ref.endswith('(' + ref_orig + ')'):
+                    self.grid_components.SetCellValue(cur_row, col, value)
 
 
 def main():

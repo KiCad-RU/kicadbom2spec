@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Feb 13 2016)
+## Python code generated with wxFormBuilder (version Mar 22 2016)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -184,7 +184,7 @@ class MainFrame ( wx.Frame ):
 		self.menuitem_about.SetBitmap( wx.Bitmap( u"bitmaps/gtk-info.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_help.AppendItem( self.menuitem_about )
 		
-		self.menubar.Append( self.menu_help, u"Справка" ) 
+		self.menubar.Append( self.menu_help, u"&Справка" ) 
 		
 		self.SetMenuBar( self.menubar )
 		
