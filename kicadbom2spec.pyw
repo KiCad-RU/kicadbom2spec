@@ -905,6 +905,10 @@ class Window(gui.MainFrame):
             self.menuitem_save_sch_as.Enable(False)
             self.menuitem_save_lib.Enable(False)
             self.menuitem_save_lib_as.Enable(False)
+            self.menuitem_copy.Enable(False)
+            self.menuitem_cut.Enable(False)
+            self.menuitem_edit.Enable(False)
+            self.menuitem_clear.Enable(False)
             self.menuitem_find.Enable(False)
             self.menuitem_replace.Enable(False)
 
@@ -1081,6 +1085,10 @@ class Window(gui.MainFrame):
             self.menuitem_save_sch_as.Enable(False)
             self.menuitem_save_lib.Enable(False)
             self.menuitem_save_lib_as.Enable(False)
+            self.menuitem_copy.Enable(False)
+            self.menuitem_cut.Enable(False)
+            self.menuitem_edit.Enable(False)
+            self.menuitem_clear.Enable(False)
             self.menuitem_find.Enable(False)
             self.menuitem_replace.Enable(False)
 
