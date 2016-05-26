@@ -1288,7 +1288,7 @@ class Window(gui.MainFrame):
 
             if open_complist:
                 if sys.platform == 'linux2':
-                    subprocess.call(["xdg-open", self.complist_file])
+                    subprocess.Popen(["xdg-open", self.complist_file])
                 else:
                     os.startfile(self.complist_file)
             else:
