@@ -899,6 +899,16 @@ class Window(gui.MainFrame):
             wx.BeginBusyCursor()
             wx.SafeYield()
 
+            # Menu & Toolbar
+            self.menuitem_complist.Enable(False)
+            self.menuitem_save_sch.Enable(False)
+            self.menuitem_save_sch_as.Enable(False)
+            self.menuitem_save_lib.Enable(False)
+            self.menuitem_save_lib_as.Enable(False)
+            self.menuitem_find.Enable(False)
+            self.menuitem_replace.Enable(False)
+
+            self.init_grid()
             self.library_file = ''
             self.complist_file = os.path.splitext(self.schematic_file)[0] + '.ods'
             self.library = None
@@ -909,7 +919,6 @@ class Window(gui.MainFrame):
             self.sheets = []
             for sheet_name in sheet_names:
                 self.sheets.append(Schematic(sheet_name))
-            self.init_grid()
             sch_values = self.get_schematic_values()
             self.grid_components.AppendRows(len(sch_values))
             self.set_grid_values(sch_values)
@@ -922,8 +931,6 @@ class Window(gui.MainFrame):
             self.menuitem_complist.Enable(True)
             self.menuitem_save_sch.Enable(False)
             self.menuitem_save_sch_as.Enable(True)
-            self.menuitem_save_lib.Enable(False)
-            self.menuitem_save_lib_as.Enable(False)
             self.menuitem_find.Enable(True)
             self.menuitem_replace.Enable(True)
             self.add_to_recent(self.schematic_file, 'sch')
@@ -931,10 +938,25 @@ class Window(gui.MainFrame):
             # Set cursor back to 'normal'
             wx.EndBusyCursor()
 
+            # Title
+            self.SetTitle('kicadbom2spec - ' + self.schematic_file)
+
         except:
             # Set cursor back to 'normal'
             if wx.IsBusy():
                 wx.EndBusyCursor()
+
+            # Title
+            self.SetTitle('kicadbom2spec')
+
+            # Menu & Toolbar
+            self.menuitem_complist.Enable(False)
+            self.menuitem_save_sch.Enable(False)
+            self.menuitem_save_sch_as.Enable(False)
+            self.menuitem_save_lib.Enable(False)
+            self.menuitem_save_lib_as.Enable(False)
+            self.menuitem_find.Enable(False)
+            self.menuitem_replace.Enable(False)
 
             wx.MessageBox(
                 u'При открытии файла схемы:\n' +
@@ -1053,10 +1075,19 @@ class Window(gui.MainFrame):
             wx.BeginBusyCursor()
             wx.SafeYield()
 
+            # Menu & Toolbar
+            self.menuitem_complist.Enable(False)
+            self.menuitem_save_sch.Enable(False)
+            self.menuitem_save_sch_as.Enable(False)
+            self.menuitem_save_lib.Enable(False)
+            self.menuitem_save_lib_as.Enable(False)
+            self.menuitem_find.Enable(False)
+            self.menuitem_replace.Enable(False)
+
+            self.init_grid()
             self.schematic_file = ''
             self.complist_file = ''
             self.library = Library(self.library_file)
-            self.init_grid()
             lib_values = self.get_library_values()
             self.grid_components.AppendRows(len(lib_values))
             self.set_grid_values(lib_values)
@@ -1066,9 +1097,6 @@ class Window(gui.MainFrame):
             self.saved = True
 
             # Menu & Toolbar
-            self.menuitem_complist.Enable(False)
-            self.menuitem_save_sch.Enable(False)
-            self.menuitem_save_sch_as.Enable(False)
             self.menuitem_save_lib.Enable(False)
             self.menuitem_save_lib_as.Enable(True)
             self.menuitem_find.Enable(True)
@@ -1078,10 +1106,25 @@ class Window(gui.MainFrame):
             # Set cursor back to 'normal'
             wx.EndBusyCursor()
 
+            # Title
+            self.SetTitle('kicadbom2spec - ' + self.library_file)
+
         except:
             # Set cursor back to 'normal'
             if wx.IsBusy():
                 wx.EndBusyCursor()
+
+            # Title
+            self.SetTitle('kicadbom2spec')
+
+            # Menu & Toolbar
+            self.menuitem_complist.Enable(False)
+            self.menuitem_save_sch.Enable(False)
+            self.menuitem_save_sch_as.Enable(False)
+            self.menuitem_save_lib.Enable(False)
+            self.menuitem_save_lib_as.Enable(False)
+            self.menuitem_find.Enable(False)
+            self.menuitem_replace.Enable(False)
 
             wx.MessageBox(
                 u'При открытии файла библиотеки:\n' +
