@@ -912,10 +912,10 @@ class Window(gui.MainFrame):
             self.menuitem_find.Enable(False)
             self.menuitem_replace.Enable(False)
 
-            self.init_grid()
             self.library_file = ''
             self.complist_file = os.path.splitext(self.schematic_file)[0] + '.ods'
             self.library = None
+            self.init_grid()
             complist = CompList()
             sheet_names = [self.schematic_file]
             sheet_names.extend(complist.get_sheets(self.schematic_file))
@@ -959,8 +959,15 @@ class Window(gui.MainFrame):
             self.menuitem_save_sch_as.Enable(False)
             self.menuitem_save_lib.Enable(False)
             self.menuitem_save_lib_as.Enable(False)
+            self.menuitem_copy.Enable(False)
+            self.menuitem_cut.Enable(False)
+            self.menuitem_edit.Enable(False)
+            self.menuitem_clear.Enable(False)
             self.menuitem_find.Enable(False)
             self.menuitem_replace.Enable(False)
+
+            # Initialize grid of the components
+            self.init_grid()
 
             wx.MessageBox(
                 u'При открытии файла схемы:\n' +
@@ -1092,10 +1099,10 @@ class Window(gui.MainFrame):
             self.menuitem_find.Enable(False)
             self.menuitem_replace.Enable(False)
 
-            self.init_grid()
             self.schematic_file = ''
             self.complist_file = ''
             self.library = Library(self.library_file)
+            self.init_grid()
             lib_values = self.get_library_values()
             self.grid_components.AppendRows(len(lib_values))
             self.set_grid_values(lib_values)
@@ -1131,8 +1138,15 @@ class Window(gui.MainFrame):
             self.menuitem_save_sch_as.Enable(False)
             self.menuitem_save_lib.Enable(False)
             self.menuitem_save_lib_as.Enable(False)
+            self.menuitem_copy.Enable(False)
+            self.menuitem_cut.Enable(False)
+            self.menuitem_edit.Enable(False)
+            self.menuitem_clear.Enable(False)
             self.menuitem_find.Enable(False)
             self.menuitem_replace.Enable(False)
+
+            # Initialize grid of the components
+            self.init_grid()
 
             wx.MessageBox(
                 u'При открытии файла библиотеки:\n' +
@@ -2032,7 +2046,8 @@ class Window(gui.MainFrame):
                             # Skip copies of the one component (see 'path_and_ref' in Comp)
                             if ('(' in value[2]) and (')' in value[2]):
                                 continue
-                            if value[2].rstrip('*') == item.ref and value[-1] == sheet.sch_name:
+                            if value[2].rstrip('*') == item.fields[0].text \
+                                    and value[-1] == sheet.sch_name:
                                 item.fields[1].text = value[4]
                                 for ind, field_name in field_names.items():
                                     if value[ind] != u'':
