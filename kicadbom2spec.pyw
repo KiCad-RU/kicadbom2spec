@@ -503,6 +503,24 @@ class Window(gui.MainFrame):
         recent_files = recent_files[:10]
         self.build_recent_menu(recent_files, file_type)
 
+    def remove_from_recent(self, file_name, file_type):
+        """
+        Remove file from the menu with list of the recent files.
+
+        """
+        menu = None
+        if file_type == 'sch':
+            menu = self.submenu_recent_sch
+        elif file_type == 'lib':
+            menu = self.submenu_recent_lib
+
+        recent_files = []
+        for recent_menuitem in menu.GetMenuItems():
+            recent_files.append(recent_menuitem.GetLabel())
+        if file_name in recent_files:
+            recent_files.remove(file_name)
+        self.build_recent_menu(recent_files, file_type)
+
     def build_recent_menu(self, file_names, file_type):
         """
         Fill submenu with recent files.
@@ -969,6 +987,9 @@ class Window(gui.MainFrame):
             # Initialize grid of the components
             self.init_grid()
 
+            # Remove bad file from rcent
+            self.remove_from_recent(self.schematic_file, 'sch')
+
             wx.MessageBox(
                 u'При открытии файла схемы:\n' +
                 self.schematic_file + '\n' \
@@ -1147,6 +1168,9 @@ class Window(gui.MainFrame):
 
             # Initialize grid of the components
             self.init_grid()
+
+            # Remove bad file from rcent
+            self.remove_from_recent(self.library_file, 'lib')
 
             wx.MessageBox(
                 u'При открытии файла библиотеки:\n' +
