@@ -1898,10 +1898,13 @@ class Window(gui.MainFrame):
                 u'Справка',
                 wx.ICON_INFORMATION|wx.OK, self
                 )
+            prog_path = u'/usr/bin'
+            if sys.platform == 'win32':
+                prog_path = os.environ['ProgramFiles']
             help_viewer_dialog = wx.FileDialog(
                 self,
                 u'Выбор программы для просмотра справки',
-                u'',
+                prog_path,
                 u'',
                 u'Все файлы (*.*)|*.*',
                 wx.FD_OPEN|wx.FD_FILE_MUST_EXIST
