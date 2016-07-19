@@ -1906,7 +1906,7 @@ class Window(gui.MainFrame):
                 u'Выбор программы для просмотра справки',
                 prog_path,
                 u'',
-                u'Все файлы (*.*)|*.*',
+                u'Все файлы (*.*)|*',
                 wx.FD_OPEN|wx.FD_FILE_MUST_EXIST
                 )
             if help_viewer_dialog.ShowModal() == wx.ID_CANCEL:

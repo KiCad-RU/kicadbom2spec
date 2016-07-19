@@ -975,7 +975,7 @@ class SettingsDialog ( wx.Dialog ):
 		self.help_viewer_label.Wrap( -1 )
 		help_viewer_tab_sizer.Add( self.help_viewer_label, 0, wx.ALL|wx.EXPAND, 5 )
 		
-		self.help_viewer_filepicker = wx.FilePickerCtrl( self.help_viewer_panel, wx.ID_ANY, wx.EmptyString, u"Выбор программы для просмотра справки", u"*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL )
+		self.help_viewer_filepicker = wx.FilePickerCtrl( self.help_viewer_panel, wx.ID_ANY, wx.EmptyString, u"Выбор программы для просмотра справки", u"Все файлы (*.*)|*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL )
 		help_viewer_tab_sizer.Add( self.help_viewer_filepicker, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		
