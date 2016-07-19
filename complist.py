@@ -319,6 +319,9 @@ class CompList():
                     temp.append(u'1')
                     if hasattr(comp, 'path_and_ref'):
                         for ref in comp.path_and_ref:
+                            # Skip unannotated components
+                            if not ref[1] or ref[1].endswith('?'):
+                                continue
                             # Skip parts of the same comp from different sheets
                             for value in comp_array:
                                 tmp_ref = value[1] + value[2]
