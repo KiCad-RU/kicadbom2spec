@@ -666,8 +666,8 @@ class Window(gui.MainFrame):
 
         def compare_ref(row):
             """
-            Returns integer equivalent value of reference
-            fo comparison in sort() function.
+            Returns value of reference
+            for comparison in sort() function.
 
             """
             ref = row[2]
@@ -675,22 +675,30 @@ class Window(gui.MainFrame):
             ref = ref.split('(')[0]
             ref = ref.rstrip('*')
 
-            ref_val = 0
             matches = re.search(r'^([A-Z]+)\d+', ref)
-            if matches != None:
-                for ch in range(len(matches.group(1))):
-                    #  Ref begins maximum of two letters, the first
-                    #  is multiplied by 10^5, the second by 10^4
-                    ref_val += ord(matches.group(1)[ch]) * 10 ** 5 / (10 ** ch)
-            matches = re.search(r'^[A-Z]+(\d+)', ref)
-            if matches != None:
-                ref_val += int(matches.group(1))
+            ref_val = matches.group(1)
             return ref_val
+
+        def compare_num(row):
+            """
+            Returns integer value of number from reference
+            for comparison in sort() function.
+
+            """
+            ref = row[2]
+            # Remove extra data from ref in comp like 'R123(R321)' or 'R321*'
+            ref = ref.split('(')[0]
+            ref = ref.rstrip('*')
+
+            matches = re.search(r'^[A-Z]+(\d+)', ref)
+            num_val = int(matches.group(1))
+            return num_val
 
         sort_col = event.GetCol()
         grid_data = self.get_grid_values()
         if sort_col == 2 and not self.library:
-            sorted_data = sorted(grid_data, key=compare_ref)
+            sorted_data = sorted(grid_data, key=compare_num)
+            sorted_data = sorted(sorted_data, key=compare_ref)
         else:
             sorted_data = sorted(grid_data, key=itemgetter(sort_col))
         if sort_col == self.last_sorted_col:

@@ -206,22 +206,6 @@ class CompList():
         # Coment
         self.replace_text(self.cur_table, u'#4:%d' % self.cur_line, element[7])
 
-    def compare_ref(self, ref):
-        """
-        Get integer value of reference (type & number) fo comparison in sort() function.
-
-        """
-        ref_val = 0
-        matches = re.search(r'^([A-Z]+)\d+', ref[0] + ref[1])
-        if matches != None:
-            for ch in range(len(matches.group(1))):
-                # Ref begins maximum of two letters, the first is multiplied by 10^5, the second by 10^4
-                ref_val += ord(matches.group(1)[ch]) * 10 ** 5 / (10 ** ch)
-        matches = re.search(r'^[A-Z]+(\d+)', ref[0] + ref[1])
-        if matches != None:
-            ref_val += int(matches.group(1))
-        return ref_val
-
     def get_descr(self, sch_file_name):
         """
         Open KiCad Schematic file and get title block description.
@@ -292,7 +276,7 @@ class CompList():
 
         comp_array = []
         if comp_fields:
-            comp_array = comp_fields
+            comp_array = comp_fields[:]
         else:
             components = self.get_components(sch_file_name)
             # Handle all lines
@@ -361,14 +345,23 @@ class CompList():
                 else:
                     comp_lines.append([temp_name, temp_array])
 
+        # Sort components into every group by ref_num
+        for group in comp_lines:
+            group[1].sort(key=lambda num: int(num[1]))
+            group[1].sort(key=lambda ref: ref[0])
         # Sort grops by reference of first element
-        comp_lines = sorted(comp_lines, key=lambda x: x[1][0][0])
+        comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][0])
         # Group with no name must be first
-        if comp_lines[-1][0] == u'':
-            comp_lines.insert(0, comp_lines.pop(-1))
-
-        temp_array = []
+        noname_groups = []
+        named_groups = []
+        for group in comp_lines:
+            if group[0] == u'':
+                noname_groups.append(group)
+            else:
+                named_groups.append(group)
+        comp_lines = noname_groups + named_groups
         # Combining the identical elements in one line
+        temp_array = []
         for group in comp_lines:
             first = u''
             last = u''
@@ -377,7 +370,6 @@ class CompList():
             last_index = 0
             temp_group = [group[0], []]
 
-            group[1].sort(key=self.compare_ref)
             for element in group[1]:
                 if group[1].index(element) == 0:
                     # first element
