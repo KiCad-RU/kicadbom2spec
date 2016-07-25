@@ -158,7 +158,7 @@ class CompList():
         If table is full, save it in list object and create a new one.
 
         """
-        # Increment line counter
+        # Increase line counter
         self.cur_line += 1
 
         # First page of the list has 29 lines, other pages has 32 lines

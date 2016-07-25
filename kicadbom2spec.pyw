@@ -709,6 +709,7 @@ class Window(gui.MainFrame):
             self.reversed_sorting = False
         self.set_grid_values(sorted_data, False)
         self.last_sorted_col = sort_col
+        self.update_grid_attr()
         event.Skip()
 
     def on_update_toolbar(self, event):
@@ -1923,6 +1924,36 @@ class Window(gui.MainFrame):
             self.settings.set('general', 'help viewer', help_viewer)
             self.on_help(None)
 
+    def update_grid_attr(self):
+        """
+        Update attributes of all cells after changes.
+
+        """
+        rows = self.grid_components.GetNumberRows()
+        cols = self.grid_components.GetNumberCols()
+        for row in range(rows):
+            ref_value = self.grid_components.GetCellValue(row, 2)
+            for col in range(cols):
+                # Set default values
+                self.grid_components.SetCellBackgroundColour(row, col, self.grid_components.GetDefaultCellBackgroundColour())
+                self.grid_components.SetReadOnly(row, col, False)
+                # Checkboxes
+                if col == 0:
+                    self.grid_components.SetReadOnly(row, col)
+                    self.grid_components.SetCellRenderer(row, col, wx.grid.GridCellBoolRenderer())
+                # Ref is read only
+                # Value of the component from library is read only
+                elif col == 2 or \
+                        (col == 4 and self.library):
+                    self.grid_components.SetReadOnly(row, col)
+                    self.grid_components.SetCellAlignment(row, col, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+                # Copies of the component (like "R123(R321)") is read only
+                if '(' in ref_value and ')' in ref_value:
+                    self.grid_components.SetReadOnly(row, col)
+                # Highlight sorted column
+                if self.last_sorted_col == col:
+                    self.grid_components.SetCellBackgroundColour(row, col, (240, 240, 240))
+
     def get_grid_values(self):
         """
         Returns list of cell values of grid.
@@ -1958,27 +1989,13 @@ class Window(gui.MainFrame):
                     comp1 = self.grid_components.GetCellValue(row, 2)
                     comp2 = values_row[2]
                 if (comp1 == comp2 or not comp1) | (not accordingly):
-                    # Reset attributes of the row to default
-                    self.grid_components.SetRowAttr(row, wx.grid.GridCellAttr())
                     for col in range(cols):
                         value = values_row[col].replace(u'\\"', u'"')
-                        # Checkboxes
-                        if col == 0:
-                            self.grid_components.SetReadOnly(row, col)
-                            self.grid_components.SetCellRenderer(row, col, wx.grid.GridCellBoolRenderer())
-                        # Ref is read only
-                        # Value of the component from library is read only
-                        elif col == 2 or \
-                                (col == 4 and self.library):
-                            self.grid_components.SetReadOnly(row, col)
-                            self.grid_components.SetCellAlignment(row, col, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
-                        # Copies of the component (like "R123(R321)") is read only
-                        if '(' in values_row[2] and ')' in values_row[2]:
-                            self.grid_components.SetReadOnly(row, col)
                         self.grid_components.SetCellValue(row, col, value)
                     self.grid_components.SetRowLabelValue(row, values_row[-1])
                     del values[values_index]
                     break
+        self.update_grid_attr()
 
     def get_schematic_values(self):
         """
