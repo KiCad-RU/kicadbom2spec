@@ -370,7 +370,8 @@ class CompList():
             else:
                 if len(temp_noname_group[1]) > 0:
                     comp_lines.append(temp_noname_group)
-        # Sort grops by reference of first element
+        # Sort grops by reference (ref & num) of first element
+        comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][1])
         comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][0])
         # Combining the identical elements in one line
         temp_array = []
