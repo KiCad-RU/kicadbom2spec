@@ -74,7 +74,6 @@ class CompList():
             self.complist.settings.addElement(setting)
 
         # Current state of filling list of the components
-        self.cur_group = u''
         self.cur_line = 1
         self.cur_page = 1
         self.cur_table = self.firstPagePattern
@@ -349,17 +348,31 @@ class CompList():
         for group in comp_lines:
             group[1].sort(key=lambda num: int(num[1]))
             group[1].sort(key=lambda ref: ref[0])
-        # Sort grops by reference of first element
-        comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][0])
-        # Group with no name must be first
-        noname_groups = []
+        # Split noname group into subgroups by type (ref)
+        noname_group = None
         named_groups = []
         for group in comp_lines:
             if group[0] == u'':
-                noname_groups.append(group)
+                noname_group = group
             else:
                 named_groups.append(group)
-        comp_lines = noname_groups + named_groups
+        comp_lines = named_groups
+        if noname_group != None:
+            prev_comp_type = None
+            temp_noname_group = [u'', []]
+            for comp in noname_group[1]:
+                if prev_comp_type == None or comp[0] == prev_comp_type:
+                    temp_noname_group[1].append(comp)
+                else:
+                    comp_lines.append(temp_noname_group)
+                    temp_noname_group = [u'', []]
+                    temp_noname_group[1].append(comp)
+                prev_comp_type = comp[0]
+            else:
+                if len(temp_noname_group[1]) > 0:
+                    comp_lines.append(temp_noname_group)
+        # Sort grops by reference of first element
+        comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][0])
         # Combining the identical elements in one line
         temp_array = []
         for group in comp_lines:
@@ -369,7 +382,6 @@ class CompList():
             first_index = 0
             last_index = 0
             temp_group = [group[0], []]
-
             for element in group[1]:
                 if group[1].index(element) == 0:
                     # first element
@@ -422,43 +434,20 @@ class CompList():
 
         # Fill list of the components
         for group in comp_lines:
-            if self.cur_group != group[0]:
+            if group[0] != u'':
                 # New group title
-                self.cur_group = group[0]
-
-                if (self.cur_page == 1 and self.cur_line > 26) or (self.cur_page > 1 and self.cur_line > 29):
+                if (self.cur_page == 1 and self.cur_line == 29) or (self.cur_page > 1 and self.cur_line == 32):
                     # If name of group at bottom of table without elements, go to beginning of a new
                     while self.cur_line != 1:
                         self.next_line()
-                else:
-                    self.next_line() # Skip one line
-
                 self.replace_text(self.cur_table, u'#2:%d' % self.cur_line, group[0], group=True)
                 self.next_line() # Skip one line
-                self.next_line() # Moving to next line
-
-            # Put all group lines to the table
-            if group[0] == u'':
-                # Elements without group
-                prev = None
-                for element in group[1]:
-                    if prev == None:
-                        prev = element[0]
-                        self.set_line(element)
-                        self.next_line()
-                        continue
-                    if element[0] != prev:
-                        # Elements with different types separated by one empty line
-                        self.next_line()
-                        prev = element[0]
-                    self.set_line(element)
-                    self.next_line()
-
+            # Place all components of the group into list
+            for comp in group[1]:
+                self.set_line(comp)
+                self.next_line()
             else:
-                # Elements with group
-                for element in group[1]:
-                    self.set_line(element)
-                    self.next_line()
+                self.next_line() # Skip one line
 
         if self.cur_line != 1:
             # Current table not empty - save it

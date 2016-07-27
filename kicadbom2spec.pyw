@@ -577,6 +577,9 @@ class Window(gui.MainFrame):
         Switch state of the checkbox in 0 column by pressing space key.
 
         """
+        # Skip if table is empty
+        if self.grid_components.GetNuberRows() == 0:
+            return
         cur_col = self.grid_components.GetGridCursorCol()
         cur_row = self.grid_components.GetGridCursorRow()
         # Copies of the component (like "R123(R321)") is read only
