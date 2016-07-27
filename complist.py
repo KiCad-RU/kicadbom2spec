@@ -527,6 +527,7 @@ class CompList():
         The correction of the title.
 
         """
+        suffix = u'\\nПеречень элементов'
         title_parts = title.rsplit(u'Схема электрическая ', 1)
         sch_types = (
             u'структурная',
@@ -538,6 +539,8 @@ class CompList():
             u'расположения'
             )
         if len(title_parts) > 1 and title_parts[1] in sch_types:
-            return title_parts[0] + u'Перечень элементов'
+            if title_parts[0].endswith(u'\\n'):
+                suffix = suffix.replace(u'\\n', u'')
+            return title_parts[0] + suffix
         else:
-            return title + u'\\nПеречень элементов'
+            return title + suffix
