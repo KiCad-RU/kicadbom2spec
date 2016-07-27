@@ -147,7 +147,6 @@ class CompList():
 
         """
         self.cur_table = self.lastPagePattern
-        self.cur_page += 1
         self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
         self.complist.spreadsheet.addElement(self.cur_table)
 
@@ -453,6 +452,9 @@ class CompList():
             # Current table not empty - save it
             self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
             self.complist.spreadsheet.addElement(self.cur_table)
+            self.cur_table = deepcopy(self.otherPagesPattern)
+            self.cur_page += 1
+            self.cur_line =1
 
     def save(self, complist_file_name):
         """
