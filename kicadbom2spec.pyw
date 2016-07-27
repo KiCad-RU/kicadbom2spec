@@ -578,7 +578,8 @@ class Window(gui.MainFrame):
 
         """
         # Skip if table is empty
-        if self.grid_components.GetNuberRows() == 0:
+        if self.grid_components.GetNumberRows() == 0:
+            event.Skip()
             return
         cur_col = self.grid_components.GetGridCursorCol()
         cur_row = self.grid_components.GetGridCursorRow()
@@ -1953,9 +1954,18 @@ class Window(gui.MainFrame):
                 # Copies of the component (like "R123(R321)") is read only
                 if '(' in ref_value and ')' in ref_value:
                     self.grid_components.SetReadOnly(row, col)
-                # Highlight sorted column
-                if self.last_sorted_col == col:
-                    self.grid_components.SetCellBackgroundColour(row, col, (240, 240, 240))
+        for col in range(cols):
+            # Remove extra characters from title
+            col_title = self.grid_components.GetColLabelValue(col)
+            col_title = col_title.replace(u' ▲', u'')
+            col_title = col_title.replace(u' ▼', u'')
+            # Add sorting indicator
+            if self.last_sorted_col == col:
+                if self.reversed_sorting:
+                    col_title += u' ▲'
+                else:
+                    col_title += u' ▼'
+            self.grid_components.SetColLabelValue(col, col_title)
 
     def get_grid_values(self):
         """
