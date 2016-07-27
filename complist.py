@@ -434,6 +434,10 @@ class CompList():
 
         # Fill list of the components
         for group in comp_lines:
+            # One empty line-separator
+            if not (self.cur_page == 1 and self.cur_line == 1):
+                self.next_line() # Skip one line
+
             if group[0] != u'':
                 # New group title
                 if (self.cur_page == 1 and self.cur_line == 29) or (self.cur_page > 1 and self.cur_line == 32):
@@ -446,16 +450,15 @@ class CompList():
             for comp in group[1]:
                 self.set_line(comp)
                 self.next_line()
-            else:
-                self.next_line() # Skip one line
 
         if self.cur_line != 1:
             # Current table not empty - save it
-            self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
-            self.complist.spreadsheet.addElement(self.cur_table)
-            self.cur_table = deepcopy(self.otherPagesPattern)
-            self.cur_page += 1
-            self.cur_line =1
+            if self.cur_page == 1:
+                slef.cur_line = 29
+            else:
+                self.cur_line = 32
+            # Go to next empty page and save current
+            self.next_line()
 
     def save(self, complist_file_name):
         """
