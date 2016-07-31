@@ -437,6 +437,10 @@ class Window(gui.MainFrame):
             self.on_select
             )
         self.grid_components.Bind(
+            wx.grid.EVT_GRID_EDITOR_CREATED,
+            self.on_grid_editor_created
+            )
+        self.grid_components.Bind(
             wx.grid.EVT_GRID_EDITOR_SHOWN,
             self.on_grid_editor_shown
             )
@@ -721,19 +725,88 @@ class Window(gui.MainFrame):
         self.update_grid_attr()
         event.Skip()
 
-    def on_grid_editor_shown(self, event):
+    def on_grid_editor_created(self, event):
         """
         Setup cell editor after creating.
 
         """
+        def on_copy(event):
+            combobox.Copy()
+
+        def on_cut(event):
+            combobox.Cut()
+
+        def on_paste(event):
+            combobox.Paste()
+
+        def on_delete(event):
+            combobox.WriteText(u'')
+
+        def on_select_all(event):
+            combobox.SelectAll()
+
+        def popup(event):
+            copy_id = wx.NewId()
+            cut_id = wx.NewId()
+            paste_id = wx.NewId()
+            delete_id = wx.NewId()
+            select_all_id = wx.NewId()
+
+            menu = wx.Menu()
+            item = wx.MenuItem(menu, copy_id, u'Копировать')
+            menu.AppendItem(item)
+            menu.Bind(wx.EVT_MENU, on_copy, item)
+
+            item = wx.MenuItem(menu, cut_id, u'Вырезать')
+            menu.AppendItem(item)
+            menu.Bind(wx.EVT_MENU, on_cut, item)
+
+            item = wx.MenuItem(menu, paste_id, u'Вставить')
+            menu.AppendItem(item)
+            menu.Bind(wx.EVT_MENU, on_paste, item)
+
+            item = wx.MenuItem(menu, delete_id, u'Удалить')
+            menu.AppendItem(item)
+            menu.Bind(wx.EVT_MENU, on_delete, item)
+
+            menu.Append(wx.ID_SEPARATOR)
+
+            item = wx.MenuItem(menu, select_all_id, u'Выделить всё')
+            menu.AppendItem(item)
+            menu.Bind(wx.EVT_MENU, on_select_all, item)
+
+            if not combobox.CanCopy():
+                menu.Enable(copy_id, False)
+
+            if not combobox.CanCut():
+                menu.Enable(cut_id, False)
+
+            if not combobox.CanPaste():
+                menu.Enable(paste_id, False)
+
+            if not combobox.CanCopy():
+                menu.Enable(delete_id, False)
+
+            combobox.PopupMenu(menu, event.GetPosition())
+            menu.Destroy()
+
         row = event.GetRow()
         col = event.GetCol()
+        combobox = event.GetControl()
         row_num = self.grid_components.GetNumberRows()
         rows = range(0, row_num)
         cols = [col]
         choices = self.get_choices(rows, cols)
-        cell_editor = wx.grid.GridCellChoiceEditor(choices[col], True)
-        self.grid_components.SetCellEditor(row, col, cell_editor)
+        combobox.AppendItems(choices[col])
+        combobox.Bind(wx.EVT_RIGHT_DOWN, popup)
+
+    def on_grid_editor_shown(self, event):
+        """
+        Create new default editor.
+
+        """
+        editor = wx.grid.GridCellChoiceEditor(allowOthers=True)
+        self.grid_components.SetDefaultEditor(editor)
 
     def on_update_toolbar(self, event):
         """
