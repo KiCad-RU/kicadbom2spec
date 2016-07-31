@@ -436,6 +436,10 @@ class Window(gui.MainFrame):
             wx.grid.EVT_GRID_RANGE_SELECT,
             self.on_select
             )
+        self.grid_components.Bind(
+            wx.grid.EVT_GRID_EDITOR_SHOWN,
+            self.on_grid_editor_shown
+            )
 
         # Columns
         self.grid_components.SetDefaultColSize(150)
@@ -474,6 +478,7 @@ class Window(gui.MainFrame):
             wx.ALIGN_LEFT,
             wx.ALIGN_CENTRE
             )
+        self.grid_components.SetDefaultEditor(wx.grid.GridCellChoiceEditor(allowOthers=True))
 
         # Layout
         sizer_components = wx.BoxSizer(wx.HORIZONTAL)
@@ -716,6 +721,20 @@ class Window(gui.MainFrame):
         self.update_grid_attr()
         event.Skip()
 
+    def on_grid_editor_shown(self, event):
+        """
+        Setup cell editor after creating.
+
+        """
+        row = event.GetRow()
+        col = event.GetCol()
+        row_num = self.grid_components.GetNumberRows()
+        rows = range(0, row_num)
+        cols = [col]
+        choices = self.get_choices(rows, cols)
+        cell_editor = wx.grid.GridCellChoiceEditor(choices[col], True)
+        self.grid_components.SetCellEditor(row, col, cell_editor)
+
     def on_update_toolbar(self, event):
         """
         Change enable/disable future of the toolbar as same as menuitem.
@@ -855,7 +874,7 @@ class Window(gui.MainFrame):
             if col in selected_cols:
                 self.grid_components_set_value(row, col, u'')
         self.menuitem_paste.Enable(True)
-        if self.is_grid_chaged():
+        if self.is_grid_changed():
             self.on_grid_change()
 
     def on_paste(self, event):
@@ -875,7 +894,7 @@ class Window(gui.MainFrame):
                     col,
                     self.buffer[col - 1]
                     )
-        if self.is_grid_chaged():
+        if self.is_grid_changed():
             self.on_grid_change()
 
     def on_select(self, event):
@@ -1388,24 +1407,12 @@ class Window(gui.MainFrame):
         editor = gui.EditorDialog(self)
         selected_rows = self.get_selected_rows()
         col_num = self.grid_components.GetNumberCols()
-        all_choices = []
-        for col in range(1, col_num):
-            if col == 2:
-                all_choices.append([])
-                continue
-            field_choices = self.values_dict[self.grid_components.GetColLabelValue(col).lower()][:]
-            for row in selected_rows:
-                cell_value = self.grid_components.GetCellValue(row, col)
-                if cell_value and not cell_value in field_choices:
-                    field_choices.append(cell_value)
-            while '' in field_choices:
-                field_choices.remove('')
-            all_choices.append(field_choices)
+        all_choices = self.get_choices(selected_rows, range(0, col_num))
         for i in range(1, col_num):
-            if i == 2:
+            if i == 0 or i == 2:
                 continue
             cur_combobox = getattr(editor, 'combobox_' + str(i))
-            for choice in all_choices[i - 1]:
+            for choice in all_choices[i]:
                 cur_combobox.Append(choice)
             cur_combobox.select_all = False
             cur_combobox.Bind(wx.EVT_SET_FOCUS, on_combobox_set_focus)
@@ -1431,7 +1438,7 @@ class Window(gui.MainFrame):
                         continue
                     else:
                         self.grid_components_set_value(row, col, new_value)
-            if self.is_grid_chaged():
+            if self.is_grid_changed():
                 self.on_grid_change()
 
     def on_settings(self, event):
@@ -1691,7 +1698,7 @@ class Window(gui.MainFrame):
         for row in selected_rows:
             for col in selected_cols:
                 self.grid_components_set_value(row, col, u'')
-        if self.is_grid_chaged():
+        if self.is_grid_changed():
             self.on_grid_change()
 
     def on_find_replace(self, event):
@@ -2232,7 +2239,7 @@ class Window(gui.MainFrame):
                         for field_index, field in enumerate(comp.fields):
                             field.number = field_index
 
-    def is_grid_chaged(self):
+    def is_grid_changed(self):
         """
         Returns True if values of the grid was changed.
 
@@ -2304,6 +2311,28 @@ class Window(gui.MainFrame):
                 if getattr(selector, 'checkbox_' + str(i)).IsChecked():
                     selected_cols.append(i)
         return selected_cols
+
+    def get_choices(self, rows, columns):
+        """
+        Get all unique values for every column in selected rows.
+
+        """
+        col_num = self.grid_components.GetNumberCols()
+        choices = [[]] # First column with checkboxes skiped
+        for col in range(1, col_num):
+            if not col in columns or col == 2:
+                choices.append([])
+                continue
+            else:
+                column_label = self.grid_components.GetColLabelValue(col).lower()
+                column_choices = self.values_dict[column_label][:]
+                for row in rows:
+                    cell_value = self.grid_components.GetCellValue(row, col)
+                    if cell_value != '' and not cell_value in column_choices:
+                        column_choices.append(cell_value)
+                column_choices.sort()
+                choices.append(column_choices)
+        return choices
 
     def grid_components_set_value(self, row, col, value):
         """
