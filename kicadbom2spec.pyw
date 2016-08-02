@@ -730,66 +730,6 @@ class Window(gui.MainFrame):
         Setup cell editor after creating.
 
         """
-        def on_copy(event):
-            combobox.Copy()
-
-        def on_cut(event):
-            combobox.Cut()
-
-        def on_paste(event):
-            combobox.Paste()
-
-        def on_delete(event):
-            combobox.WriteText(u'')
-
-        def on_select_all(event):
-            combobox.SelectAll()
-
-        def popup(event):
-            copy_id = wx.NewId()
-            cut_id = wx.NewId()
-            paste_id = wx.NewId()
-            delete_id = wx.NewId()
-            select_all_id = wx.NewId()
-
-            menu = wx.Menu()
-            item = wx.MenuItem(menu, copy_id, u'Копировать')
-            menu.AppendItem(item)
-            menu.Bind(wx.EVT_MENU, on_copy, item)
-
-            item = wx.MenuItem(menu, cut_id, u'Вырезать')
-            menu.AppendItem(item)
-            menu.Bind(wx.EVT_MENU, on_cut, item)
-
-            item = wx.MenuItem(menu, paste_id, u'Вставить')
-            menu.AppendItem(item)
-            menu.Bind(wx.EVT_MENU, on_paste, item)
-
-            item = wx.MenuItem(menu, delete_id, u'Удалить')
-            menu.AppendItem(item)
-            menu.Bind(wx.EVT_MENU, on_delete, item)
-
-            menu.Append(wx.ID_SEPARATOR)
-
-            item = wx.MenuItem(menu, select_all_id, u'Выделить всё')
-            menu.AppendItem(item)
-            menu.Bind(wx.EVT_MENU, on_select_all, item)
-
-            if not combobox.CanCopy():
-                menu.Enable(copy_id, False)
-
-            if not combobox.CanCut():
-                menu.Enable(cut_id, False)
-
-            if not combobox.CanPaste():
-                menu.Enable(paste_id, False)
-
-            if not combobox.CanCopy():
-                menu.Enable(delete_id, False)
-
-            combobox.PopupMenu(menu, event.GetPosition())
-            menu.Destroy()
-
         row = event.GetRow()
         col = event.GetCol()
         combobox = event.GetControl()
@@ -798,7 +738,7 @@ class Window(gui.MainFrame):
         cols = [col]
         choices = self.get_choices(rows, cols)
         combobox.AppendItems(choices[col])
-        combobox.Bind(wx.EVT_RIGHT_DOWN, popup)
+        self.combobox_create_menu(combobox)
 
     def on_grid_editor_shown(self, event):
         """
@@ -1549,6 +1489,8 @@ class Window(gui.MainFrame):
             cur_combobox.Bind(wx.EVT_SET_FOCUS, on_combobox_set_focus)
             cur_combobox.Bind(wx.EVT_IDLE, on_combobox_idle)
             cur_combobox.Bind(wx.EVT_TEXT, locals()["on_combobox_text_updated_%i" % i])
+            self.combobox_create_menu(cur_combobox)
+
             cur_checkbox = getattr(editor, 'checkbox_%i' % i)
             cur_checkbox.Bind(wx.EVT_CHECKBOX, on_checkbox_changed)
         if self.library:
@@ -2504,6 +2446,73 @@ class Window(gui.MainFrame):
                 cur_row_ref = self.grid_components.GetCellValue(cur_row, 2)
                 if cur_row_ref.endswith('(' + ref_orig + ')'):
                     self.grid_components.SetCellValue(cur_row, col, value)
+
+    def combobox_create_menu(self, combobox):
+        """
+        Create custom popup menu for combobox.
+
+        """
+        def on_copy(event):
+            combobox.Copy()
+
+        def on_cut(event):
+            combobox.Cut()
+
+        def on_paste(event):
+            combobox.Paste()
+
+        def on_delete(event):
+            combobox.WriteText(u'')
+
+        def on_select_all(event):
+            combobox.SelectAll()
+
+        def popup(event):
+            copy_id = wx.NewId()
+            cut_id = wx.NewId()
+            paste_id = wx.NewId()
+            delete_id = wx.NewId()
+            select_all_id = wx.NewId()
+
+            menu = wx.Menu()
+            item = wx.MenuItem(menu, copy_id, u'Копировать')
+            menu.AppendItem(item)
+            menu.Bind(wx.EVT_MENU, on_copy, item)
+
+            item = wx.MenuItem(menu, cut_id, u'Вырезать')
+            menu.AppendItem(item)
+            menu.Bind(wx.EVT_MENU, on_cut, item)
+
+            item = wx.MenuItem(menu, paste_id, u'Вставить')
+            menu.AppendItem(item)
+            menu.Bind(wx.EVT_MENU, on_paste, item)
+
+            item = wx.MenuItem(menu, delete_id, u'Удалить')
+            menu.AppendItem(item)
+            menu.Bind(wx.EVT_MENU, on_delete, item)
+
+            menu.Append(wx.ID_SEPARATOR)
+
+            item = wx.MenuItem(menu, select_all_id, u'Выделить всё')
+            menu.AppendItem(item)
+            menu.Bind(wx.EVT_MENU, on_select_all, item)
+
+            if not combobox.CanCopy():
+                menu.Enable(copy_id, False)
+
+            if not combobox.CanCut():
+                menu.Enable(cut_id, False)
+
+            if not combobox.CanPaste():
+                menu.Enable(paste_id, False)
+
+            if not combobox.CanCopy():
+                menu.Enable(delete_id, False)
+
+            combobox.PopupMenu(menu, event.GetPosition())
+            menu.Destroy()
+
+        combobox.Bind(wx.EVT_RIGHT_DOWN, popup)
 
 
 def main():
