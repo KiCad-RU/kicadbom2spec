@@ -1477,6 +1477,64 @@ class Window(gui.MainFrame):
                 combobox.select_all = False
                 combobox.SelectAll()
 
+        def update_checkbox(checkbox, value, values):
+            """
+            Update state of the checkbox based on changes in combobox.
+
+            """
+            if value == u'<не изменять>':
+                checkbox.SetValue(False)
+                checkbox.Enable(False)
+                checkbox.UnsetToolTip()
+            elif value in values:
+                checkbox.Enable(True)
+                checkbox.SetValue(True)
+            else:
+                checkbox.Enable(True)
+                checkbox.SetValue(False)
+
+        def on_combobox_text_updated_1(event):
+            update_checkbox(editor.checkbox_1, event.GetString(), self.values_dict[u'группа'])
+
+        def on_combobox_text_updated_3(event):
+            update_checkbox(editor.checkbox_3, event.GetString(), self.values_dict[u'марка'])
+
+        def on_combobox_text_updated_4(event):
+            update_checkbox(editor.checkbox_4, event.GetString(), self.values_dict[u'значение'])
+
+        def on_combobox_text_updated_5(event):
+            update_checkbox(editor.checkbox_5, event.GetString(), self.values_dict[u'класс точности'])
+
+        def on_combobox_text_updated_6(event):
+            update_checkbox(editor.checkbox_6, event.GetString(), self.values_dict[u'тип'])
+
+        def on_combobox_text_updated_7(event):
+            update_checkbox(editor.checkbox_7, event.GetString(), self.values_dict[u'стандарт'])
+
+        def on_combobox_text_updated_8(event):
+            update_checkbox(editor.checkbox_8, event.GetString(), self.values_dict[u'примечание'])
+
+        def on_checkbox_changed(event):
+            """
+            Update content of the tooltip after changin value of the checkbox.
+
+            """
+            checkbox = event.GetEventObject()
+            checkbox.UnsetToolTip()
+            if event.IsChecked():
+                checkbox.SetToolTip(wx.ToolTip(checkbox_tooltip_checked))
+            else:
+                checkbox.SetToolTip(wx.ToolTip(checkbox_tooltip_unchecked))
+
+        checkbox_tooltip_checked = \
+            u'Новое значение поля относится к стандартным значениям\n' \
+            u'и всегда доступно в выпадающем списке. Если нужно\n' \
+            u'удалить его из стандартных значений - снимите отметку.'
+        checkbox_tooltip_unchecked = \
+            u'Чтобы новое значение поля всегда было доступно в\n' \
+            u'выпадающем списке нужно установить отметку.\n' \
+            u'Таким образом, новый вариант будет добавлен в список\n' \
+            u'стандартных значений.'
         editor = gui.EditorDialog(self)
         selected_rows = self.get_selected_rows()
         col_num = self.grid_components.GetNumberCols()
@@ -1484,12 +1542,15 @@ class Window(gui.MainFrame):
         for i in range(1, col_num):
             if i == 0 or i == 2:
                 continue
-            cur_combobox = getattr(editor, 'combobox_' + str(i))
+            cur_combobox = getattr(editor, 'combobox_%i' % i)
             for choice in all_choices[i]:
                 cur_combobox.Append(choice)
             cur_combobox.select_all = False
             cur_combobox.Bind(wx.EVT_SET_FOCUS, on_combobox_set_focus)
             cur_combobox.Bind(wx.EVT_IDLE, on_combobox_idle)
+            cur_combobox.Bind(wx.EVT_TEXT, locals()["on_combobox_text_updated_%i" % i])
+            cur_checkbox = getattr(editor, 'checkbox_%i' % i)
+            cur_checkbox.Bind(wx.EVT_CHECKBOX, on_checkbox_changed)
         if self.library:
             editor.checkbox.Hide()
             editor.statictext_4.Hide()
@@ -1503,14 +1564,31 @@ class Window(gui.MainFrame):
                     self.grid_components_set_value(row, 0, '1')
                 else:
                     self.grid_components_set_value(row, 0, '0')
+                value_dict_keys = [
+                    u'',
+                    u'группа',
+                    u'',
+                    u'марка',
+                    u'значение',
+                    u'класс точности',
+                    u'тип',
+                    u'стандарт',
+                    u'примечание'
+                    ]
                 for col in range(1, 9):
                     if col == 2:
                         continue
-                    new_value = getattr(editor, 'combobox_' + str(col)).GetValue()
+                    new_value = getattr(editor, 'combobox_%i' % col).GetValue()
                     if new_value == u'<не изменять>':
                         continue
                     else:
                         self.grid_components_set_value(row, col, new_value)
+                        if getattr(editor, 'checkbox_%i' % col).GetValue():
+                            if not new_value in self.values_dict[value_dict_keys[col]]:
+                                self.values_dict[value_dict_keys[col]].append(new_value)
+                        else:
+                            if new_value in self.values_dict[value_dict_keys[col]]:
+                                self.values_dict[value_dict_keys[col]].remove(new_value)
             if self.is_grid_changed():
                 self.on_grid_change()
 

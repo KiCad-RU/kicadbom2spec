@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Mar 22 2016)
+## Python code generated with wxFormBuilder (version Aug  1 2016)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -371,6 +371,11 @@ class EditorDialog ( wx.Dialog ):
 		self.combobox_1.SetSelection( 0 )
 		sizer_field_1.Add( self.combobox_1, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
+		self.checkbox_1 = wx.CheckBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_1.Enable( False )
+		
+		sizer_field_1.Add( self.checkbox_1, 0, wx.ALL, 5 )
+		
 		
 		sizer_fields.Add( sizer_field_1, 0, wx.EXPAND, 5 )
 		
@@ -384,6 +389,11 @@ class EditorDialog ( wx.Dialog ):
 		self.combobox_3 = wx.ComboBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, combobox_3Choices, 0 )
 		self.combobox_3.SetSelection( 0 )
 		sizer_field_3.Add( self.combobox_3, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.checkbox_3 = wx.CheckBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_3.Enable( False )
+		
+		sizer_field_3.Add( self.checkbox_3, 0, wx.ALL, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_3, 0, wx.EXPAND, 5 )
@@ -399,6 +409,11 @@ class EditorDialog ( wx.Dialog ):
 		self.combobox_4.SetSelection( 0 )
 		sizer_field_4.Add( self.combobox_4, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
+		self.checkbox_4 = wx.CheckBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_4.Enable( False )
+		
+		sizer_field_4.Add( self.checkbox_4, 0, wx.ALL, 5 )
+		
 		
 		sizer_fields.Add( sizer_field_4, 0, wx.EXPAND, 5 )
 		
@@ -412,6 +427,11 @@ class EditorDialog ( wx.Dialog ):
 		self.combobox_5 = wx.ComboBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, combobox_5Choices, 0 )
 		self.combobox_5.SetSelection( 0 )
 		sizer_field_5.Add( self.combobox_5, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.checkbox_5 = wx.CheckBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_5.Enable( False )
+		
+		sizer_field_5.Add( self.checkbox_5, 0, wx.ALL, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_5, 0, wx.EXPAND, 5 )
@@ -427,6 +447,11 @@ class EditorDialog ( wx.Dialog ):
 		self.combobox_6.SetSelection( 0 )
 		sizer_field_6.Add( self.combobox_6, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
+		self.checkbox_6 = wx.CheckBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_6.Enable( False )
+		
+		sizer_field_6.Add( self.checkbox_6, 0, wx.ALL, 5 )
+		
 		
 		sizer_fields.Add( sizer_field_6, 0, wx.EXPAND, 5 )
 		
@@ -441,6 +466,11 @@ class EditorDialog ( wx.Dialog ):
 		self.combobox_7.SetSelection( 0 )
 		sizer_field_7.Add( self.combobox_7, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
+		self.checkbox_7 = wx.CheckBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_7.Enable( False )
+		
+		sizer_field_7.Add( self.checkbox_7, 0, wx.ALL, 5 )
+		
 		
 		sizer_fields.Add( sizer_field_7, 0, wx.EXPAND, 5 )
 		
@@ -454,6 +484,11 @@ class EditorDialog ( wx.Dialog ):
 		self.combobox_8 = wx.ComboBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, combobox_8Choices, 0 )
 		self.combobox_8.SetSelection( 0 )
 		sizer_field_8.Add( self.combobox_8, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.checkbox_8 = wx.CheckBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_8.Enable( False )
+		
+		sizer_field_8.Add( self.checkbox_8, 0, wx.ALL, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_8, 0, wx.EXPAND, 5 )
