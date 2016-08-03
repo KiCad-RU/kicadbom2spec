@@ -738,6 +738,7 @@ class Window(gui.MainFrame):
         cols = [col]
         choices = self.get_choices(rows, cols)
         combobox.AppendItems(choices[col])
+        combobox.field_name = self.grid_components.GetColLabelValue(col).lower()
         self.combobox_create_menu(combobox)
 
     def on_grid_editor_shown(self, event):
@@ -1417,64 +1418,17 @@ class Window(gui.MainFrame):
                 combobox.select_all = False
                 combobox.SelectAll()
 
-        def update_checkbox(checkbox, value, values):
-            """
-            Update state of the checkbox based on changes in combobox.
-
-            """
-            if value == u'<не изменять>':
-                checkbox.SetValue(False)
-                checkbox.Enable(False)
-                checkbox.UnsetToolTip()
-            elif value in values:
-                checkbox.Enable(True)
-                checkbox.SetValue(True)
-            else:
-                checkbox.Enable(True)
-                checkbox.SetValue(False)
-
-        def on_combobox_text_updated_1(event):
-            update_checkbox(editor.checkbox_1, event.GetString(), self.values_dict[u'группа'])
-
-        def on_combobox_text_updated_3(event):
-            update_checkbox(editor.checkbox_3, event.GetString(), self.values_dict[u'марка'])
-
-        def on_combobox_text_updated_4(event):
-            update_checkbox(editor.checkbox_4, event.GetString(), self.values_dict[u'значение'])
-
-        def on_combobox_text_updated_5(event):
-            update_checkbox(editor.checkbox_5, event.GetString(), self.values_dict[u'класс точности'])
-
-        def on_combobox_text_updated_6(event):
-            update_checkbox(editor.checkbox_6, event.GetString(), self.values_dict[u'тип'])
-
-        def on_combobox_text_updated_7(event):
-            update_checkbox(editor.checkbox_7, event.GetString(), self.values_dict[u'стандарт'])
-
-        def on_combobox_text_updated_8(event):
-            update_checkbox(editor.checkbox_8, event.GetString(), self.values_dict[u'примечание'])
-
-        def on_checkbox_changed(event):
-            """
-            Update content of the tooltip after changin value of the checkbox.
-
-            """
-            checkbox = event.GetEventObject()
-            checkbox.UnsetToolTip()
-            if event.IsChecked():
-                checkbox.SetToolTip(wx.ToolTip(checkbox_tooltip_checked))
-            else:
-                checkbox.SetToolTip(wx.ToolTip(checkbox_tooltip_unchecked))
-
-        checkbox_tooltip_checked = \
-            u'Новое значение поля относится к стандартным значениям\n' \
-            u'и всегда доступно в выпадающем списке. Если нужно\n' \
-            u'удалить его из стандартных значений - снимите отметку.'
-        checkbox_tooltip_unchecked = \
-            u'Чтобы новое значение поля всегда было доступно в\n' \
-            u'выпадающем списке нужно установить отметку.\n' \
-            u'Таким образом, новый вариант будет добавлен в список\n' \
-            u'стандартных значений.'
+        value_dict_keys = [
+            u'',
+            u'группа',
+            u'',
+            u'марка',
+            u'значение',
+            u'класс точности',
+            u'тип',
+            u'стандарт',
+            u'примечание'
+            ]
         editor = gui.EditorDialog(self)
         selected_rows = self.get_selected_rows()
         col_num = self.grid_components.GetNumberCols()
@@ -1483,16 +1437,12 @@ class Window(gui.MainFrame):
             if i == 0 or i == 2:
                 continue
             cur_combobox = getattr(editor, 'combobox_%i' % i)
-            for choice in all_choices[i]:
-                cur_combobox.Append(choice)
+            cur_combobox.AppendItems(all_choices[i])
+            cur_combobox.field_name = value_dict_keys[i]
             cur_combobox.select_all = False
             cur_combobox.Bind(wx.EVT_SET_FOCUS, on_combobox_set_focus)
             cur_combobox.Bind(wx.EVT_IDLE, on_combobox_idle)
-            cur_combobox.Bind(wx.EVT_TEXT, locals()["on_combobox_text_updated_%i" % i])
             self.combobox_create_menu(cur_combobox)
-
-            cur_checkbox = getattr(editor, 'checkbox_%i' % i)
-            cur_checkbox.Bind(wx.EVT_CHECKBOX, on_checkbox_changed)
         if self.library:
             editor.checkbox.Hide()
             editor.statictext_4.Hide()
@@ -1506,17 +1456,6 @@ class Window(gui.MainFrame):
                     self.grid_components_set_value(row, 0, '1')
                 else:
                     self.grid_components_set_value(row, 0, '0')
-                value_dict_keys = [
-                    u'',
-                    u'группа',
-                    u'',
-                    u'марка',
-                    u'значение',
-                    u'класс точности',
-                    u'тип',
-                    u'стандарт',
-                    u'примечание'
-                    ]
                 for col in range(1, 9):
                     if col == 2:
                         continue
@@ -1525,12 +1464,6 @@ class Window(gui.MainFrame):
                         continue
                     else:
                         self.grid_components_set_value(row, col, new_value)
-                        if getattr(editor, 'checkbox_%i' % col).GetValue():
-                            if not new_value in self.values_dict[value_dict_keys[col]]:
-                                self.values_dict[value_dict_keys[col]].append(new_value)
-                        else:
-                            if new_value in self.values_dict[value_dict_keys[col]]:
-                                self.values_dict[value_dict_keys[col]].remove(new_value)
             if self.is_grid_changed():
                 self.on_grid_change()
 
@@ -2467,35 +2400,91 @@ class Window(gui.MainFrame):
         def on_select_all(event):
             combobox.SelectAll()
 
+        def on_add_std_value(event):
+            """
+            Add current value to standard values.
+
+            """
+            combobox_value = combobox.GetValue()
+            self.values_dict[combobox.field_name].append(combobox_value)
+            combobox_list = combobox.GetStrings()
+            combobox_list.append(combobox_value)
+            combobox_list.sort()
+            combobox.Clear()
+            combobox.AppendItems(combobox_list)
+
+        def on_remove_std_value(event):
+            """
+            Remove current value from standard values.
+
+            """
+            combobox_value = combobox.GetValue()
+            self.values_dict[combobox.field_name].remove(combobox_value)
+            combobox_list = combobox.GetStrings()
+            combobox_list.remove(combobox_value)
+            combobox_list.sort()
+            combobox.Clear()
+            combobox.AppendItems(combobox_list)
+
         def popup(event):
+            """
+            Create popup menu.
+
+            """
             copy_id = wx.NewId()
             cut_id = wx.NewId()
             paste_id = wx.NewId()
             delete_id = wx.NewId()
             select_all_id = wx.NewId()
+            add_std_value_id = wx.NewId()
+            remove_std_value_id = wx.NewId()
 
             menu = wx.Menu()
             item = wx.MenuItem(menu, copy_id, u'Копировать')
+            item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy_small.png', wx.BITMAP_TYPE_PNG))
             menu.AppendItem(item)
             menu.Bind(wx.EVT_MENU, on_copy, item)
 
             item = wx.MenuItem(menu, cut_id, u'Вырезать')
+            item.SetBitmap(wx.Bitmap(u'bitmaps/edit-cut_small.png', wx.BITMAP_TYPE_PNG))
             menu.AppendItem(item)
             menu.Bind(wx.EVT_MENU, on_cut, item)
 
             item = wx.MenuItem(menu, paste_id, u'Вставить')
+            item.SetBitmap(wx.Bitmap(u'bitmaps/edit-paste_small.png', wx.BITMAP_TYPE_PNG))
             menu.AppendItem(item)
             menu.Bind(wx.EVT_MENU, on_paste, item)
 
             item = wx.MenuItem(menu, delete_id, u'Удалить')
+            item.SetBitmap(wx.Bitmap(u'bitmaps/edit-delete_small.png', wx.BITMAP_TYPE_PNG))
             menu.AppendItem(item)
             menu.Bind(wx.EVT_MENU, on_delete, item)
 
             menu.Append(wx.ID_SEPARATOR)
 
             item = wx.MenuItem(menu, select_all_id, u'Выделить всё')
+            item.SetBitmap(wx.Bitmap(u'bitmaps/edit-select-all_small.png', wx.BITMAP_TYPE_PNG))
             menu.AppendItem(item)
             menu.Bind(wx.EVT_MENU, on_select_all, item)
+
+            menu.Append(wx.ID_SEPARATOR)
+
+            combobox_value = combobox.GetValue()
+            if not combobox_value in [u'', u'<не изменять>']:
+                if combobox_value in self.values_dict[combobox.field_name]:
+                    if len(combobox_value) > 9:
+                        combobox_value = combobox_value[:10] + u'…'
+                    item = wx.MenuItem(menu, remove_std_value_id, u'Удалить "%s" из стандартных' % combobox_value)
+                    item.SetBitmap(wx.Bitmap(u'bitmaps/list-remove_small.png', wx.BITMAP_TYPE_PNG))
+                    menu.AppendItem(item)
+                    menu.Bind(wx.EVT_MENU, on_remove_std_value, item)
+                else:
+                    if len(combobox_value) > 9:
+                        combobox_value = combobox_value[:10] + u'…'
+                    item = wx.MenuItem(menu, add_std_value_id, u'Добавить "%s" в стандартные' % combobox_value)
+                    item.SetBitmap(wx.Bitmap(u'bitmaps/list-add_small.png', wx.BITMAP_TYPE_PNG))
+                    menu.AppendItem(item)
+                    menu.Bind(wx.EVT_MENU, on_add_std_value, item)
 
             if not combobox.CanCopy():
                 menu.Enable(copy_id, False)
