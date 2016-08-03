@@ -444,6 +444,14 @@ class Window(gui.MainFrame):
             wx.grid.EVT_GRID_EDITOR_SHOWN,
             self.on_grid_editor_shown
             )
+        self.grid_components.Bind(
+            wx.EVT_CONTEXT_MENU,
+            self.on_grid_popup
+            )
+        self.grid_components.Bind(
+            wx.grid.EVT_GRID_CELL_RIGHT_CLICK,
+            self.on_grid_popup
+            )
 
         # Columns
         self.grid_components.SetDefaultColSize(150)
@@ -748,6 +756,58 @@ class Window(gui.MainFrame):
         """
         editor = wx.grid.GridCellChoiceEditor(allowOthers=True)
         self.grid_components.SetDefaultEditor(editor)
+
+    def on_grid_popup(self, event):
+        """
+        Show popup menu for grid.
+
+        """
+        if self.grid_components.IsCellEditControlEnabled():
+            event.Skip()
+            return
+
+        copy_id = wx.NewId()
+        cut_id = wx.NewId()
+        paste_id = wx.NewId()
+        edit_id = wx.NewId()
+        clear_id = wx.NewId()
+
+        menu = wx.Menu()
+
+        item = wx.MenuItem(menu, copy_id, u'Копировать поля')
+        item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy.png', wx.BITMAP_TYPE_PNG))
+        menu.AppendItem(item)
+        menu.Bind(wx.EVT_MENU, self.on_copy, item)
+        menu.Enable(copy_id, self.menuitem_copy.IsEnabled())
+
+        item = wx.MenuItem(menu, cut_id, u'Вырезать поля…')
+        item.SetBitmap(wx.Bitmap(u'bitmaps/edit-cut.png', wx.BITMAP_TYPE_PNG))
+        menu.AppendItem(item)
+        menu.Bind(wx.EVT_MENU, self.on_cut, item)
+        menu.Enable(cut_id, self.menuitem_cut.IsEnabled())
+
+        item = wx.MenuItem(menu, paste_id, u'Вставить поля…')
+        item.SetBitmap(wx.Bitmap(u'bitmaps/edit-paste.png', wx.BITMAP_TYPE_PNG))
+        menu.AppendItem(item)
+        menu.Bind(wx.EVT_MENU, self.on_paste, item)
+        menu.Enable(paste_id, self.menuitem_paste.IsEnabled())
+
+        menu.Append(wx.ID_SEPARATOR)
+
+        item = wx.MenuItem(menu, edit_id, u'Редактировать поля…')
+        item.SetBitmap(wx.Bitmap(u'bitmaps/gtk-edit.png', wx.BITMAP_TYPE_PNG))
+        menu.AppendItem(item)
+        menu.Bind(wx.EVT_MENU, self.on_edit_fields, item)
+        menu.Enable(edit_id, self.menuitem_edit.IsEnabled())
+
+        item = wx.MenuItem(menu, clear_id, u'Очистить поля…')
+        item.SetBitmap(wx.Bitmap(u'bitmaps/edit-clear.png', wx.BITMAP_TYPE_PNG))
+        menu.AppendItem(item)
+        menu.Bind(wx.EVT_MENU, self.on_clear_fields, item)
+        menu.Enable(clear_id, self.menuitem_clear.IsEnabled())
+
+        self.grid_components.PopupMenu(menu, event.GetPosition())
+        menu.Destroy()
 
     def on_update_toolbar(self, event):
         """
@@ -2502,6 +2562,7 @@ class Window(gui.MainFrame):
             menu.Destroy()
 
         combobox.Bind(wx.EVT_RIGHT_DOWN, popup)
+        combobox.Bind(wx.EVT_CONTEXT_MENU, popup)
 
 
 def main():
