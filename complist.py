@@ -240,8 +240,9 @@ class CompList():
 
         """
         components = []
-        exec_path = os.path.dirname(os.path.realpath(__file__))
-        os.chdir(os.path.dirname(sch_file_name))
+        if os.path.isabs(sch_file_name):
+            exec_path = os.path.dirname(os.path.realpath(__file__))
+            os.chdir(os.path.dirname(sch_file_name))
         sch = Schematic(sch_file_name)
         for item in sch.items:
             if item.__class__.__name__ == u'Comp':
@@ -249,8 +250,9 @@ class CompList():
                 if not item.ref.startswith(u'#'):
                     components.append(item)
             elif item.__class__.__name__ == u'Sheet' and not root_only:
-                components.extend(self.get_components(os.path.abspath(item.file_name)))
-        os.chdir(exec_path)
+                components.extend(self.get_components(item.file_name))
+        if os.path.isabs(sch_file_name):
+            os.chdir(exec_path)
         return components
 
     def load(self, sch_file_name, comp_fields=None):
@@ -272,11 +274,56 @@ class CompList():
                         return field.text
             return u''
 
+        def apply_substitution(comp, ref, field_value):
+            """
+            Replace ${field_name} with value from field with name "field_name".
+
+            """
+            match = re.search(r'\$\{([^{}]*)\}', field_value)
+            if match == None:
+                return field_value
+            else:
+                substitution_value = u''
+                if match.group(1) == u'Обозначение':
+                    substitution_value = ref
+                elif match.group(1) == u'Значение':
+                    substitution_value = comp.fields[1].text
+                elif match.group(1) == u'Посад.место':
+                    substitution_value = comp.fields[2].text
+                elif match.group(1) == u'Документация':
+                    substitution_value = comp.fields[3].text
+                else:
+                    substitution_value = get_text_from_field(comp, match.group(1))
+
+                new_field_value = field_value.replace(
+                    u'${%s}' % match.group(1),
+                    substitution_value,
+                    1
+                    )
+                new_field_value = apply_substitution(comp, ref, new_field_value)
+                return new_field_value
+
+        def get_comp_by_ref(ref):
+            """
+            Get component object with reference "ref".
+
+            """
+            for comp in components:
+                if comp.fields[0].text == ref:
+                    return comp
+                else:
+                    if hasattr(comp, 'path_and_ref'):
+                        for path_and_ref in comp.path_and_ref:
+                            if path_and_ref[1] == ref:
+                                return comp
+            else:
+                return None
+
         comp_array = []
+        components = self.get_components(sch_file_name)
         if comp_fields:
             comp_array = comp_fields[:]
         else:
-            components = self.get_components(sch_file_name)
             # Handle all lines
             for comp in components:
                 # Skip unannotated components
@@ -316,6 +363,19 @@ class CompList():
                                 comp_array.append(new_temp)
                     else:
                         comp_array.append(temp)
+
+        # Apply substitution
+        for i in range(len(comp_array)):
+            comp = get_comp_by_ref(comp_array[i][1] + comp_array[i][2])
+            for ii in range(len(comp_array[i])):
+                field_value = comp_array[i][ii]
+                new_field_value = apply_substitution(
+                    comp,
+                    comp_array[i][1] + comp_array[i][2],
+                    field_value
+                    )
+                comp_array[i][ii] = new_field_value
+
         comp_array = sorted(comp_array, key=itemgetter(0))
         self.get_descr(sch_file_name)
 
@@ -454,7 +514,7 @@ class CompList():
         if self.cur_line != 1:
             # Current table not empty - save it
             if self.cur_page == 1:
-                slef.cur_line = 29
+                self.cur_line = 29
             else:
                 self.cur_line = 32
             # Go to next empty page and save current

@@ -746,7 +746,10 @@ class Window(gui.MainFrame):
         cols = [col]
         choices = self.get_choices(rows, cols)
         combobox.AppendItems(choices[col])
-        combobox.field_name = self.grid_components.GetColLabelValue(col).lower()
+        col_title = self.grid_components.GetColLabelValue(col).lower()
+        col_title = col_title.replace(u' ▲', u'')
+        col_title = col_title.replace(u' ▼', u'')
+        combobox.field_name = col_title
         self.combobox_create_menu(combobox)
 
     def on_grid_editor_shown(self, event):
@@ -1466,7 +1469,10 @@ class Window(gui.MainFrame):
 
             """
             combobox = event.GetEventObject()
-            combobox.select_all = True
+            if not combobox.skip_selecting:
+                combobox.select_all = True
+            else:
+                combobox.skip_selecting = False
 
         def on_combobox_idle(event):
             """
@@ -1500,6 +1506,7 @@ class Window(gui.MainFrame):
             cur_combobox.AppendItems(all_choices[i])
             cur_combobox.field_name = value_dict_keys[i]
             cur_combobox.select_all = False
+            cur_combobox.skip_selecting = False
             cur_combobox.Bind(wx.EVT_SET_FOCUS, on_combobox_set_focus)
             cur_combobox.Bind(wx.EVT_IDLE, on_combobox_idle)
             self.combobox_create_menu(cur_combobox)
@@ -2411,6 +2418,8 @@ class Window(gui.MainFrame):
                 continue
             else:
                 column_label = self.grid_components.GetColLabelValue(col).lower()
+                column_label = column_label.replace(u' ▲', u'')
+                column_label = column_label.replace(u' ▼', u'')
                 column_choices = self.values_dict[column_label][:]
                 for row in rows:
                     cell_value = self.grid_components.GetCellValue(row, col)
@@ -2486,19 +2495,30 @@ class Window(gui.MainFrame):
             combobox.Clear()
             combobox.AppendItems(combobox_list)
 
+        def on_insert(event):
+            """
+            Insert substitution for some field.
+
+            """
+            cur_id = event.GetId()
+            combobox.skip_selecting = True
+            if cur_id == ref_id:
+                combobox.WriteText(u'${Обозначение}')
+            elif cur_id == value_id:
+                combobox.WriteText(u'${Значение}')
+            elif cur_id == footprint_id:
+                combobox.WriteText(u'${Посад.место}')
+            elif cur_id == datasheet_id:
+                combobox.WriteText(u'${Документация}')
+            elif cur_id == another_id:
+                combobox.WriteText(u'${}')
+                combobox.SetInsertionPoint(combobox.GetInsertionPoint() - 1)
+
         def popup(event):
             """
             Create popup menu.
 
             """
-            copy_id = wx.NewId()
-            cut_id = wx.NewId()
-            paste_id = wx.NewId()
-            delete_id = wx.NewId()
-            select_all_id = wx.NewId()
-            add_std_value_id = wx.NewId()
-            remove_std_value_id = wx.NewId()
-
             menu = wx.Menu()
             item = wx.MenuItem(menu, copy_id, u'Копировать')
             item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy_small.png', wx.BITMAP_TYPE_PNG))
@@ -2527,24 +2547,52 @@ class Window(gui.MainFrame):
             menu.AppendItem(item)
             menu.Bind(wx.EVT_MENU, on_select_all, item)
 
-            menu.Append(wx.ID_SEPARATOR)
-
             combobox_value = combobox.GetValue()
             if not combobox_value in [u'', u'<не изменять>']:
+                menu.Append(wx.ID_SEPARATOR)
+
                 if combobox_value in self.values_dict[combobox.field_name]:
-                    if len(combobox_value) > 9:
-                        combobox_value = combobox_value[:10] + u'…'
+                    if len(combobox_value) > 15:
+                        combobox_value = combobox_value[:10] + u'…' + combobox_value[-5:]
                     item = wx.MenuItem(menu, remove_std_value_id, u'Удалить "%s" из стандартных' % combobox_value)
                     item.SetBitmap(wx.Bitmap(u'bitmaps/list-remove_small.png', wx.BITMAP_TYPE_PNG))
                     menu.AppendItem(item)
                     menu.Bind(wx.EVT_MENU, on_remove_std_value, item)
                 else:
-                    if len(combobox_value) > 9:
-                        combobox_value = combobox_value[:10] + u'…'
+                    if len(combobox_value) > 15:
+                        combobox_value = combobox_value[:10] + u'…' + combobox_value[-5:]
                     item = wx.MenuItem(menu, add_std_value_id, u'Добавить "%s" в стандартные' % combobox_value)
                     item.SetBitmap(wx.Bitmap(u'bitmaps/list-add_small.png', wx.BITMAP_TYPE_PNG))
                     menu.AppendItem(item)
                     menu.Bind(wx.EVT_MENU, on_add_std_value, item)
+
+            menu.Append(wx.ID_SEPARATOR)
+
+            submenu = wx.Menu()
+
+            item = wx.MenuItem(menu, ref_id, u'${Обозначение}')
+            submenu.AppendItem(item)
+            submenu.Bind(wx.EVT_MENU, on_insert, item)
+
+            item = wx.MenuItem(menu, value_id, u'${Значение}')
+            submenu.AppendItem(item)
+            submenu.Bind(wx.EVT_MENU, on_insert, item)
+
+            item = wx.MenuItem(menu, footprint_id, u'${Посад.место}')
+            submenu.AppendItem(item)
+            submenu.Bind(wx.EVT_MENU, on_insert, item)
+
+            item = wx.MenuItem(menu, datasheet_id, u'${Документация}')
+            submenu.AppendItem(item)
+            submenu.Bind(wx.EVT_MENU, on_insert, item)
+
+            item = wx.MenuItem(menu, another_id, u'Другую…')
+            submenu.AppendItem(item)
+            submenu.Bind(wx.EVT_MENU, on_insert, item)
+
+            submenu_item = wx.MenuItem(menu, wx.NewId(), u'Вставить подстановку…', u'', wx.ITEM_NORMAL, submenu)
+            submenu_item.SetBitmap(wx.Bitmap(u'bitmaps/insert-text_small.png', wx.BITMAP_TYPE_PNG))
+            submenu_item = menu.AppendItem(submenu_item)
 
             if not combobox.CanCopy():
                 menu.Enable(copy_id, False)
@@ -2560,6 +2608,19 @@ class Window(gui.MainFrame):
 
             combobox.PopupMenu(menu, event.GetPosition())
             menu.Destroy()
+
+        copy_id = wx.NewId()
+        cut_id = wx.NewId()
+        paste_id = wx.NewId()
+        delete_id = wx.NewId()
+        select_all_id = wx.NewId()
+        add_std_value_id = wx.NewId()
+        remove_std_value_id = wx.NewId()
+        ref_id = wx.NewId()
+        value_id = wx.NewId()
+        footprint_id = wx.NewId()
+        datasheet_id = wx.NewId()
+        another_id = wx.NewId()
 
         combobox.Bind(wx.EVT_RIGHT_DOWN, popup)
         combobox.Bind(wx.EVT_CONTEXT_MENU, popup)
