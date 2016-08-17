@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.4">
+<meta name="author" content="Барановский Константин">
+<title>kicadbom2spec</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
+<style>
+/* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
+/* Remove comment around @import statement below when using as a custom stylesheet */
+/*@import "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700";*/
+article,aside,details,figcaption,figure,footer,header,hgroup,main,nav,section,summary{display:block}
+audio,canvas,video{display:inline-block}
+audio:not([controls]){display:none;height:0}
+[hidden],template{display:none}
+script{display:none!important}
+html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}
+body{margin:0}
+a{background:transparent}
+a:focus{outline:thin dotted}
+a:active,a:hover{outline:0}
+h1{font-size:2em;margin:.67em 0}
+abbr[title]{border-bottom:1px dotted}
+b,strong{font-weight:bold}
+dfn{font-style:italic}
+hr{-moz-box-sizing:content-box;box-sizing:content-box;height:0}
+mark{background:#ff0;color:#000}
+code,kbd,pre,samp{font-family:monospace;font-size:1em}
+pre{white-space:pre-wrap}
+q{quotes:"\201C" "\201D" "\2018" "\2019"}
+small{font-size:80%}
+sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}
+sup{top:-.5em}
+sub{bottom:-.25em}
+img{border:0}
+svg:not(:root){overflow:hidden}
+figure{margin:0}
+fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}
+legend{border:0;padding:0}
+button,input,select,textarea{font-family:inherit;font-size:100%;margin:0}
+button,input{line-height:normal}
+button,select{text-transform:none}
+button,html input[type="button"],input[type="reset"],input[type="submit"]{-webkit-appearance:button;cursor:pointer}
+button[disabled],html input[disabled]{cursor:default}
+input[type="checkbox"],input[type="radio"]{box-sizing:border-box;padding:0}
+input[type="search"]{-webkit-appearance:textfield;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;box-sizing:content-box}
+input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance:none}
+button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}
+textarea{overflow:auto;vertical-align:top}
+table{border-collapse:collapse;border-spacing:0}
+*,*:before,*:after{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}
+html,body{font-size:100%}
+body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto}
+a:hover{cursor:pointer}
+img,object,embed{max-width:100%;height:auto}
+object,embed{height:100%}
+img{-ms-interpolation-mode:bicubic}
+.left{float:left!important}
+.right{float:right!important}
+.text-left{text-align:left!important}
+.text-right{text-align:right!important}
+.text-center{text-align:center!important}
+.text-justify{text-align:justify!important}
+.hide{display:none}
+body{-webkit-font-smoothing:antialiased}
+img,object,svg{display:inline-block;vertical-align:middle}
+textarea{height:auto;min-height:50px}
+select{width:100%}
+.center{margin-left:auto;margin-right:auto}
+.spread{width:100%}
+p.lead,.paragraph.lead>p,#preamble>.sectionbody>.paragraph:first-of-type p{font-size:1.21875em;line-height:1.6}
+.subheader,.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{line-height:1.45;color:#7a2518;font-weight:400;margin-top:0;margin-bottom:.25em}
+div,dl,dt,dd,ul,ol,li,h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6,pre,form,p,blockquote,th,td{margin:0;padding:0;direction:ltr}
+a{color:#2156a5;text-decoration:underline;line-height:inherit}
+a:hover,a:focus{color:#1d4b8f}
+a img{border:none}
+p{font-family:inherit;font-weight:400;font-size:1em;line-height:1.6;margin-bottom:1.25em;text-rendering:optimizeLegibility}
+p aside{font-size:.875em;line-height:1.35;font-style:italic}
+h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{font-family:"Open Sans","DejaVu Sans",sans-serif;font-weight:300;font-style:normal;color:#ba3925;text-rendering:optimizeLegibility;margin-top:1em;margin-bottom:.5em;line-height:1.0125em}
+h1 small,h2 small,h3 small,#toctitle small,.sidebarblock>.content>.title small,h4 small,h5 small,h6 small{font-size:60%;color:#e99b8f;line-height:0}
+h1{font-size:2.125em}
+h2{font-size:1.6875em}
+h3,#toctitle,.sidebarblock>.content>.title{font-size:1.375em}
+h4,h5{font-size:1.125em}
+h6{font-size:1em}
+hr{border:solid #ddddd8;border-width:1px 0 0;clear:both;margin:1.25em 0 1.1875em;height:0}
+em,i{font-style:italic;line-height:inherit}
+strong,b{font-weight:bold;line-height:inherit}
+small{font-size:60%;line-height:inherit}
+code{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;color:rgba(0,0,0,.9)}
+ul,ol,dl{font-size:1em;line-height:1.6;margin-bottom:1.25em;list-style-position:outside;font-family:inherit}
+ul,ol,ul.no-bullet,ol.no-bullet{margin-left:1.5em}
+ul li ul,ul li ol{margin-left:1.25em;margin-bottom:0;font-size:1em}
+ul.square li ul,ul.circle li ul,ul.disc li ul{list-style:inherit}
+ul.square{list-style-type:square}
+ul.circle{list-style-type:circle}
+ul.disc{list-style-type:disc}
+ul.no-bullet{list-style:none}
+ol li ul,ol li ol{margin-left:1.25em;margin-bottom:0}
+dl dt{margin-bottom:.3125em;font-weight:bold}
+dl dd{margin-bottom:1.25em}
+abbr,acronym{text-transform:uppercase;font-size:90%;color:rgba(0,0,0,.8);border-bottom:1px dotted #ddd;cursor:help}
+abbr{text-transform:none}
+blockquote{margin:0 0 1.25em;padding:.5625em 1.25em 0 1.1875em;border-left:1px solid #ddd}
+blockquote cite{display:block;font-size:.9375em;color:rgba(0,0,0,.6)}
+blockquote cite:before{content:"\2014 \0020"}
+blockquote cite a,blockquote cite a:visited{color:rgba(0,0,0,.6)}
+blockquote,blockquote p{line-height:1.6;color:rgba(0,0,0,.85)}
+@media only screen and (min-width:768px){h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2}
+h1{font-size:2.75em}
+h2{font-size:2.3125em}
+h3,#toctitle,.sidebarblock>.content>.title{font-size:1.6875em}
+h4{font-size:1.4375em}}
+table{background:#fff;margin-bottom:1.25em;border:solid 1px #dedede}
+table thead,table tfoot{background:#f7f8f7;font-weight:bold}
+table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:.5em .625em .625em;font-size:inherit;color:rgba(0,0,0,.8);text-align:left}
+table tr th,table tr td{padding:.5625em .625em;font-size:inherit;color:rgba(0,0,0,.8)}
+table tr.even,table tr.alt,table tr:nth-of-type(even){background:#f8f8f7}
+table thead tr th,table tfoot tr th,table tbody tr td,table tr td,table tfoot tr td{display:table-cell;line-height:1.6}
+body{tab-size:4}
+h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2;word-spacing:-.05em}
+h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title strong,h4 strong,h5 strong,h6 strong{font-weight:400}
+.clearfix:before,.clearfix:after,.float-group:before,.float-group:after{content:" ";display:table}
+.clearfix:after,.float-group:after{clear:both}
+*:not(pre)>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background-color:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
+pre,pre>code{line-height:1.45;color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;text-rendering:optimizeSpeed}
+.keyseq{color:rgba(51,51,51,.8)}
+kbd{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;display:inline-block;color:rgba(0,0,0,.8);font-size:.65em;line-height:1.45;background-color:#f7f7f7;border:1px solid #ccc;-webkit-border-radius:3px;border-radius:3px;-webkit-box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em white inset;box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em #fff inset;margin:0 .15em;padding:.2em .5em;vertical-align:middle;position:relative;top:-.1em;white-space:nowrap}
+.keyseq kbd:first-child{margin-left:0}
+.keyseq kbd:last-child{margin-right:0}
+.menuseq,.menu{color:rgba(0,0,0,.8)}
+b.button:before,b.button:after{position:relative;top:-1px;font-weight:400}
+b.button:before{content:"[";padding:0 3px 0 2px}
+b.button:after{content:"]";padding:0 2px 0 3px}
+p a>code:hover{color:rgba(0,0,0,.9)}
+#header,#content,#footnotes,#footer{width:100%;margin-left:auto;margin-right:auto;margin-top:0;margin-bottom:0;max-width:62.5em;*zoom:1;position:relative;padding-left:.9375em;padding-right:.9375em}
+#header:before,#header:after,#content:before,#content:after,#footnotes:before,#footnotes:after,#footer:before,#footer:after{content:" ";display:table}
+#header:after,#content:after,#footnotes:after,#footer:after{clear:both}
+#content{margin-top:1.25em}
+#content:before{content:none}
+#header>h1:first-child{color:rgba(0,0,0,.85);margin-top:2.25rem;margin-bottom:0}
+#header>h1:first-child+#toc{margin-top:8px;border-top:1px solid #ddddd8}
+#header>h1:only-child,body.toc2 #header>h1:nth-last-child(2){border-bottom:1px solid #ddddd8;padding-bottom:8px}
+#header .details{border-bottom:1px solid #ddddd8;line-height:1.45;padding-top:.25em;padding-bottom:.25em;padding-left:.25em;color:rgba(0,0,0,.6);display:-ms-flexbox;display:-webkit-flex;display:flex;-ms-flex-flow:row wrap;-webkit-flex-flow:row wrap;flex-flow:row wrap}
+#header .details span:first-child{margin-left:-.125em}
+#header .details span.email a{color:rgba(0,0,0,.85)}
+#header .details br{display:none}
+#header .details br+span:before{content:"\00a0\2013\00a0"}
+#header .details br+span.author:before{content:"\00a0\22c5\00a0";color:rgba(0,0,0,.85)}
+#header .details br+span#revremark:before{content:"\00a0|\00a0"}
+#header #revnumber{text-transform:capitalize}
+#header #revnumber:after{content:"\00a0"}
+#content>h1:first-child:not([class]){color:rgba(0,0,0,.85);border-bottom:1px solid #ddddd8;padding-bottom:8px;margin-top:0;padding-top:1rem;margin-bottom:1.25rem}
+#toc{border-bottom:1px solid #efefed;padding-bottom:.5em}
+#toc>ul{margin-left:.125em}
+#toc ul.sectlevel0>li>a{font-style:italic}
+#toc ul.sectlevel0 ul.sectlevel1{margin:.5em 0}
+#toc ul{font-family:"Open Sans","DejaVu Sans",sans-serif;list-style-type:none}
+#toc li{line-height:1.3334;margin-top:.3334em}
+#toc a{text-decoration:none}
+#toc a:active{text-decoration:underline}
+#toctitle{color:#7a2518;font-size:1.2em}
+@media only screen and (min-width:768px){#toctitle{font-size:1.375em}
+body.toc2{padding-left:15em;padding-right:0}
+#toc.toc2{margin-top:0!important;background-color:#f8f8f7;position:fixed;width:15em;left:0;top:0;border-right:1px solid #efefed;border-top-width:0!important;border-bottom-width:0!important;z-index:1000;padding:1.25em 1em;height:100%;overflow:auto}
+#toc.toc2 #toctitle{margin-top:0;margin-bottom:.8rem;font-size:1.2em}
+#toc.toc2>ul{font-size:.9em;margin-bottom:0}
+#toc.toc2 ul ul{margin-left:0;padding-left:1em}
+#toc.toc2 ul.sectlevel0 ul.sectlevel1{padding-left:0;margin-top:.5em;margin-bottom:.5em}
+body.toc2.toc-right{padding-left:0;padding-right:15em}
+body.toc2.toc-right #toc.toc2{border-right-width:0;border-left:1px solid #efefed;left:auto;right:0}}
+@media only screen and (min-width:1280px){body.toc2{padding-left:20em;padding-right:0}
+#toc.toc2{width:20em}
+#toc.toc2 #toctitle{font-size:1.375em}
+#toc.toc2>ul{font-size:.95em}
+#toc.toc2 ul ul{padding-left:1.25em}
+body.toc2.toc-right{padding-left:0;padding-right:20em}}
+#content #toc{border-style:solid;border-width:1px;border-color:#e0e0dc;margin-bottom:1.25em;padding:1.25em;background:#f8f8f7;-webkit-border-radius:4px;border-radius:4px}
+#content #toc>:first-child{margin-top:0}
+#content #toc>:last-child{margin-bottom:0}
+#footer{max-width:100%;background-color:rgba(0,0,0,.8);padding:1.25em}
+#footer-text{color:rgba(255,255,255,.8);line-height:1.44}
+.sect1{padding-bottom:.625em}
+@media only screen and (min-width:768px){.sect1{padding-bottom:1.25em}}
+.sect1+.sect1{border-top:1px solid #efefed}
+#content h1>a.anchor,h2>a.anchor,h3>a.anchor,#toctitle>a.anchor,.sidebarblock>.content>.title>a.anchor,h4>a.anchor,h5>a.anchor,h6>a.anchor{position:absolute;z-index:1001;width:1.5ex;margin-left:-1.5ex;display:block;text-decoration:none!important;visibility:hidden;text-align:center;font-weight:400}
+#content h1>a.anchor:before,h2>a.anchor:before,h3>a.anchor:before,#toctitle>a.anchor:before,.sidebarblock>.content>.title>a.anchor:before,h4>a.anchor:before,h5>a.anchor:before,h6>a.anchor:before{content:"\00A7";font-size:.85em;display:block;padding-top:.1em}
+#content h1:hover>a.anchor,#content h1>a.anchor:hover,h2:hover>a.anchor,h2>a.anchor:hover,h3:hover>a.anchor,#toctitle:hover>a.anchor,.sidebarblock>.content>.title:hover>a.anchor,h3>a.anchor:hover,#toctitle>a.anchor:hover,.sidebarblock>.content>.title>a.anchor:hover,h4:hover>a.anchor,h4>a.anchor:hover,h5:hover>a.anchor,h5>a.anchor:hover,h6:hover>a.anchor,h6>a.anchor:hover{visibility:visible}
+#content h1>a.link,h2>a.link,h3>a.link,#toctitle>a.link,.sidebarblock>.content>.title>a.link,h4>a.link,h5>a.link,h6>a.link{color:#ba3925;text-decoration:none}
+#content h1>a.link:hover,h2>a.link:hover,h3>a.link:hover,#toctitle>a.link:hover,.sidebarblock>.content>.title>a.link:hover,h4>a.link:hover,h5>a.link:hover,h6>a.link:hover{color:#a53221}
+.audioblock,.imageblock,.literalblock,.listingblock,.stemblock,.videoblock{margin-bottom:1.25em}
+.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{text-rendering:optimizeLegibility;text-align:left;font-family:"Noto Serif","DejaVu Serif",serif;font-size:1rem;font-style:italic}
+table.tableblock>caption.title{white-space:nowrap;overflow:visible;max-width:0}
+.paragraph.lead>p,#preamble>.sectionbody>.paragraph:first-of-type p{color:rgba(0,0,0,.85)}
+table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p{font-size:inherit}
+.admonitionblock>table{border-collapse:separate;border:0;background:none;width:100%}
+.admonitionblock>table td.icon{text-align:center;width:80px}
+.admonitionblock>table td.icon img{max-width:none}
+.admonitionblock>table td.icon .title{font-weight:bold;font-family:"Open Sans","DejaVu Sans",sans-serif;text-transform:uppercase}
+.admonitionblock>table td.content{padding-left:1.125em;padding-right:1.25em;border-left:1px solid #ddddd8;color:rgba(0,0,0,.6)}
+.admonitionblock>table td.content>:last-child>:last-child{margin-bottom:0}
+.exampleblock>.content{border-style:solid;border-width:1px;border-color:#e6e6e6;margin-bottom:1.25em;padding:1.25em;background:#fff;-webkit-border-radius:4px;border-radius:4px}
+.exampleblock>.content>:first-child{margin-top:0}
+.exampleblock>.content>:last-child{margin-bottom:0}
+.sidebarblock{border-style:solid;border-width:1px;border-color:#e0e0dc;margin-bottom:1.25em;padding:1.25em;background:#f8f8f7;-webkit-border-radius:4px;border-radius:4px}
+.sidebarblock>:first-child{margin-top:0}
+.sidebarblock>:last-child{margin-bottom:0}
+.sidebarblock>.content>.title{color:#7a2518;margin-top:0;text-align:center}
+.exampleblock>.content>:last-child>:last-child,.exampleblock>.content .olist>ol>li:last-child>:last-child,.exampleblock>.content .ulist>ul>li:last-child>:last-child,.exampleblock>.content .qlist>ol>li:last-child>:last-child,.sidebarblock>.content>:last-child>:last-child,.sidebarblock>.content .olist>ol>li:last-child>:last-child,.sidebarblock>.content .ulist>ul>li:last-child>:last-child,.sidebarblock>.content .qlist>ol>li:last-child>:last-child{margin-bottom:0}
+.literalblock pre,.listingblock pre:not(.highlight),.listingblock pre[class="highlight"],.listingblock pre[class^="highlight "],.listingblock pre.CodeRay,.listingblock pre.prettyprint{background:#f7f7f8}
+.sidebarblock .literalblock pre,.sidebarblock .listingblock pre:not(.highlight),.sidebarblock .listingblock pre[class="highlight"],.sidebarblock .listingblock pre[class^="highlight "],.sidebarblock .listingblock pre.CodeRay,.sidebarblock .listingblock pre.prettyprint{background:#f2f1f1}
+.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{-webkit-border-radius:4px;border-radius:4px;word-wrap:break-word;padding:1em;font-size:.8125em}
+.literalblock pre.nowrap,.literalblock pre[class].nowrap,.listingblock pre.nowrap,.listingblock pre[class].nowrap{overflow-x:auto;white-space:pre;word-wrap:normal}
+@media only screen and (min-width:768px){.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{font-size:.90625em}}
+@media only screen and (min-width:1280px){.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{font-size:1em}}
+.literalblock.output pre{color:#f7f7f8;background-color:rgba(0,0,0,.9)}
+.listingblock pre.highlightjs{padding:0}
+.listingblock pre.highlightjs>code{padding:1em;-webkit-border-radius:4px;border-radius:4px}
+.listingblock pre.prettyprint{border-width:0}
+.listingblock>.content{position:relative}
+.listingblock code[data-lang]:before{display:none;content:attr(data-lang);position:absolute;font-size:.75em;top:.425rem;right:.5rem;line-height:1;text-transform:uppercase;color:#999}
+.listingblock:hover code[data-lang]:before{display:block}
+.listingblock.terminal pre .command:before{content:attr(data-prompt);padding-right:.5em;color:#999}
+.listingblock.terminal pre .command:not([data-prompt]):before{content:"$"}
+table.pyhltable{border-collapse:separate;border:0;margin-bottom:0;background:none}
+table.pyhltable td{vertical-align:top;padding-top:0;padding-bottom:0;line-height:1.45}
+table.pyhltable td.code{padding-left:.75em;padding-right:0}
+pre.pygments .lineno,table.pyhltable td:not(.code){color:#999;padding-left:0;padding-right:.5em;border-right:1px solid #ddddd8}
+pre.pygments .lineno{display:inline-block;margin-right:.25em}
+table.pyhltable .linenodiv{background:none!important;padding-right:0!important}
+.quoteblock{margin:0 1em 1.25em 1.5em;display:table}
+.quoteblock>.title{margin-left:-1.5em;margin-bottom:.75em}
+.quoteblock blockquote,.quoteblock blockquote p{color:rgba(0,0,0,.85);font-size:1.15rem;line-height:1.75;word-spacing:.1em;letter-spacing:0;font-style:italic;text-align:justify}
+.quoteblock blockquote{margin:0;padding:0;border:0}
+.quoteblock blockquote:before{content:"\201c";float:left;font-size:2.75em;font-weight:bold;line-height:.6em;margin-left:-.6em;color:#7a2518;text-shadow:0 1px 2px rgba(0,0,0,.1)}
+.quoteblock blockquote>.paragraph:last-child p{margin-bottom:0}
+.quoteblock .attribution{margin-top:.5em;margin-right:.5ex;text-align:right}
+.quoteblock .quoteblock{margin-left:0;margin-right:0;padding:.5em 0;border-left:3px solid rgba(0,0,0,.6)}
+.quoteblock .quoteblock blockquote{padding:0 0 0 .75em}
+.quoteblock .quoteblock blockquote:before{display:none}
+.verseblock{margin:0 1em 1.25em 1em}
+.verseblock pre{font-family:"Open Sans","DejaVu Sans",sans;font-size:1.15rem;color:rgba(0,0,0,.85);font-weight:300;text-rendering:optimizeLegibility}
+.verseblock pre strong{font-weight:400}
+.verseblock .attribution{margin-top:1.25rem;margin-left:.5ex}
+.quoteblock .attribution,.verseblock .attribution{font-size:.9375em;line-height:1.45;font-style:italic}
+.quoteblock .attribution br,.verseblock .attribution br{display:none}
+.quoteblock .attribution cite,.verseblock .attribution cite{display:block;letter-spacing:-.025em;color:rgba(0,0,0,.6)}
+.quoteblock.abstract{margin:0 0 1.25em 0;display:block}
+.quoteblock.abstract blockquote,.quoteblock.abstract blockquote p{text-align:left;word-spacing:0}
+.quoteblock.abstract blockquote:before,.quoteblock.abstract blockquote p:first-of-type:before{display:none}
+table.tableblock{max-width:100%;border-collapse:separate}
+table.tableblock td>.paragraph:last-child p>p:last-child,table.tableblock th>p:last-child,table.tableblock td>p:last-child{margin-bottom:0}
+table.tableblock,th.tableblock,td.tableblock{border:0 solid #dedede}
+table.grid-all th.tableblock,table.grid-all td.tableblock{border-width:0 1px 1px 0}
+table.grid-all tfoot>tr>th.tableblock,table.grid-all tfoot>tr>td.tableblock{border-width:1px 1px 0 0}
+table.grid-cols th.tableblock,table.grid-cols td.tableblock{border-width:0 1px 0 0}
+table.grid-all *>tr>.tableblock:last-child,table.grid-cols *>tr>.tableblock:last-child{border-right-width:0}
+table.grid-rows th.tableblock,table.grid-rows td.tableblock{border-width:0 0 1px 0}
+table.grid-all tbody>tr:last-child>th.tableblock,table.grid-all tbody>tr:last-child>td.tableblock,table.grid-all thead:last-child>tr>th.tableblock,table.grid-rows tbody>tr:last-child>th.tableblock,table.grid-rows tbody>tr:last-child>td.tableblock,table.grid-rows thead:last-child>tr>th.tableblock{border-bottom-width:0}
+table.grid-rows tfoot>tr>th.tableblock,table.grid-rows tfoot>tr>td.tableblock{border-width:1px 0 0 0}
+table.frame-all{border-width:1px}
+table.frame-sides{border-width:0 1px}
+table.frame-topbot{border-width:1px 0}
+th.halign-left,td.halign-left{text-align:left}
+th.halign-right,td.halign-right{text-align:right}
+th.halign-center,td.halign-center{text-align:center}
+th.valign-top,td.valign-top{vertical-align:top}
+th.valign-bottom,td.valign-bottom{vertical-align:bottom}
+th.valign-middle,td.valign-middle{vertical-align:middle}
+table thead th,table tfoot th{font-weight:bold}
+tbody tr th{display:table-cell;line-height:1.6;background:#f7f8f7}
+tbody tr th,tbody tr th p,tfoot tr th,tfoot tr th p{color:rgba(0,0,0,.8);font-weight:bold}
+p.tableblock>code:only-child{background:none;padding:0}
+p.tableblock{font-size:1em}
+td>div.verse{white-space:pre}
+ol{margin-left:1.75em}
+ul li ol{margin-left:1.5em}
+dl dd{margin-left:1.125em}
+dl dd:last-child,dl dd:last-child>:last-child{margin-bottom:0}
+ol>li p,ul>li p,ul dd,ol dd,.olist .olist,.ulist .ulist,.ulist .olist,.olist .ulist{margin-bottom:.625em}
+ul.unstyled,ol.unnumbered,ul.checklist,ul.none{list-style-type:none}
+ul.unstyled,ol.unnumbered,ul.checklist{margin-left:.625em}
+ul.checklist li>p:first-child>.fa-square-o:first-child,ul.checklist li>p:first-child>.fa-check-square-o:first-child{width:1em;font-size:.85em}
+ul.checklist li>p:first-child>input[type="checkbox"]:first-child{width:1em;position:relative;top:1px}
+ul.inline{margin:0 auto .625em auto;margin-left:-1.375em;margin-right:0;padding:0;list-style:none;overflow:hidden}
+ul.inline>li{list-style:none;float:left;margin-left:1.375em;display:block}
+ul.inline>li>*{display:block}
+.unstyled dl dt{font-weight:400;font-style:normal}
+ol.arabic{list-style-type:decimal}
+ol.decimal{list-style-type:decimal-leading-zero}
+ol.loweralpha{list-style-type:lower-alpha}
+ol.upperalpha{list-style-type:upper-alpha}
+ol.lowerroman{list-style-type:lower-roman}
+ol.upperroman{list-style-type:upper-roman}
+ol.lowergreek{list-style-type:lower-greek}
+.hdlist>table,.colist>table{border:0;background:none}
+.hdlist>table>tbody>tr,.colist>table>tbody>tr{background:none}
+td.hdlist1,td.hdlist2{vertical-align:top;padding:0 .625em}
+td.hdlist1{font-weight:bold;padding-bottom:1.25em}
+.literalblock+.colist,.listingblock+.colist{margin-top:-.5em}
+.colist>table tr>td:first-of-type{padding:0 .75em;line-height:1}
+.colist>table tr>td:last-of-type{padding:.25em 0}
+.thumb,.th{line-height:0;display:inline-block;border:solid 4px #fff;-webkit-box-shadow:0 0 0 1px #ddd;box-shadow:0 0 0 1px #ddd}
+.imageblock.left,.imageblock[style*="float: left"]{margin:.25em .625em 1.25em 0}
+.imageblock.right,.imageblock[style*="float: right"]{margin:.25em 0 1.25em .625em}
+.imageblock>.title{margin-bottom:0}
+.imageblock.thumb,.imageblock.th{border-width:6px}
+.imageblock.thumb>.title,.imageblock.th>.title{padding:0 .125em}
+.image.left,.image.right{margin-top:.25em;margin-bottom:.25em;display:inline-block;line-height:0}
+.image.left{margin-right:.625em}
+.image.right{margin-left:.625em}
+a.image{text-decoration:none;display:inline-block}
+a.image object{pointer-events:none}
+sup.footnote,sup.footnoteref{font-size:.875em;position:static;vertical-align:super}
+sup.footnote a,sup.footnoteref a{text-decoration:none}
+sup.footnote a:active,sup.footnoteref a:active{text-decoration:underline}
+#footnotes{padding-top:.75em;padding-bottom:.75em;margin-bottom:.625em}
+#footnotes hr{width:20%;min-width:6.25em;margin:-.25em 0 .75em 0;border-width:1px 0 0 0}
+#footnotes .footnote{padding:0 .375em 0 .225em;line-height:1.3334;font-size:.875em;margin-left:1.2em;text-indent:-1.05em;margin-bottom:.2em}
+#footnotes .footnote a:first-of-type{font-weight:bold;text-decoration:none}
+#footnotes .footnote:last-of-type{margin-bottom:0}
+#content #footnotes{margin-top:-.625em;margin-bottom:0;padding:.75em 0}
+.gist .file-data>table{border:0;background:#fff;width:100%;margin-bottom:0}
+.gist .file-data>table td.line-data{width:99%}
+div.unbreakable{page-break-inside:avoid}
+.big{font-size:larger}
+.small{font-size:smaller}
+.underline{text-decoration:underline}
+.overline{text-decoration:overline}
+.line-through{text-decoration:line-through}
+.aqua{color:#00bfbf}
+.aqua-background{background-color:#00fafa}
+.black{color:#000}
+.black-background{background-color:#000}
+.blue{color:#0000bf}
+.blue-background{background-color:#0000fa}
+.fuchsia{color:#bf00bf}
+.fuchsia-background{background-color:#fa00fa}
+.gray{color:#606060}
+.gray-background{background-color:#7d7d7d}
+.green{color:#006000}
+.green-background{background-color:#007d00}
+.lime{color:#00bf00}
+.lime-background{background-color:#00fa00}
+.maroon{color:#600000}
+.maroon-background{background-color:#7d0000}
+.navy{color:#000060}
+.navy-background{background-color:#00007d}
+.olive{color:#606000}
+.olive-background{background-color:#7d7d00}
+.purple{color:#600060}
+.purple-background{background-color:#7d007d}
+.red{color:#bf0000}
+.red-background{background-color:#fa0000}
+.silver{color:#909090}
+.silver-background{background-color:#bcbcbc}
+.teal{color:#006060}
+.teal-background{background-color:#007d7d}
+.white{color:#bfbfbf}
+.white-background{background-color:#fafafa}
+.yellow{color:#bfbf00}
+.yellow-background{background-color:#fafa00}
+span.icon>.fa{cursor:default}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
+.conum[data-value]{display:inline-block;color:#fff!important;background-color:rgba(0,0,0,.8);-webkit-border-radius:100px;border-radius:100px;text-align:center;font-size:.75em;width:1.67em;height:1.67em;line-height:1.67em;font-family:"Open Sans","DejaVu Sans",sans-serif;font-style:normal;font-weight:bold}
+.conum[data-value] *{color:#fff!important}
+.conum[data-value]+b{display:none}
+.conum[data-value]:after{content:attr(data-value)}
+pre .conum[data-value]{position:relative;top:-.125em}
+b.conum *{color:inherit!important}
+.conum:not([data-value]):empty{display:none}
+dt,th.tableblock,td.content,div.footnote{text-rendering:optimizeLegibility}
+h1,h2,p,td.content,span.alt{letter-spacing:-.01em}
+p strong,td.content strong,div.footnote strong{letter-spacing:-.005em}
+p,blockquote,dt,td.content,span.alt{font-size:1.0625rem}
+p{margin-bottom:1.25rem}
+.sidebarblock p,.sidebarblock dt,.sidebarblock td.content,p.tableblock{font-size:1em}
+.exampleblock>.content{background-color:#fffef7;border-color:#e0e0dc;-webkit-box-shadow:0 1px 4px #e0e0dc;box-shadow:0 1px 4px #e0e0dc}
+.print-only{display:none!important}
+@media print{@page{margin:1.25cm .75cm}
+*{-webkit-box-shadow:none!important;box-shadow:none!important;text-shadow:none!important}
+a{color:inherit!important;text-decoration:underline!important}
+a.bare,a[href^="#"],a[href^="mailto:"]{text-decoration:none!important}
+a[href^="http:"]:not(.bare):after,a[href^="https:"]:not(.bare):after{content:"(" attr(href) ")";display:inline-block;font-size:.875em;padding-left:.25em}
+abbr[title]:after{content:" (" attr(title) ")"}
+pre,blockquote,tr,img,object,svg{page-break-inside:avoid}
+thead{display:table-header-group}
+svg{max-width:100%}
+p,blockquote,dt,td.content{font-size:1em;orphans:3;widows:3}
+h2,h3,#toctitle,.sidebarblock>.content>.title{page-break-after:avoid}
+#toc,.sidebarblock,.exampleblock>.content{background:none!important}
+#toc{border-bottom:1px solid #ddddd8!important;padding-bottom:0!important}
+.sect1{padding-bottom:0!important}
+.sect1+.sect1{border:0!important}
+#header>h1:first-child{margin-top:1.25rem}
+body.book #header{text-align:center}
+body.book #header>h1:first-child{border:0!important;margin:2.5em 0 1em 0}
+body.book #header .details{border:0!important;display:block;padding:0!important}
+body.book #header .details span:first-child{margin-left:0!important}
+body.book #header .details br{display:block}
+body.book #header .details br+span:before{content:none!important}
+body.book #toc{border:0!important;text-align:left!important;padding:0!important;margin:0!important}
+body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-break-before:always}
+.listingblock code[data-lang]:before{display:block}
+#footer{background:none!important;padding:0 .9375em}
+#footer-text{color:rgba(0,0,0,.6)!important;font-size:.9em}
+.hide-on-print{display:none!important}
+.print-only{display:block!important}
+.hide-for-print{display:none!important}
+.show-for-print{display:inherit!important}}
+</style>
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>kicadbom2spec</h1>
+<div class="details">
+<span id="author" class="author">Барановский Константин</span><br>
+<span id="email" class="email"><a href="mailto:baranovskiykonstantin@gmail.com">baranovskiykonstantin@gmail.com</a></span><br>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Содержание</div>
+<ul class="sectlevel1">
+<li><a href="#_Введение">Введение</a></li>
+<li><a href="#_Быстрый_старт">Быстрый старт</a></li>
+<li><a href="#_Графический_интерфейс_пользователя">1. Графический интерфейс пользователя</a>
+<ul class="sectlevel2">
+<li><a href="#_Меню">1.1. Меню</a>
+<ul class="sectlevel3">
+<li><a href="#_Файл">1.1.1. Файл</a></li>
+<li><a href="#_Правка">1.1.2. Правка</a></li>
+<li><a href="#_Вид">1.1.3. Вид</a></li>
+<li><a href="#_Справка">1.1.4. Справка</a></li>
+</ul>
+</li>
+<li><a href="#_Панель_инструментов">1.2. Панель инструментов</a></li>
+<li><a href="#_Таблица_полей_элементов">1.3. Таблица полей элементов</a>
+<ul class="sectlevel3">
+<li><a href="#_Контекстное_меню_таблицы">1.3.1. Контекстное меню таблицы</a></li>
+<li><a href="#_Редактор_ячеек_таблицы">1.3.2. Редактор ячеек таблицы</a>
+<ul class="sectlevel4">
+<li><a href="#_Контекстное_меню_редактора_ячеек">1.3.2.1. Контекстное меню редактора ячеек</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_Работа_с_программой">2. Работа с программой</a>
+<ul class="sectlevel2">
+<li><a href="#_Основные_принципы">2.1. Основные принципы</a></li>
+<li><a href="#_Работа_с_таблицей_полей_элементов">2.2. Работа с таблицей полей элементов</a>
+<ul class="sectlevel3">
+<li><a href="#_Сортировка_элементов">2.2.1. Сортировка элементов</a></li>
+<li><a href="#_Выделение_элементов">2.2.2. Выделение элементов</a></li>
+<li><a href="#_Поиск_замена_текста">2.2.3. Поиск/замена текста</a></li>
+<li><a href="#_Редактирование_полей">2.2.4. Редактирование полей</a></li>
+<li><a href="#_Редактирование_полей_нескольких_элементов_одновременно">2.2.5. Редактирование полей нескольких элементов одновременно</a></li>
+<li><a href="#_Редактирование_полей_компонентов_иерархических_схем">2.2.6. Редактирование полей компонентов иерархических схем</a></li>
+<li><a href="#_Подстановки_полей">2.2.7. Подстановки полей</a></li>
+</ul>
+</li>
+<li><a href="#_Создание_перечня_элементов">2.3. Создание перечня элементов</a></li>
+</ul>
+</li>
+<li><a href="#_Настройка_программы">3. Настройка программы</a>
+<ul class="sectlevel2">
+<li><a href="#_Основные_параметры">3.1. Основные параметры</a></li>
+<li><a href="#_Значения_полей">3.2. Значения полей</a></li>
+<li><a href="#_Импорт_экспорт_параметров">3.3. Импорт/экспорт параметров</a></li>
+</ul>
+</li>
+<li><a href="#_Параметры_командной_строки">4. Параметры командной строки</a>
+<ul class="sectlevel2">
+<li><a href="#_Первый_позиционный_аргумент_em_strong_schematic_strong_em">4.1. Первый позиционный аргумент <em><strong>schematic</strong></em></a></li>
+<li><a href="#_Второй_позиционный_аргумент_em_strong_complist_strong_em">4.2. Второй позиционный аргумент <em><strong>complist</strong></em></a></li>
+<li><a href="#_Параметр_em_strong_h_help_strong_em">4.3. Параметр <em><strong>-h, --help</strong></em></a></li>
+<li><a href="#_Параметр_em_strong_v_version_strong_em">4.4. Параметр <em><strong>-v, --version</strong></em></a></li>
+</ul>
+</li>
+<li><a href="#_Настройка_em_strong_kicad_strong_em_для_работы_с_em_strong_kicadbom2spec_strong_em">5. Настройка <em><strong>KiCad</strong></em> для работы с <em><strong>kicadbom2spec</strong></em></a>
+<ul class="sectlevel2">
+<li><a href="#_Настройка_редактора_схем_em_strong_eeschema_strong_em">5.1. Настройка редактора схем <em><strong>Eeschema</strong></em></a>
+<ul class="sectlevel3">
+<li><a href="#_Создание_и_настройка_плагина">5.1.1. Создание и настройка плагина</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Руководство пользователя</p>
+</div>
+<div class="paragraph">
+<p>Версия 3.10</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_Введение">Введение</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>kicadbom2spec</strong>&#8201;&#8212;&#8201;приложение для создания перечней элементов схем,
+выполненных в <strong>KiCad</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Перечни создаются в виде таблиц <em>*.ods</em> в формате <em>Open Document Format</em> и
+оформляются в соответствии с требованиями <em>ЕСКД</em>.</p>
+</div>
+<div class="paragraph">
+<p>Кроме создания перечня элементов, с помощью этой программы можно редактировать
+необходимые пользовательские поля элементов как в файлах схем (<em>*.sch</em>) так
+и в файлах библиотек (<em>*.lib</em>).</p>
+</div>
+<div class="paragraph">
+<p>В данном руководстве представлена вся необходимая информация для успешного
+создания перечней элементов и редактирования необходимых полей компонентов
+схемы/библиотеки.</p>
+</div>
+<div class="paragraph">
+<p>Все изображения были созданы в операционной системе Ubuntu, но в других ОС
+интерфейс пользователя выглядит аналогично. В некоторых случаях, все же,
+присутствуют различия и в таких местах приводятся изображения для каждого
+конкретного случая.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_Быстрый_старт">Быстрый старт</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Для демонстрации работы программы <strong>kicadbom2spec</strong> в её директории имеется
+каталог <em>sample</em>, в котором находятся файлы небольшой схемы:</p>
+</div>
+<div id="содержимое_папки_sample" class="imageblock">
+<div class="content">
+<img src="images/содержимое_папки_sample.png" alt="содержимое папки sample">
+</div>
+<div class="title">Содержимое папки sample</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>sample.lib</em>&#8201;&#8212;&#8201;библиотека элементов схемы</p>
+</li>
+<li>
+<p><em>sample.pdf</em>&#8201;&#8212;&#8201;образец готового перечня элементов</p>
+</li>
+<li>
+<p><em>sample.pro</em>&#8201;&#8212;&#8201;файл проекта KiCad</p>
+</li>
+<li>
+<p><em>sample.sch</em>&#8201;&#8212;&#8201;файл схемы (поля элементов уже заполнены в соответствии с
+данным руководством)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Итак, чтобы создать перечень элементов для схемы <em>sample.sch</em> нужно запустить
+<strong>kicadbom2spec</strong>, выполнить команду <em>Файл&#8594;Открыть схему&#8230;&#8203;</em> и выбрать файл
+примера схемы. По умолчанию, он находится по следующему пути:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Linux</dt>
+<dd>
+<p><code>/usr/share/kicadbom2spec/sample/sample.sch</code></p>
+</dd>
+<dt class="hdlist1">Windows</dt>
+<dd>
+<p><code>C:\Program Files\kicadbom2spec\sample\sample.sch</code></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>После этого в таблицу <strong>kicadbom2spec</strong> будут загружены элементы и станет
+доступной команда <em>Файл&#8594;Создать перечень элементов&#8230;&#8203;</em> (и соответствующая
+кнопка на панели инструментов):</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/внешний_вид.png" alt="внешний вид">
+</div>
+<div class="title">Окно программы kicadbom2spec с загруженными элементами из sample.sch</div>
+</div>
+<div class="paragraph">
+<p>На данном этапе можно выполнить редактирование полей элементов и сохранить
+изменения в файл схемы. Но в этом примере ничего редактировать не нужно, сразу
+переходим к созданию перечня. Нужно выполнить команду <em>Файл&#8594;Создать
+перечень элементов&#8230;&#8203;</em>&#8201;&#8212;&#8201;откроется диалог создания перечня элементов:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/диалог_создания_перечня_для_примера.png" alt="диалог создания перечня для примера">
+</div>
+<div class="title">Диалог создания перечня элементов</div>
+</div>
+<div class="paragraph">
+<p>По умолчанию, файл перечня элементов предлагается расположить в каталоге со
+схемой. Но, так как файлы примера установлены вместе с программой в системный
+каталог, то у некоторых пользователей может быть недостаточно прав для записи в
+него. Поэтому нужно изменить место сохранения перечня. Для этого необходимо
+нажать кнопку справа от текстового поля&#8201;&#8212;&#8201;откроется диалог выбора файла.
+Теперь нужно указать каталог, к которому пользователь может легко получить
+доступ, например&#8201;&#8212;&#8201;<em>"Рабочий стол"</em>. Имя файла перечня элементов остается без
+изменений&#8201;&#8212;&#8201;<em>"sample.ods"</em>.</p>
+</div>
+<div class="paragraph">
+<p>Из параметров нужно оставить отметку только для параметра <em>Добавлять единицы
+измерения</em> и завершить создание перечня нажав кнопку <em>Ок</em>. После завершения
+генерации перечня элементов будет показано сообщение:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/сообщение_о_создании_перечня_элементов.png" alt="сообщение о создании перечня элементов">
+</div>
+<div class="title">Сообщение о создании перечня элементов</div>
+</div>
+<div class="paragraph">
+<p>И в указанном ранее каталоге (на <em>Рабочем столе</em>) появится новый файл
+<em>sample.ods</em>:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/созданный_файл_перечня_элементов.png" alt="созданный файл перечня элементов">
+</div>
+<div class="title">Созданный файл перечня элементов</div>
+</div>
+<div class="paragraph">
+<p>Готово&#8201;&#8212;&#8201;перечень элементов создан. Чтобы убедится что все выполнено верно,
+можно сравнить полученный перечень с образцом <em>sample.pdf</em>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_Графический_интерфейс_пользователя">1. Графический интерфейс пользователя</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Внешний вид приложения <strong>kicadbom2spec</strong> показан на рисунке ниже.</p>
+</div>
+<div id="внешний_вид" class="imageblock">
+<div class="content">
+<img src="images/внешний_вид.png" alt="внешний вид">
+</div>
+<div class="title">Внешний вид</div>
+</div>
+<div class="paragraph">
+<p>Графический интерфейс пользователя имеет следующие основные элементы:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>меню</strong>;</p>
+</li>
+<li>
+<p><strong>панель инструментов</strong>;</p>
+</li>
+<li>
+<p><strong>таблицу полей элементов</strong>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Рассмотрим дальше каждый из этих элементов отдельно.</p>
+</div>
+<div class="sect2">
+<h3 id="_Меню">1.1. Меню</h3>
+<div class="paragraph">
+<p>Меню располагается в верхней части окна и содержит следующие элементы:</p>
+</div>
+<div id="меню_программы" class="imageblock">
+<div class="content">
+<img src="images/меню_программы.png" alt="меню программы">
+</div>
+<div class="title">Меню программы</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Файл</strong>&#8201;&#8212;&#8201;в этом меню собраны команды, которые относятся к работе с файлами.</p>
+</li>
+<li>
+<p><strong>Правка</strong>&#8201;&#8212;&#8201;здесь собраны команды для редактирования полей элементов и
+настроек программы.</p>
+</li>
+<li>
+<p><strong>Вид</strong>&#8201;&#8212;&#8201;содержит элементы настройки внешнего вида программы.</p>
+</li>
+<li>
+<p><strong>Справка</strong>&#8201;&#8212;&#8201;в этом меню доступны команды для получения справки.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_Файл">1.1.1. Файл</h4>
+<div class="paragraph">
+<p>В этом меню содержатся следующие команды для управления файлами:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Открыть схему&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает диалог для выбора файла схемы.</p>
+</li>
+<li>
+<p><strong>Недавние схемы</strong>&#8201;&#8212;&#8201;содержит список 10-и последних файлов схем.</p>
+</li>
+<li>
+<p><strong>Сохранить схему</strong>&#8201;&#8212;&#8201;сохраняет изменения полей элементов в файл схемы.</p>
+</li>
+<li>
+<p><strong>Сохранить схему как&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает диалог для сохранения схемы с
+изменёнными полями элементов в новый файл.</p>
+</li>
+<li>
+<p><strong>Открыть библиотеку&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает диалог для выбора файла библиотеки
+элементов.</p>
+</li>
+<li>
+<p><strong>Недавние библиотеки</strong>&#8201;&#8212;&#8201;содержит список 10-и последних файлов библиотек.</p>
+</li>
+<li>
+<p><strong>Сохранить библиотеку</strong>&#8201;&#8212;&#8201;сохраняет изменения полей элементов в файл
+библиотеки.</p>
+</li>
+<li>
+<p><strong>Сохранить библиотеку как&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает диалог для сохранения библиотеки
+с измененными полями элементов в новый файл.</p>
+</li>
+<li>
+<p><strong>Создать перечень элементов&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает диалог создания перечня
+элементов.</p>
+</li>
+</ul>
+</div>
+<div id="диалог_создания_перечня_элементов" class="imageblock">
+<div class="content">
+<img src="images/диалог_создания_перечня_элементов.png" alt="диалог создания перечня элементов">
+</div>
+<div class="title">Диалог создания перечня элементов</div>
+</div>
+<div class="paragraph">
+<p>В данном окне нужно указать имя файла для перечня элементов и задать некоторые
+параметры.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Выход</strong>&#8201;&#8212;&#8201;завершит выполнение программы, если имеются не сохранённые
+изменения&#160;-- будет показано предупреждающее сообщение.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_Правка">1.1.2. Правка</h4>
+<div class="paragraph">
+<p>В этом меню содержатся следующие команды редактирования полей элементов:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Отменить</strong>&#8201;&#8212;&#8201;отменяет последнее изменение поля/полей элементов.</p>
+</li>
+<li>
+<p><strong>Повторить</strong>&#8201;&#8212;&#8201;повторяет отменённое ранее изменение.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Примечание</div>
+</td>
+<td class="content">
+Все изменения сохраняются в оперативной памяти и количество сохраняемых
+изменений не ограничивается. При длительной работе с большим количеством
+элементов может использоваться значительный объем памяти и если это критично,
+то для её освобождения нужно сохранить схему/библиотеку и открыть её вновь.
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Копировать</strong>&#8201;&#8212;&#8201;копирует значения всех пользовательских полей выбранного
+элемента в буфер обмена.</p>
+</li>
+<li>
+<p><strong>Вырезать&#8230;&#8203;</strong>&#8201;&#8212;&#8201;вырезает в буфер обмена значения полей элемента, которые
+были указаны в диалоге выбора полей. Значения полей, которые не были отмечены,
+просто копируются (без дальнейшего удаления).</p>
+</li>
+</ul>
+</div>
+<div id="диалог_выбора_полей" class="imageblock">
+<div class="content">
+<img src="images/диалог_выбора_полей.png" alt="диалог выбора полей">
+</div>
+<div class="title">Диалог выбора полей</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Примечание</div>
+</td>
+<td class="content">
+Команды <strong>Копировать</strong> и <strong>Вырезать&#8230;&#8203;</strong> применяются только к одному
+элементу. Если при выполнении одной из этих команд будет выделено несколько
+элементов&#160;-- отобразится предупреждающее сообщение с предложением
+применить операция только к первому выделенному элементу.
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Вставить&#8230;&#8203;</strong>&#8201;&#8212;&#8201;вставляет в выделенный(е) элемент(ы) значения из буфера
+обмена. Поля, значения которых нужно заменить, выбираются с помощью диалога
+выбора полей. Не отмеченные поля останутся без изменений.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Примечание</div>
+</td>
+<td class="content">
+Для организации <em>копирования</em>, <em>вырезания</em> и <em>вставки</em> полей
+элементов в программе реализован свой собственный буфер обмена.
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Найти&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает диалог поиска текста в полях элементов.</p>
+</li>
+</ul>
+</div>
+<div id="диалог_поиска_текста" class="imageblock">
+<div class="content">
+<img src="images/диалог_поиска_текста.png" alt="диалог поиска текста">
+</div>
+<div class="title">Диалог поиска текста</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Заменить&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает диалог замены текста в полях элементов.</p>
+</li>
+</ul>
+</div>
+<div id="диалог_замены_текста" class="imageblock">
+<div class="content">
+<img src="images/диалог_замены_текста.png" alt="диалог замены текста">
+</div>
+<div class="title">Диалог замены текста</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Редактировать поля&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает редактор полей для выделенного(ых)
+элемента(ов).</p>
+</li>
+</ul>
+</div>
+<div id="редактор_полей" class="imageblock">
+<div class="content">
+<img src="images/редактор_полей.png" alt="редактор полей">
+</div>
+<div class="title">Редактор полей</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Очистить поля&#8230;&#8203;</strong>&#8201;&#8212;&#8201;удаляет во всех выбранных элементах содержимое полей,
+указанных в диалоге выбора полей.</p>
+</li>
+<li>
+<p><strong>Параметры&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает редактор настроек.</p>
+</li>
+<li>
+<p><strong>Импорт параметров&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает диалог выбора файла, в который нужно
+сохранить текущие параметры программы.</p>
+</li>
+<li>
+<p><strong>Экспорт параметров&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает диалог выбора файла, из которого
+нужно загрузить параметры программы.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_Вид">1.1.3. Вид</h4>
+<div class="paragraph">
+<p>Меню вид содержит лишь один пункт:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Панель инструментов</strong>&#8201;&#8212;&#8201;с помощью этой команды можно скрыть или отобразить
+панель инструментов.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_Справка">1.1.4. Справка</h4>
+<div class="paragraph">
+<p>С помощью меню справки можно выполнить два действия:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Руководство пользователя</strong>&#8201;&#8212;&#8201;открывает данное справочное руководство.</p>
+</li>
+<li>
+<p><strong>О программе&#8230;&#8203;</strong>&#8201;&#8212;&#8201;открывает диалоговое окно с краткими сведениями о
+программе <strong>kicadbom2spec</strong>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_Панель_инструментов">1.2. Панель инструментов</h3>
+<div class="paragraph">
+<p>Панель инструментов расположена в верхней части окна и повторяет часто
+используемые команды меню.</p>
+</div>
+<div id="панель_инструментов" class="imageblock">
+<div class="content">
+<img src="images/панель_инструментов.png" alt="панель инструментов">
+</div>
+<div class="title">Панель инструментов</div>
+</div>
+<div class="paragraph">
+<p>Здесь доступны следующие команды (в порядке расположения слева направо):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Открыть схему</strong></p>
+</li>
+<li>
+<p><strong>Сохранить схему</strong></p>
+</li>
+<li>
+<p><strong>Создать перечень элементов</strong></p>
+</li>
+<li>
+<p><strong>Копировать</strong></p>
+</li>
+<li>
+<p><strong>Вырезать</strong></p>
+</li>
+<li>
+<p><strong>Вставить</strong></p>
+</li>
+<li>
+<p><strong>Отменить</strong></p>
+</li>
+<li>
+<p><strong>Повторить</strong></p>
+</li>
+<li>
+<p><strong>Редактировать поля</strong></p>
+</li>
+<li>
+<p><strong>Очистить поля</strong></p>
+</li>
+<li>
+<p><strong>Найти</strong></p>
+</li>
+<li>
+<p><strong>Заменить</strong></p>
+</li>
+<li>
+<p><strong>Руководство пользователя.</strong></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>В случае необходимости панель инструментов можно скрыть выбрав команду меню
+<em>Вид&#8594;Панель инструментов</em>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_Таблица_полей_элементов">1.3. Таблица полей элементов</h3>
+<div class="paragraph">
+<p>Таблица полей элементов занимает основную часть окна приложения и имеет
+следующую структуру.</p>
+</div>
+<div id="таблица_полей_элементов" class="imageblock">
+<div class="content">
+<img src="images/таблица_полей_элементов.png" alt="таблица полей элементов">
+</div>
+<div class="title">Таблица полей элементов</div>
+</div>
+<div class="paragraph">
+<p>Каждая строка представляет собой элемент схемы или библиотеки, а столбцы&#8201;&#8212;&#8201;поля элементов. Всего столбцов девять:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Первый</strong> столбец не имеет названия и содержит во всех ячейках флажки. С
+помощью этих флажков можно выбирать элементы, которые нужно использовать при
+создании перечня элементов. По умолчанию, все элементы отмечены флажками. При
+редактировании файла библиотеки этот столбец хоть и отображается, но не
+используется.</p>
+</li>
+<li>
+<p><strong>Второй</strong> столбец <em>Группа</em> содержит текст одноимённого поля элемента.</p>
+</li>
+<li>
+<p><strong>Третий</strong> столбец <em>Обозначение</em> содержит текст одноимённого поля элемента.
+Это поле используется как уникальный идентификатор элемента и доступно только
+для чтения. Нормально заполненная схема не должна иметь элементов с одинаковыми
+<em>обозначениями</em>. Если в схеме есть не пронумерованные элементы (обозначение
+пустое или оканчивается вопросительным знаком, например, <em>R?</em>, <em>C?</em> и
+т.д.), то они не будут загружены в таблицу.</p>
+</li>
+<li>
+<p><strong>Четвёртый&#8201;&#8212;&#8201;девятый</strong> столбцы отображают содержимое полей <em>Марка</em>,
+<em>Значение</em>, <em>Класс точности</em>, <em>Тип</em>, <em>Стандарт</em>, <em>Примечание</em>,
+соответственно.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>При редактировании библиотеки элементов, ячейки столбца <em>Значение</em> доступны
+только для чтения, изменять значение этого поля в элементах библиотеки нельзя.</p>
+</div>
+<div class="sect3">
+<h4 id="_Контекстное_меню_таблицы">1.3.1. Контекстное меню таблицы</h4>
+<div class="paragraph">
+<p>Контекстное меню вызывается щелчком правой кнопки мыши или нажатием специальной
+клавиши на клавиатуре (между правыми <em>Alt</em> и <em>Ctrl</em>).</p>
+</div>
+<div id="контекстное_меню_таблицы" class="imageblock">
+<div class="content">
+<img src="images/контекстное_меню_таблицы.png" alt="контекстное меню таблицы">
+</div>
+<div class="title">Контекстное меню таблицы полей элементов</div>
+</div>
+<div class="paragraph">
+<p>Здесь собраны команды, которые непосредственно относятся к редактированию полей
+элементов.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_Редактор_ячеек_таблицы">1.3.2. Редактор ячеек таблицы</h4>
+<div class="paragraph">
+<p>Изменение содержимого отдельной ячейки таблицы выполняется с помощью
+специального элемента графического интерфейса&#8201;&#8212;&#8201;<em>текстового поля с выпадающим
+списком</em>.</p>
+</div>
+<div id="редактор_ячеек" class="imageblock">
+<div class="content">
+<img src="images/редактор_ячеек.png" alt="редактор ячеек">
+</div>
+<div class="title">Редактор ячейки таблицы</div>
+</div>
+<div class="paragraph">
+<p>Новое значение вводится непосредственно в текстовое поле или выбирается из
+списка доступных значений. Выпадающий список вызывается нажатием кнопки со
+стрелкой справа от текстового поля. В нем содержатся стандартные значения для
+данного поля, а также значения из других компонентов.</p>
+</div>
+<div class="sect4">
+<h5 id="_Контекстное_меню_редактора_ячеек">1.3.2.1. Контекстное меню редактора ячеек</h5>
+<div class="paragraph">
+<p>Контекстное меню редактора ячеек содержит следующие команды:</p>
+</div>
+<div id="контекстное_меню_редактора_ячеек" class="imageblock">
+<div class="content">
+<img src="images/контекстное_меню_редактора_ячеек.png" alt="контекстное меню редактора ячеек">
+</div>
+<div class="title">Контекстное меню редактора ячеек</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Копировать</strong>&#8201;&#8212;&#8201;копировать выделенный текст.</p>
+</li>
+<li>
+<p><strong>Вырезать</strong>&#8201;&#8212;&#8201;вырезать выделенный текст.</p>
+</li>
+<li>
+<p><strong>Вставить</strong>&#8201;&#8212;&#8201;вставить текст из буфера обмена вместо выделенного текста.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Примечание</div>
+</td>
+<td class="content">
+Операции <em>копировать</em>, <em>вырезать</em> и <em>вставить</em> оперируют с
+системным буфером обмена.
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Удалить</strong>&#8201;&#8212;&#8201;удалить выделенный текст.</p>
+</li>
+<li>
+<p><strong>Выделить всё</strong>&#8201;&#8212;&#8201;выделить содержимое текстового поля.</p>
+</li>
+<li>
+<p><strong>Добавить "&#8230;&#8203;" в стандартные</strong>&#8201;&#8212;&#8201;добавить текущее значение в список
+стандартных (этот пункт появляется если значение ещё отсутствует в стандартных
+для данного поля).</p>
+</li>
+<li>
+<p><strong>Удалить "&#8230;&#8203;" из стандартных</strong>&#8201;&#8212;&#8201;удалить текущее значение из списка
+стандартных (этот пункт появляется если значение уже присутствует в стандартных
+для данного поля).</p>
+</li>
+<li>
+<p><strong>Вставить подстановку&#8230;&#8203;</strong>&#8201;&#8212;&#8201;содержит подменю с командами вставки шаблонов
+подстановки других полей.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_Работа_с_программой">2. Работа с программой</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Работать с приложением <strong>kicadbom2spec</strong> довольно просто, но для полного
+понимания процесса формирования перечня элементов из файла схемы <strong>KiCad</strong>
+нужно объяснить некоторые определения и условности.</p>
+</div>
+<div class="sect2">
+<h3 id="_Основные_принципы">2.1. Основные принципы</h3>
+<div class="paragraph">
+<p>Компоненты из схем, выполненных в <strong>KiCad</strong>, имеют всего четыре стандартных
+поля:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Обозначение</em></p>
+</li>
+<li>
+<p><em>Значение</em></p>
+</li>
+<li>
+<p><em>Посад.место</em></p>
+</li>
+<li>
+<p><em>Документация</em></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Этого не достаточно для создания полноценного перечня элементов. Но <strong>KiCad</strong>
+позволяет каждому элементу добавлять пользовательские поля и, благодаря этому,
+становится возможным задать недостающую информацию для всех элементов.</p>
+</div>
+<div class="paragraph">
+<p>Внесение недостающей информации для каждого компонента непосредственно в
+редакторе схем <strong>Eeschema</strong>&#8201;&#8212;&#8201;процесс довольно долгий, особенно, когда проект
+достаточно крупный. Решить эту проблему позволяет <strong>kicadbom2spec</strong>. С его
+помощью можно быстро и просто заполнить все необходимые поля и сформировать
+перечень элементов.</p>
+</div>
+<div class="paragraph">
+<p>Для каждого компонента схемы/библиотеки <strong>kicadbom2spec</strong> использует следующий
+набор полей:</p>
+</div>
+<div id="набор_полей" class="olist arabic">
+<ol class="arabic">
+<li>
+<p><em>Группа</em></p>
+</li>
+<li>
+<p><strong>Обозначение</strong></p>
+</li>
+<li>
+<p><em>Марка</em></p>
+</li>
+<li>
+<p><strong>Значение</strong></p>
+</li>
+<li>
+<p><em>Класс точность</em></p>
+</li>
+<li>
+<p><em>Тип</em></p>
+</li>
+<li>
+<p><em>Стандарт</em></p>
+</li>
+<li>
+<p><em>Примечание</em></p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Примечание</div>
+</td>
+<td class="content">
+<em>Курсивом</em> выделены пользовательские поля, а <strong>жирным</strong>&#8201;&#8212;&#8201;стандартные.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Элементы, имеющие одинаковые значения поля <em>Группа</em>, будут объединены в одну
+группу с указанным названием.</p>
+</div>
+<div class="paragraph">
+<p>Значение поля <strong>Обозначение</strong> помещается в графу <em>Поз. обозначение</em>.</p>
+</div>
+<div class="paragraph">
+<p>Из полей 3&#8230;&#8203;7 формируется наименование элемента.</p>
+</div>
+<div class="paragraph">
+<p>Значение поля <em>Примечание</em> помещается в одноимённую графу перечня.</p>
+</div>
+<div class="paragraph">
+<p>Рассмотрим пример образования одной строки перечня элементов:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/пример.png" alt="пример">
+</div>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-top"><p class="tableblock">ЗНАЧЕНИЕ В ПЕРЕЧНЕ:</p></th>
+<th class="tableblock halign-center valign-top"><p class="tableblock">ПОЛЕ ЭЛЕМЕНТА:</p></th>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Резисторы</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Группа</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Обозначение</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">МЛТ-0,25-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Марка</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1,8к</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Значение<sup>1</sup></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">±5%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Класс точности</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-В</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Тип</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#160;ОЖ0.467.18</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Стандарт<sup>2</sup></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1&#8230;&#8203;2,8кОм</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Примечание</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><em>Примечания:</em></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Единицы измерения (в данном случае "Ом") могут добавляться автоматически
+для резисторов, конденсаторов и индуктивностей если при создании перечня
+элементов была установлена отметка возле параметра <em>Добавлять единицы
+измерения</em>.</p>
+</li>
+<li>
+<p>Стандарт указан с пробелом в начале.</p>
+</li>
+</ol>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>При образовании наименования разделители не используются, поэтому их нужно
+указывать в значениях полей.</p>
+</div>
+<div class="paragraph">
+<p>Если какое-нибудь поле не нужно&#8201;&#8212;&#8201;его оставляют пустым.</p>
+</div>
+<div class="paragraph">
+<p>Количество элементов подсчитывается автоматически. Если имеется несколько
+одинаковых элементов идущих подряд, они сводятся в одну строку с указанием
+первого и последнего элемента и их общего количества.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_Работа_с_таблицей_полей_элементов">2.2. Работа с таблицей полей элементов</h3>
+<div class="sect3">
+<h4 id="_Сортировка_элементов">2.2.1. Сортировка элементов</h4>
+<div class="paragraph">
+<p>Для представления элементов в более удобном виде предусмотрена возможность
+сортировки содержимого таблицы. Выполняется она путём нажатия левой кнопки
+мыши на заголовке столбца, по содержимому которого должна производится
+сортировка. Например, если нужно отобразить элементы собранные по группам и в
+алфавитном порядке&#8201;&#8212;&#8201;нужно нажать на заголовок столбца <em>Группа</em>. Если нажать
+ещё один раз&#8201;&#8212;&#8201;содержимое отсортируется в обратном порядке.</p>
+</div>
+<div id="индикатор_сортировки" class="imageblock">
+<div class="content">
+<img src="images/индикатор_сортировки.png" alt="индикатор сортировки">
+</div>
+<div class="title">Индикатор сортировки</div>
+</div>
+<div class="paragraph">
+<p>В заголовке столбца, по которому выполнена сортировка, появляется индикатор с
+указанием направления сортировки.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_Выделение_элементов">2.2.2. Выделение элементов</h4>
+<div class="paragraph">
+<p>Чтобы выделить один элемент нужно нажать левой кнопкой мыши (ЛКМ) на одном из
+его полей.</p>
+</div>
+<div class="paragraph">
+<p>Если необходимо выделить несколько элементов подряд&#8201;&#8212;&#8201;нужно выделить первый
+нужный элемент, затем нажать клавишу <em>Shift</em> и не отпуская её нажать ЛКМ на
+последнем нужном элементе. Эту же операцию можно выполнить другим
+способом&#160;-- нажать ЛКМ на первом нужном элементе и не отпуская её тянуть
+курсор к последнему нужному элементу и после этого отпустить ЛКМ.</p>
+</div>
+<div class="paragraph">
+<p>Чтобы выделить несколько не последовательных элементов нужно выделить первый
+элемент, а последующие выделять при нажатой клавише <em>Ctrl</em>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_Поиск_замена_текста">2.2.3. Поиск/замена текста</h4>
+<div class="paragraph">
+<p>Чтобы найти текст в полях элементов нужно воспользоваться командной
+<em>Правка&#8594;Найти&#8230;&#8203;</em> После выбора данной команды будет открыт
+<a href="#диалог_поиска_текста">диалог поиска текста</a> в котором нужно ввести фрагмент
+текста в текстовое поле и для поиска ниже выделенного элемента, нажать кнопку
+<em>Далее</em> или нажать клавишу <em>Enter</em>. Для поиска текста в обратном
+направлении нужно нажать кнопку <em>Назад</em>.</p>
+</div>
+<div class="paragraph">
+<p>Чтобы уточнить результаты поиска можно воспользоваться опциями:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>С учётом регистра</strong> – поиск будет выполнен учитывая регистр введённых букв;</p>
+</li>
+<li>
+<p><strong>Слово целиком</strong> – будут найдены только те слова, которые полностью
+соответствуют введённому поисковому запросу.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Важно!</div>
+</td>
+<td class="content">
+Если включена опция <strong>Слово целиком</strong> и запрос состоит из нескольких
+слов, то они никогда не будут найдены (если нужно найти слово, то и запрос
+должен быть словом).
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Для замены текста используется команда <em>Правка&#8594;Заменить&#8230;&#8203;</em> При её выборе
+появится расширенное диалоговое окно поиска&#8201;&#8212;&#8201;<a href="#диалог_замены_текста">диалог
+замены текста</a>. В начале выполняется поиск фрагмента текста, который нужно
+заменить подобно тому как было описано ранее. Далее вводится текст на который
+нужно заменить найденный фрагмент в поле <em>Заменить на</em> и нажатием кнопки
+<em>Заменить</em> выполняется замена.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_Редактирование_полей">2.2.4. Редактирование полей</h4>
+<div class="paragraph">
+<p>Любое изменение в таблице можно отменить с помощью команды меню
+<em>Правка&#8594;Отменить</em>, а отменённое действие повторить с помощью команды
+<em>Правка&#8594;Повторить</em>. Если после отмены было произведено новое изменение то
+команда повтора становится недоступной.</p>
+</div>
+<div class="paragraph">
+<p>Для редактирования содержимого полей предусмотрено несколько способов.</p>
+</div>
+<div class="paragraph">
+<p>Прежде всего, каждое доступное для редактирования поле можно править щёлкнув по
+нему двойным щелчком ЛКМ. В случае с флажками&#8201;&#8212;&#8201;однократный щелчок ЛКМ изменит
+его состояние на противоположное. Эти же операции можно выполнять с клавиатуры.
+С помощью стрелок нужно переместиться к ячейке с содержимым поля, которое
+необходимо отредактировать и для замены - просто начать вводить новое значение,
+для редактирования&#8201;&#8212;&#8201;нажать клавишу <em>F2</em>. Для изменения состояния флажка
+нужно нажать клавишу <em>пробел</em>.</p>
+</div>
+<div class="paragraph">
+<p>Изменение содержимого ячеек выполняется с помощью <a href="#редактор_ячеек">редактора
+ячеек</a>. При его активации, выпадающий список заполняется следующим образом.
+Сначала в него добавляются стандартные значения (если они имеются) и, затем,
+все уникальные значения этого же поля других компонентов.</p>
+</div>
+<div class="paragraph">
+<p>Чтобы добавить новое значение в список стандартных для текущего поля, можно
+воспользоваться <a href="#контекстное_меню_редактора_ячеек">контекстным меню</a>.
+Аналогичным образом текущее значение можно удалить из стандартных, если оно там
+уже присутствует.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_Редактирование_полей_нескольких_элементов_одновременно">2.2.5. Редактирование полей нескольких элементов одновременно</h4>
+<div class="paragraph">
+<p>Для редактирования полей нескольких элементов одновременно можно
+воспользоваться <a href="#редактор_полей">редактором полей</a>. Чтобы изменить
+значения полей одновременно для нескольких элементов необходимо их выделить и
+затем выполнить команду <em>Правка&#8594;Редактировать поля&#8230;&#8203;</em>, откроется редактор
+полей. Он содержит флажок для указания того, нужно ли помещать выделенные
+элементы в перечень элементов или нет (при редактировании библиотеки&#160;--
+отсутствует) и текстовые поля с выпадающим списком (аналог редактора ячеек) для
+редактирования полей элементов. В отличии от редактора ячеек, в редакторе полей
+значения для каждого поля собираются не со всех компонентов, а только с
+выделенных.</p>
+</div>
+<div class="paragraph">
+<p>По умолчанию, во всех текстовых полях редактора полей установлено значение
+<em>&lt;не изменять&gt;</em>, что указывает на то, что значение полей не будет изменено.
+Это позволяет редактировать только нужные поля, а остальные оставить без
+изменений. Чтобы изменить значение поля всех выделенных элементов нужно
+заменить надпись <em>&lt;не изменять&gt;</em> на нужное значение и нажать кнопку <em>Ок</em>.</p>
+</div>
+<div class="paragraph">
+<p>Значения полей одного или нескольких элементов можно очищать. Для этого
+существует команда меню <em>Правка&#8594;Очистить поля&#8230;&#8203;</em>, после выбора которой
+отобразится <a href="#диалог_выбора_полей">диалог выбора полей</a>. Чтобы очистить нужные
+поля&#160;-- их необходимо отметить и нажать кнопку <em>Ок</em>.</p>
+</div>
+<div class="paragraph">
+<p>При редактировании полей доступны операции для работы с буфером обмена
+<em>Правка&#8594;Копировать/Вырезать&#8230;&#8203;/Вставить&#8230;&#8203;</em> Команды <em>Копировать</em> и
+<em>Вырезать&#8230;&#8203;</em> применимы только к одному элементу. Команду <em>Вставить&#8230;&#8203;</em>
+можно применять сразу к нескольким выделенным элементам.</p>
+</div>
+<div class="paragraph">
+<p>При копировании, в буфер обмена сохраняются значения полей выделенного
+элемента. При вырезании выполняется копирование значений всех полей с
+последующей очисткой только тех полей, которые были указаны в диалоге выбора
+полей. При вставке будут заменены значения только тех полей, которые были
+отмечены в диалоге выбора полей.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_Редактирование_полей_компонентов_иерархических_схем">2.2.6. Редактирование полей компонентов иерархических схем</h4>
+<div class="paragraph">
+<p>С помощью <strong>KiCad</strong> можно создавать довольно сложные схемы, содержащие
+множество иерархических листов неограниченной вложенности. Компоненты таких
+схем собираются со всех листов, включая иерархические, в один список и
+формируют единый перечень элементов.</p>
+</div>
+<div class="paragraph">
+<p>Ещё одной особенностью САПР <strong>KiCad</strong>, при создании сложных схем, является
+возможность использования одной и той же схемы для нескольких иерархических
+листов. Таким образом можно изобразить некое количество повторяющихся
+однотипных узлов. В данном случае компоненты иерархической схемы сохраняются
+особым образом. Дело в том, что несколько однотипных листов ссылаются к одной и
+той же схеме и, таким образом, эти однотипные листы используют одни и те же
+компоненты. Эти компоненты содержат специальные свойства, в которых указаны
+обозначения для каждого из листов, т.е. каждый из таких компонентов имеет
+несколько обозначений. Изменение значения поля компонента в одном из однотипных
+листов приведёт к изменению этого же поля, такого же компонента, в остальных
+листах.</p>
+</div>
+<div class="paragraph">
+<p>В <strong>kicadbom2spec</strong> такие компоненты отображаются особым образом. Компоненты
+одного из повторяющихся однотипных листов принимаются за "оригинальные", а
+компоненты остальных листов как "копии". Это разделение условно и сделано для
+удобства редактирования.</p>
+</div>
+<div class="paragraph">
+<p>"Оригинальные" компоненты отображаются в таблице с пометкой "*" в конце
+обозначения. Если увидите компонент с данной пометкой, например, <em>R256*</em>,
+значит где-то в таблице имеются его "копии".</p>
+</div>
+<div class="paragraph">
+<p>"Копии" компонента в поле <em>Обозначение</em> содержат обозначение "оригинального"
+компонента в скобках. Например, <em>R123(R256)</em>.</p>
+</div>
+<div class="paragraph">
+<p>Так как "оригинальные" компоненты и их "копии", по сути, являются одним
+компонентом с одним набором полей, но с несколькими обозначениями, то значения
+полей у них всегда равны. Поэтому редактировать можно только "оригинальные"
+компоненты. После изменения поля "оригинального" компонента, соответствующее
+поле "копий" примет такое же значение. "Копии" доступны лишь для чтения и
+отображаются для предоставления полного перечня элементов.</p>
+</div>
+<div class="paragraph">
+<p>Если в процессе редактирования дважды щёлкнуть мышей по "копии", отобразиться
+информационное сообщение с предложением перейти к "оригинальному" компоненту.</p>
+</div>
+<div class="paragraph">
+<p>При формировании перечня элементов будут использоваться обычные обозначения без
+каких либо пометок (в данном случае без "<em>*</em>" и "<em>(256)</em>"). Они
+используются только для удобства редактирования.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_Подстановки_полей">2.2.7. Подстановки полей</h4>
+<div class="paragraph">
+<p>В процессе работы <strong>kicadbom2spec</strong> использует фиксированный набор полей. В то
+же время, пользователь может хранить некоторую информацию в других
+пользовательских полях или в стандартных полях, которые не используются в
+<strong>kicadbom2spec</strong> (<em>Посад.место</em>, <em>Документация</em>). Для того чтобы включить
+эти данные в перечень элементов используются <em>подстановки полей</em>.</p>
+</div>
+<div class="paragraph">
+<p>Принцип работы следующий. В полях, <a href="#набор_полей">с которыми работает
+<strong>kicadbom2spec</strong></a>, вставляются специальные метки:</p>
+</div>
+<div class="paragraph">
+<p><code>${Название_поля}</code></p>
+</div>
+<div class="paragraph">
+<p>При формировании перечня элементов <strong>kicadbom2spec</strong> обрабатывает каждый
+элемент и когда находит подобную метку&#8201;&#8212;&#8201;ищет в этом же компоненте поле с
+названием <em><strong>Название_поля</strong></em>. Далее, метка заменяется содержимым найденного
+поля. Если поле с указанным именем не найдено, метка просто удаляется.</p>
+</div>
+<div class="paragraph">
+<p>Подобные метки можно вводить вручную с клавиатуры или воспользоваться
+контекстным меню в <a href="#редактор_ячеек">редакторе ячеек</a>. В нём всегда
+присутствуют подстановки четырех стандартных полей. Чтобы вставить подстановку
+пользовательского поля, можно выбрать <em>Вставить подстановку&#8230;&#8203;&#8594;Другую&#8230;&#8203;</em>.
+При этом в текстовое поле будет вставлена пустая метка с курсором внутри скобок
+для ввода названия нужного поля.</p>
+</div>
+<div class="paragraph">
+<p>Метки могут быть окружены текстом, т.е. помимо меток в поле можно указывать и
+другую информацию. Также, в поле можно вставлять несколько меток.</p>
+</div>
+<div class="paragraph">
+<p>Для примера предположим, что в перечне элементов компоненту схемы нужно указать
+тип корпуса. Используем для этого поле <em>Примечание</em> и заполняем его следующим
+образом:</p>
+</div>
+<div class="paragraph">
+<p><code>В корпусе ${Посад.место}</code></p>
+</div>
+<div class="paragraph">
+<p>Компоненту присвоено посадочное место, скажем, <em>DIP16</em>. Тогда в перечне
+элементов, в поле <em>Примечание</em> получим:</p>
+</div>
+<div class="paragraph">
+<p><code>В корпусе DIP16</code></p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_Создание_перечня_элементов">2.3. Создание перечня элементов</h3>
+<div class="paragraph">
+<p>Когда в <strong>kicadbom2spec</strong> загружен файл схемы и все необходимые поля
+заполнены&#160;-- можно приступить к созданию перечня элементов. Для этого
+нужно выполнить команду <em>Файл&#8594;Создать перечень элементов&#8230;&#8203;</em>. Откроется
+<a href="#диалог_создания_перечня_элементов">диалог создания перечня элементов</a>, в
+котором нужно указать имя файла перечня элементов. По умолчанию, это имя
+образуется из имени файла схемы путём замены расширения на <em>*.ods</em>.  Если же
+данный вариант не устраивает можно исправить имя в текстовом поле или с помощью
+диалога выбора файлов нажав кнопку справа от текстового поля.</p>
+</div>
+<div class="paragraph">
+<p>Дополнительно доступны следующие параметры:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Добавить единицы измерения</em>&#8201;&#8212;&#8201;если этот параметр отмечен и в значениях
+резисторов/конденсаторов/индуктивностей (определяется по литерам обозначения
+<em>R</em>, <em>C</em>, <em>L</em>) отсутствуют единицы измерения (например, <em>10к</em>, <em>1мк</em>,
+<em>2.2н</em>), то они будут добавлены автоматически (<em>10кОм</em>, <em>1мкФ</em>,
+<em>2.2нГн</em>).</p>
+</li>
+<li>
+<p><em>Все элементы</em>&#8201;&#8212;&#8201;если этот параметр отмечен, то перечень будет составлен
+из всех элементов схемы, т.е. состояние флажка в таблице будет проигнорировано.</p>
+</li>
+<li>
+<p><em>Добавить лист регистрации изменений</em>&#8201;&#8212;&#8201;если данная опция включена, то в
+конец перечня элементов будет добавлен лист регистрации изменений.</p>
+</li>
+<li>
+<p><em>Открыть перечень элементов</em>&#8201;&#8212;&#8201;если этот параметр установлен, то по
+завершении будет открыт созданный перечень элементов в редакторе по умолчанию
+(например, в <strong>LibreOffice</strong>).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Когда все параметры заданы, можно завершить создание перечня нажав кнопку
+<em>Ок</em>. После успешного завершения генерации перечня элементов будет показано
+сообщение:</p>
+</div>
+<div id="сообщение_о_создании_перечня_элементов" class="imageblock">
+<div class="content">
+<img src="images/сообщение_о_создании_перечня_элементов.png" alt="сообщение о создании перечня элементов">
+</div>
+<div class="title">Сообщение о создании перечня элементов</div>
+</div>
+<div class="paragraph">
+<p>Если перед созданием перечня был установлен параметр <em>Открыть перечень
+элементов</em>, то сообщение о завершении показано не будет, вместо него будет
+открыт созданный перечень элементов.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Примечание</div>
+</td>
+<td class="content">
+При создании перечня элементов из <strong>Eeschema</strong> в директории фала схемы
+автоматически создаются два новых файла: один с названием схемы и
+расширением <em>*.xml</em>, второй тоже с названием схемы, но без расширения. Они не
+используются программой <strong>kicadbom2spec</strong> и если в них нет необходимости, могут
+быть удалены.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_Настройка_программы">3. Настройка программы</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Редактор настроек вызывается из меню с помощью команды
+<em>Правка&#8594;Параметры&#8230;&#8203;</em>.</p>
+</div>
+<div id="редактор_настроек" class="imageblock">
+<div class="content">
+<img src="images/редактор_настроек.png" alt="редактор настроек">
+</div>
+<div class="title">Внешний вид редактора настроек</div>
+</div>
+<div class="paragraph">
+<p>Все настройки разбиты на группы, каждая из которых расположена на отдельной
+вкладке.</p>
+</div>
+<div class="sect2">
+<h3 id="_Основные_параметры">3.1. Основные параметры</h3>
+<div class="paragraph">
+<p>Эти параметры относятся к программе в целом. Рассмотрим каждый из параметров в
+отдельности.</p>
+</div>
+<div class="paragraph">
+<p><strong>Сохранять положение и размер окна</strong>&#8201;&#8212;&#8201;если этот параметр установлен, то при
+завершении работы программы будет сохранено положение окна и его размер, а при
+следующем запуске эти значения будут восстановлены. Если же параметр не
+установлен, то программа будет каждый раз запускаться с размером и положением
+на экране заданным по умолчанию.</p>
+</div>
+<div class="paragraph">
+<p><strong>Сохранять ширину колонок таблицы</strong>&#8201;&#8212;&#8201;если этот параметр установлен, то в
+процессе работы и при завершении программы ширина столбцов таблицы элементов
+будет сохранятся и при следующем запуске они будут восстановлены.</p>
+</div>
+<div class="paragraph">
+<p><strong>Запоминать выбор элементов</strong>&#8201;&#8212;&#8201;если это параметр установлен, то при
+сохранении файла схемы для элементов, которые исключены из перечня элементов
+(отметка в таблице снята) будет добавлено новое поле с именем "Исключён из
+ПЭ". В этом поле можно указать комментарий с описанием причины, по которой
+элемент был исключён из перечня (только в <strong>Eeschema</strong>). При открытии файла
+схемы у элементов которые содержат поле "Исключён из ПЭ" будет автоматически
+снята отметка и при создании перечня эти элементы в перечень не попадут.<br>
+В общей сложности этот параметр позволяет сохранять состояние выбора элементов
+в файле схемы.</p>
+</div>
+<div class="paragraph">
+<p><strong>Автоматически заполнять поле "Группа"</strong>&#8201;&#8212;&#8201;данный параметр позволяет
+несколько автоматизировать процесс оформления перечня элементов. А именно, для
+заданных типов элементов автоматически заполнять поле "Группа" при загрузке
+документа.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Примечание</div>
+</td>
+<td class="content">
+автоматическое заполнение применяется только к элементам с пустым полем
+"Группа".
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Для организации пар <em>тип элемента&#8201;&#8212;&#8201;значение поля "Группа" </em> предусмотрен
+специальный редактор, в котором доступны три действия <em>Добавить</em>,
+<em>Изменить</em> и <em>Удалить</em>. Существующие элементы отображаются в списке и
+могут включаться или отключаться с помощью отметок.</p>
+</div>
+<div class="paragraph">
+<p>Чтобы добавить новый элемент нужно нажать на кнопку <em>Добавить</em> после чего
+отобразится диалоговое окно, как показано на рисунке:</p>
+</div>
+<div id="диалог_создания_элемента_списка" class="imageblock">
+<div class="content">
+<img src="images/диалог_создания_элемента_списка.png" alt="диалог создания элемента списка">
+</div>
+<div class="title">Диалог создания элемента списка</div>
+</div>
+<div class="paragraph">
+<p>В этом диалоге нужно заполнить два поля.</p>
+</div>
+<div class="paragraph">
+<p>Первое из них <em>Обозначение элемента</em>&#8201;&#8212;&#8201;это один или два символа, с которых
+начинается обозначение элемента, и по которым можно определить принадлежность
+элемента к группе. Например, "С" для конденсаторов, "R" для резисторов, "VT"
+для транзисторов, "D" для аналоговых и цифровых микросхем (если нужно
+конкретизировать можно указать "DA" для, скажем, стабилизаторов или
+операционных усилителей) и т.д.</p>
+</div>
+<div class="paragraph">
+<p>Второе&#8201;&#8212;&#8201;<em>Значение поля "Группа" </em> — здесь нужно задать значение поля
+"Группа", которое будет автоматически присваиваться элементам, обозначение
+которых начинается с символов, указанных в предыдущем поле.</p>
+</div>
+<div class="paragraph">
+<p>Если нужно отредактировать уже существующий элемент, необходимо его выделить и
+нажать кнопку <em>Изменить</em> или произвести двойной щелчок ЛКМ по элементу
+списка. В результате откроется диалоговое окно, подобное диалогу создания
+элемента.</p>
+</div>
+<div id="диалог_редактирования_элемента_списка" class="imageblock">
+<div class="content">
+<img src="images/диалог_редактирования_элемента_списка.png" alt="диалог редактирования элемента списка">
+</div>
+<div class="title">Диалог редактирования элемента списка</div>
+</div>
+<div class="paragraph">
+<p>Для сохранения выполненных изменений нужно нажать кнопку <em>Ок</em>, для отмены&#8201;&#8212;&#8201;<em>Отмена</em>.</p>
+</div>
+<div class="paragraph">
+<p>Чтобы удалить элемент из списка, нужно выделить его и нажать кнопку
+<em>Удалить</em>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_Значения_полей">3.2. Значения полей</h3>
+<div class="paragraph">
+<p>При оформлении перечня элементов, заполняя поля элементов часто приходится
+использовать стандартные значения, такие, например, как "Резисторы",
+"Конденсаторы", "Диоды" и т.д. для поля "Группа" или "±1%", "±5%", "±10%" для
+поля "Класс точности".</p>
+</div>
+<div id="редактор_стандартных_значений_для_полей" class="imageblock">
+<div class="content">
+<img src="images/редактор_стандартных_значений_для_полей.png" alt="редактор стандартных значений для полей">
+</div>
+<div class="title">Редактор стандартных значений для полей</div>
+</div>
+<div class="paragraph">
+<p>Чтобы ускорить процесс заполнения перечня предусмотрена возможность задавать
+стандартные значения для определённых полей элементов. Делается это с помощью
+вкладки <em>Значения полей</em> редактора настроек.</p>
+</div>
+<div class="paragraph">
+<p>Для каждой группы можно задать несколько значений, каждое из которых
+расположено на отдельной строке.</p>
+</div>
+<div class="paragraph">
+<p>Теперь при редактировании элементов все эти варианты значений будут доступны в
+выпадающем списке.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_Импорт_экспорт_параметров">3.3. Импорт/экспорт параметров</h3>
+<div class="paragraph">
+<p>Выполнить перенос параметров из одной копии программы в другую можно следующим
+образом.</p>
+</div>
+<div class="paragraph">
+<p>В первой копии программы необходимо выбрать пункт меню <em>Правка&#8594;Экспорт
+параметров&#8230;&#8203;</em> и в диалоге сохранения файлов указать в какой файл нужно
+сохранить текущие настройки. По умолчанию, имя файла&#8201;&#8212;&#8201;<code>settings.ini</code>, его
+можно изменить по своему усмотрению.</p>
+</div>
+<div class="paragraph">
+<p>Далее нужно во второй программе выбрать пункт меню <em>Правка&#8594;Импорт
+параметров&#8230;&#8203;</em> и в диалоге открытия файлов выбрать файл, полученный в
+предыдущем шаге. После этого откроется диалоговое окно в котором будет
+предложено выбрать параметры для импорта.</p>
+</div>
+<div id="диалог_выбора_параметров_для_импорта" class="imageblock">
+<div class="content">
+<img src="images/диалог_выбора_параметров_для_импорта.png" alt="диалог выбора параметров для импорта">
+</div>
+<div class="title">Диалог выбора параметров для импорта</div>
+</div>
+<div class="paragraph">
+<p>Для завершения импорта параметров нужно нажать кнопку <em>ОК</em>. Выбранные
+параметры сразу же будут применены к программе.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_Параметры_командной_строки">4. Параметры командной строки</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>При запуске программы <strong>kicadbom2spec</strong>, ей можно передавать один или два
+позиционных аргумента. Это даёт возможность подключать <strong>kicadbom2spec</strong> к
+редактору схем <strong>Eeschema</strong> в качестве плагина.</p>
+</div>
+<div class="paragraph">
+<div class="title">Формат вызова программы из командной строки:</div>
+<p><code>python kicadbom2spec.pyw [-h] [-v] [schematic] [complist]</code></p>
+</div>
+<div class="sect2">
+<h3 id="_Первый_позиционный_аргумент_em_strong_schematic_strong_em">4.1. Первый позиционный аргумент <em><strong>schematic</strong></em></h3>
+<div class="paragraph">
+<p>С помощью этого параметра в программу передаётся имя файла схемы в формате
+<em>KiCad Schematic</em>.</p>
+</div>
+<div class="paragraph">
+<p>Так как при запуске <strong>kicadbom2spec</strong> в качестве плагина <strong>Eeschema</strong>, ей
+передаётся в первом параметре имя файла списка цепей (<em>*.xml</em>), то для
+обеспечения правильной работы применяется следующий процесс обработки
+параметра:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>считывается имя файла;</p>
+</li>
+<li>
+<p>удаляется расширение;</p>
+</li>
+<li>
+<p>добавляется расширение <em>*.sch</em>;</p>
+</li>
+<li>
+<p>проверяется наличие файла с полученным именем:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>если файл существует&#8201;&#8212;&#8201;его содержимое загружается для дальнейшего
+редактирования;</p>
+</li>
+<li>
+<p>если файл не существует&#8201;&#8212;&#8201;открывается диалог выбора файла схемы вручную.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_Второй_позиционный_аргумент_em_strong_complist_strong_em">4.2. Второй позиционный аргумент <em><strong>complist</strong></em></h3>
+<div class="paragraph">
+<p>С помощью этого параметра в программу передаётся имя файла в который будет
+сохранен перечень элементов. Расширение файла автоматически заменяется на
+<em>*.ods</em>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_Параметр_em_strong_h_help_strong_em">4.3. Параметр <em><strong>-h, --help</strong></em></h3>
+<div class="paragraph">
+<p>С этим параметром программа выводит справочное сообщение с краткой информацией
+о программе и доступных параметрах. Затем закрывается без выполнения каких-либо
+вычислений.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_Параметр_em_strong_v_version_strong_em">4.4. Параметр <em><strong>-v, --version</strong></em></h3>
+<div class="paragraph">
+<p>С этим параметром программа выводит номер текущей версии программы и
+закрывается без выполнения каких-либо вычислений.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_Настройка_em_strong_kicad_strong_em_для_работы_с_em_strong_kicadbom2spec_strong_em">5. Настройка <em><strong>KiCad</strong></em> для работы с <em><strong>kicadbom2spec</strong></em></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Возможности программы <strong>Eeschema</strong> позволяют использовать сторонние инструменты
+для создания перечней элементов. Как использовать в данном случае
+<strong>kicadbom2spec</strong> будет рассказано далее.</p>
+</div>
+<div class="sect2">
+<h3 id="_Настройка_редактора_схем_em_strong_eeschema_strong_em">5.1. Настройка редактора схем <em><strong>Eeschema</strong></em></h3>
+<div class="paragraph">
+<p>Прежде всего можно определить несколько пользовательских полей для элементов
+схемы. Для этого нужно открыть диалог настроек, выбрав в меню
+<em>Настройки&#8594;Параметры</em> и во вкладке <em>Шаблон имён полей</em> заполнить поля как
+показано на рисунке ниже. Порядок полей не имеет значения.</p>
+</div>
+<div id="настройки_пользовательских_полей" class="imageblock">
+<div class="content">
+<img src="images/настройки_пользовательских_полей.png" alt="настройки пользовательских полей">
+</div>
+<div class="title">Настройка пользовательских полей</div>
+</div>
+<div class="paragraph">
+<p>Благодаря данным шаблонам, при открытии редактора свойств элемента, в нем уже
+будут присутствовать указанные выше поля. Иначе, пришлось бы добавлять их
+каждому элементу отдельно.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Примечание</div>
+</td>
+<td class="content">
+Данная настройка не является обязательной. Она лишь упрощает работу с
+полями в редакторе схем <strong>Eeschema</strong>. <strong>kicadbom2spec</strong> сам создаст все
+необходимые поля, если будет необходимо.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_Создание_и_настройка_плагина">5.1.1. Создание и настройка плагина</h4>
+<div class="paragraph">
+<p>Следующим этапом является создание нового инструмента генерации перечня
+элементов (плагина). Для этого в <strong>Eeschema</strong> нужно выполнить команду
+<em>Инструменты&#8594;Сформировать перечень элементов</em> или нажать соответствующую
+кнопку на панели инструментов, после чего откроется диалог:</p>
+</div>
+<div id="диалог_создания_перечня_элементов_в_eeschema" class="imageblock">
+<div class="content">
+<img src="images/диалог_создания_перечня_элементов_в_eeschema.png" alt="диалог создания перечня элементов в eeschema">
+</div>
+<div class="title">Диалог создания перечня элементов в Eeschema</div>
+</div>
+<div class="paragraph">
+<p>Чтобы добавить новый инструмент генерации перечня элементов нужно нажать кнопку
+<em>Добавить плагин</em>. Откроется диалог выбора файлов в котором необходимо
+указать файл программы. По умолчанию, <strong>kicadbom2spec</strong> находится по следующему
+пути:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Linux</dt>
+<dd>
+<p><code>/usr/share/kicadbom2spec/kicadbom2spec.pyw</code></p>
+</dd>
+<dt class="hdlist1">Windows</dt>
+<dd>
+<p><code>C:\Program Files\kicadbom2spec\kicadbom2spec.pyw</code></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Нужно выбрать его. После этого откроется диалоговое окно, в котором будет
+предложено ввести имя плагина (по умолчанию, "kicadbom2spec"&#8201;&#8212;&#8201;формируется
+автоматически на основе имени файла плагина) и подтвердить создание нажатием
+кнопки <em>Ок</em>.</p>
+</div>
+<div id="запрос_имени_плагина" class="imageblock">
+<div class="content">
+<img src="images/запрос_имени_плагина.png" alt="запрос имени плагина">
+</div>
+<div class="title">Запрос имени плагина</div>
+</div>
+<div class="paragraph">
+<p>Теперь, когда плагин создан, в диалоговом окне отобразится новый элемент с
+указанным ранее названием. Поле <em>Команда</em> <strong>KiCad</strong> заполнит автоматически.</p>
+</div>
+<div id="диалог_создания_перечня_элементов_после_добавления_плагина" class="imageblock">
+<div class="content">
+<img src="images/диалог_создания_перечня_элементов_после_добавления_плагина.png" alt="диалог создания перечня элементов после добавления плагина">
+</div>
+<div class="title">Диалог создания перечня элементов полсе добавления плагина</div>
+</div>
+<div class="paragraph">
+<p><strong>В операционных системах на базе Linux</strong> могут быть установлены обе версии
+<em>Python2</em> и <em>Python3</em>&#160;-- нужно указать конкретную версию <em>Python</em>,
+как показано на рисунке ниже.</p>
+</div>
+<div id="диалог_создания_перечня_элементов_с_указанной_версией_python" class="imageblock">
+<div class="content">
+<img src="images/диалог_создания_перечня_элементов_с_указанной_версией_python.png" alt="диалог создания перечня элементов с указанной версией python">
+</div>
+<div class="title">Диалог создания перечня элементов с правильно настроенным плагином в Linux</div>
+</div>
+<div class="paragraph">
+<p><strong>В операционных системах MS Windows</strong> диалог создания перечня элементов
+немного отличается. Там присутствует специальный параметр <em>Показать окно
+консоли</em>.  Нужно установить отметку напротив этого параметра&#8201;&#8212;&#8201;это очень
+важно, <strong>без него окно программы не будет отображаться!</strong></p>
+</div>
+<div id="диалог_создания_перечня_элементов_с_правильно_настроенным_плагином" class="imageblock">
+<div class="content">
+<img src="images/диалог_создания_перечня_элементов_с_правильно_настроенным_плагином.png" alt="диалог создания перечня элементов с правильно настроенным плагином">
+</div>
+<div class="title">Диалог создания перечня элементов с правильно настроенным плагином в Windows</div>
+</div>
+<div class="paragraph">
+<p>После этого плагин готов к работе. Его можно запустить нажав кнопку
+<em>Сформировать</em>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Редакция от 2016-08-17 10:07:52 EEST
+</div>
+</div>
+</body>
+</html>
