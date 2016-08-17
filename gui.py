@@ -968,21 +968,6 @@ class SettingsDialog ( wx.Dialog ):
 		self.values_tab_panel.Layout()
 		values_tab_sizer.Fit( self.values_tab_panel )
 		self.settings_tabs.AddPage( self.values_tab_panel, u"Значения полей", False )
-		self.help_viewer_panel = wx.Panel( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		help_viewer_tab_sizer = wx.BoxSizer( wx.VERTICAL )
-		
-		self.help_viewer_label = wx.StaticText( self.help_viewer_panel, wx.ID_ANY, u"Программа для отображения справочного руководства (PDF):", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.help_viewer_label.Wrap( -1 )
-		help_viewer_tab_sizer.Add( self.help_viewer_label, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		self.help_viewer_filepicker = wx.FilePickerCtrl( self.help_viewer_panel, wx.ID_ANY, wx.EmptyString, u"Выбор программы для просмотра справки", u"Все файлы (*.*)|*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL )
-		help_viewer_tab_sizer.Add( self.help_viewer_filepicker, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		
-		self.help_viewer_panel.SetSizer( help_viewer_tab_sizer )
-		self.help_viewer_panel.Layout()
-		help_viewer_tab_sizer.Fit( self.help_viewer_panel )
-		self.settings_tabs.AddPage( self.help_viewer_panel, u"Справка", False )
 		
 		sizer_settings_dialog.Add( self.settings_tabs, 1, wx.EXPAND |wx.ALL, 5 )
 		
