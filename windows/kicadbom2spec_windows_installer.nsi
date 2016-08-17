@@ -29,16 +29,16 @@ ${StrRep}
 !define PROG_NAME "kicadbom2spec"
 
 !define DEPENDENCIES "..\..\windows_installer_dependencies\"
-!define PYTHON "python-2.7.11.msi"
-!define PYTHON_NAME "Python 2.7.11"
+!define PYTHON "python-2.7.12.msi"
+!define PYTHON_NAME "Python 2.7.12"
 !define WXPYTHON "wxPython3.0-win32-3.0.2.0-py27.exe"
 !define WXPYTHON_NAME "wxPython 3.0"
-!define ODFPY "odfpy-1.3.2.tar.gz"
-!define ODFPY_NAME "ODFpy 1.3.2"
+!define ODFPY "odfpy-1.3.3.tar.gz"
+!define ODFPY_NAME "ODFpy 1.3.3"
 !define FONT "opengostfont-ttf-0.3.zip"
 !define FONT_NAME "Шрифт OpenGOST 0.3"
-!define OFFICE "http://download.documentfoundation.org/libreoffice/stable/5.1.2/win/x86/LibreOffice_5.1.2_Win_x86.msi"
-!define OFFICE_NAME "LibreOffice 5.1.2"
+!define OFFICE "http://download.documentfoundation.org/libreoffice/stable/5.2.0/win/x86/LibreOffice_5.2.0_Win_x86.msi"
+!define OFFICE_NAME "LibreOffice 5.2.0"
 
 Var SETTINGS_DIR
 Var KICAD_DIR
@@ -237,7 +237,9 @@ SectionGroup /e "!${PROG_NAME}" secgrp_main
 
 		CreateDirectory "$INSTDIR\doc"
 		SetOutPath "$INSTDIR\doc"
-		File "..\doc\help_windows.pdf"
+		File "..\doc\user_manual.html"
+		SetOutPath "$INSTDIR\doc\images"
+		File "..\doc\images\*.*"
 
 		CreateDirectory "$INSTDIR\sample"
 		SetOutPath "$INSTDIR\sample"
@@ -271,7 +273,7 @@ SectionGroup /e "!${PROG_NAME}" secgrp_main
 				"$INSTDIR\bitmaps\icon.ico"
 		CreateShortCut \
 			"$SMPROGRAMS\${PROG_NAME}\Руководство пользователя.lnk" \
-			"$INSTDIR\doc\help_windows.pdf"
+			"$INSTDIR\doc\user_manual.html"
 		CreateShortCut \
 			"$SMPROGRAMS\${PROG_NAME}\Удалить kicadbom2spec.lnk" \
 			"$INSTDIR\uninstall.exe"
@@ -483,7 +485,7 @@ Function InitComponents
 		python_ok:
 
 		Var /GLOBAL min_wx_version
-		StrCpy $min_wx_version "2.8.0.0"
+		StrCpy $min_wx_version "3.0.0.0"
 
 		nsExec::ExecToStack 'python -c "import wx; print wx.version()"'
 		Pop $1 ; status

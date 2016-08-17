@@ -4,9 +4,11 @@ INSTDIR=/usr/share/kicadbom2spec
 mkdir -p $INSTDIR
 mkdir -p $INSTDIR/bitmaps
 mkdir -p $INSTDIR/doc
+mkdir -p $INSTDIR/doc/images
 mkdir -p $INSTDIR/sample
 cp -f ../bitmaps/* $INSTDIR/bitmaps
-cp -f ../doc/help_linux.pdf $INSTDIR/doc
+cp -f ../doc/images/* $INSTDIR/doc/images
+cp -f ../doc/user_manual.html $INSTDIR/doc
 cp -f ../sample/* $INSTDIR/sample
 cp -f ../CHANGELOG $INSTDIR
 cp -f ../COPYING $INSTDIR
