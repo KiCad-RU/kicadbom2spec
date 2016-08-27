@@ -9,6 +9,7 @@
 
 import wx
 import wx.xrc
+import controls
 
 ID_OPEN_SCH = 1000
 ID_SAVE_SCH = 1001
@@ -349,7 +350,7 @@ class EditorDialog ( wx.Dialog ):
 	def __init__( self, parent ):
 		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Редактор полей", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.CAPTION|wx.CLOSE_BOX )
 		
-		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+		self.SetSizeHintsSz( wx.Size( 300,-1 ), wx.DefaultSize )
 		
 		sizer_editor = wx.BoxSizer( wx.VERTICAL )
 		
@@ -362,98 +363,84 @@ class EditorDialog ( wx.Dialog ):
 		
 		sizer_field_1 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.statictext_1 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Группа:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_CENTRE )
+		self.statictext_1 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Группа:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_LEFT )
 		self.statictext_1.Wrap( -1 )
 		sizer_field_1.Add( self.statictext_1, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		combobox_1Choices = [ u"<не изменять>" ]
-		self.combobox_1 = wx.ComboBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, combobox_1Choices, 0 )
-		self.combobox_1.SetSelection( 0 )
-		sizer_field_1.Add( self.combobox_1, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		self.editor_ctrl_1 = controls.EditorCtrl( self.panel_editor )
+		sizer_field_1.Add( self.editor_ctrl_1, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_1, 0, wx.EXPAND, 5 )
 		
 		sizer_field_3 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.statictext_3 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Марка:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_CENTRE )
+		self.statictext_3 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Марка:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_LEFT )
 		self.statictext_3.Wrap( -1 )
 		sizer_field_3.Add( self.statictext_3, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		combobox_3Choices = [ u"<не изменять>" ]
-		self.combobox_3 = wx.ComboBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, combobox_3Choices, 0 )
-		self.combobox_3.SetSelection( 0 )
-		sizer_field_3.Add( self.combobox_3, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		self.editor_ctrl_3 = controls.EditorCtrl( self.panel_editor )
+		sizer_field_3.Add( self.editor_ctrl_3, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_3, 0, wx.EXPAND, 5 )
 		
 		sizer_field_4 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.statictext_4 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Значение:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_CENTRE )
+		self.statictext_4 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Значение:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_LEFT )
 		self.statictext_4.Wrap( -1 )
 		sizer_field_4.Add( self.statictext_4, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		combobox_4Choices = [ u"<не изменять>" ]
-		self.combobox_4 = wx.ComboBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, combobox_4Choices, 0 )
-		self.combobox_4.SetSelection( 0 )
-		sizer_field_4.Add( self.combobox_4, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		self.editor_ctrl_4 = controls.EditorCtrl( self.panel_editor )
+		sizer_field_4.Add( self.editor_ctrl_4, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_4, 0, wx.EXPAND, 5 )
 		
 		sizer_field_5 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.statictext_5 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Класс точности:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_CENTRE )
+		self.statictext_5 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Класс точности:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_LEFT )
 		self.statictext_5.Wrap( -1 )
 		sizer_field_5.Add( self.statictext_5, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		combobox_5Choices = [ u"<не изменять>" ]
-		self.combobox_5 = wx.ComboBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, combobox_5Choices, 0 )
-		self.combobox_5.SetSelection( 0 )
-		sizer_field_5.Add( self.combobox_5, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		self.editor_ctrl_5 = controls.EditorCtrl( self.panel_editor )
+		sizer_field_5.Add( self.editor_ctrl_5, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_5, 0, wx.EXPAND, 5 )
 		
 		sizer_field_6 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.statictext_6 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Тип:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_CENTRE )
+		self.statictext_6 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Тип:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_LEFT )
 		self.statictext_6.Wrap( -1 )
 		sizer_field_6.Add( self.statictext_6, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		combobox_6Choices = [ u"<не изменять>" ]
-		self.combobox_6 = wx.ComboBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, combobox_6Choices, 0 )
-		self.combobox_6.SetSelection( 0 )
-		sizer_field_6.Add( self.combobox_6, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		self.editor_ctrl_6 = controls.EditorCtrl( self.panel_editor )
+		sizer_field_6.Add( self.editor_ctrl_6, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_6, 0, wx.EXPAND, 5 )
 		
 		sizer_field_7 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.statictext_7 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Стандарт:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_CENTRE )
+		self.statictext_7 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Стандарт:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_LEFT )
 		self.statictext_7.Wrap( -1 )
 		sizer_field_7.Add( self.statictext_7, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		combobox_7Choices = [ u"<не изменять>" ]
-		self.combobox_7 = wx.ComboBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, combobox_7Choices, 0 )
-		self.combobox_7.SetSelection( 0 )
-		sizer_field_7.Add( self.combobox_7, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		self.editor_ctrl_7 = controls.EditorCtrl( self.panel_editor )
+		sizer_field_7.Add( self.editor_ctrl_7, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_7, 0, wx.EXPAND, 5 )
 		
 		sizer_field_8 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.statictext_8 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Примечание:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_CENTRE )
+		self.statictext_8 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Примечание:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_LEFT )
 		self.statictext_8.Wrap( -1 )
 		sizer_field_8.Add( self.statictext_8, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		combobox_8Choices = [ u"<не изменять>" ]
-		self.combobox_8 = wx.ComboBox( self.panel_editor, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, combobox_8Choices, 0 )
-		self.combobox_8.SetSelection( 0 )
-		sizer_field_8.Add( self.combobox_8, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		self.editor_ctrl_8 = controls.EditorCtrl( self.panel_editor )
+		sizer_field_8.Add( self.editor_ctrl_8, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_8, 0, wx.EXPAND, 5 )

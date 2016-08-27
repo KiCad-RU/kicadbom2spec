@@ -88,7 +88,7 @@
             <event name="OnSetFocus"></event>
             <event name="OnSize"></event>
             <event name="OnUpdateUI"></event>
-            <object class="wxMenuBar" expanded="1">
+            <object class="wxMenuBar" expanded="0">
                 <property name="bg"></property>
                 <property name="context_help"></property>
                 <property name="context_menu">1</property>
@@ -133,7 +133,7 @@
                 <event name="OnSetFocus"></event>
                 <event name="OnSize"></event>
                 <event name="OnUpdateUI"></event>
-                <object class="wxMenu" expanded="1">
+                <object class="wxMenu" expanded="0">
                     <property name="label">&amp;Файл</property>
                     <property name="name">menu_file</property>
                     <property name="permission">protected</property>
@@ -152,7 +152,7 @@
                         <event name="OnMenuSelection">on_open_sch</event>
                         <event name="OnUpdateUI"></event>
                     </object>
-                    <object class="submenu" expanded="1">
+                    <object class="submenu" expanded="0">
                         <property name="bitmap">Load From File; bitmaps/document-open.png</property>
                         <property name="label">Нед&amp;авние схемы</property>
                         <property name="name">submenu_recent_sch</property>
@@ -207,7 +207,7 @@
                         <event name="OnMenuSelection">on_open_lib</event>
                         <event name="OnUpdateUI"></event>
                     </object>
-                    <object class="submenu" expanded="1">
+                    <object class="submenu" expanded="0">
                         <property name="bitmap">Load From File; bitmaps/document-open.png</property>
                         <property name="label">Н&amp;едавние библиотеки</property>
                         <property name="name">submenu_recent_lib</property>
@@ -914,7 +914,7 @@
                     <event name="OnUpdateUI"></event>
                 </object>
             </object>
-            <object class="wxBoxSizer" expanded="0">
+            <object class="wxBoxSizer" expanded="1">
                 <property name="minimum_size"></property>
                 <property name="name">sizer_main</property>
                 <property name="orient">wxVERTICAL</property>
@@ -1016,7 +1016,7 @@
             <property name="hidden">0</property>
             <property name="id">wxID_ANY</property>
             <property name="maximum_size"></property>
-            <property name="minimum_size"></property>
+            <property name="minimum_size">300,-1</property>
             <property name="name">EditorDialog</property>
             <property name="pos"></property>
             <property name="size"></property>
@@ -1298,7 +1298,7 @@
                                             <property name="resize">Resizable</property>
                                             <property name="show">1</property>
                                             <property name="size">120,-1</property>
-                                            <property name="style">wxALIGN_CENTRE</property>
+                                            <property name="style">wxALIGN_LEFT</property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
@@ -1331,11 +1331,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="0">
+                                    <object class="sizeritem" expanded="1">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALL|wxALIGN_CENTER_VERTICAL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
                                         <property name="proportion">1</property>
-                                        <object class="wxComboBox" expanded="0">
+                                        <object class="CustomControl" expanded="1">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -1349,10 +1349,12 @@
                                             <property name="caption"></property>
                                             <property name="caption_visible">1</property>
                                             <property name="center_pane">0</property>
-                                            <property name="choices">&quot;&lt;не изменять&gt;&quot;</property>
+                                            <property name="class"></property>
                                             <property name="close_button">1</property>
+                                            <property name="construction">self.editor_ctrl_1 = controls.EditorCtrl( self.panel_editor )</property>
                                             <property name="context_help"></property>
                                             <property name="context_menu">1</property>
+                                            <property name="declaration"></property>
                                             <property name="default_pane">0</property>
                                             <property name="dock">Dock</property>
                                             <property name="dock_fixed">0</property>
@@ -1364,6 +1366,7 @@
                                             <property name="gripper">0</property>
                                             <property name="hidden">0</property>
                                             <property name="id">wxID_ANY</property>
+                                            <property name="include">import controls</property>
                                             <property name="max_size"></property>
                                             <property name="maximize_button">0</property>
                                             <property name="maximum_size"></property>
@@ -1371,7 +1374,7 @@
                                             <property name="minimize_button">0</property>
                                             <property name="minimum_size"></property>
                                             <property name="moveable">1</property>
-                                            <property name="name">combobox_1</property>
+                                            <property name="name">editor_ctrl_1</property>
                                             <property name="pane_border">1</property>
                                             <property name="pane_position"></property>
                                             <property name="pane_size"></property>
@@ -1379,23 +1382,16 @@
                                             <property name="pin_button">1</property>
                                             <property name="pos"></property>
                                             <property name="resize">Resizable</property>
-                                            <property name="selection">0</property>
+                                            <property name="settings"></property>
                                             <property name="show">1</property>
                                             <property name="size"></property>
-                                            <property name="style"></property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
-                                            <property name="validator_data_type"></property>
-                                            <property name="validator_style">wxFILTER_NONE</property>
-                                            <property name="validator_type">wxDefaultValidator</property>
-                                            <property name="validator_variable"></property>
-                                            <property name="value"></property>
                                             <property name="window_extra_style"></property>
                                             <property name="window_name"></property>
                                             <property name="window_style"></property>
                                             <event name="OnChar"></event>
-                                            <event name="OnCombobox"></event>
                                             <event name="OnEnterWindow"></event>
                                             <event name="OnEraseBackground"></event>
                                             <event name="OnKeyDown"></event>
@@ -1417,8 +1413,6 @@
                                             <event name="OnRightUp"></event>
                                             <event name="OnSetFocus"></event>
                                             <event name="OnSize"></event>
-                                            <event name="OnText"></event>
-                                            <event name="OnTextEnter"></event>
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
@@ -1483,7 +1477,7 @@
                                             <property name="resize">Resizable</property>
                                             <property name="show">1</property>
                                             <property name="size">120,-1</property>
-                                            <property name="style">wxALIGN_CENTRE</property>
+                                            <property name="style">wxALIGN_LEFT</property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
@@ -1516,11 +1510,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="0">
+                                    <object class="sizeritem" expanded="1">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALL|wxALIGN_CENTER_VERTICAL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
                                         <property name="proportion">1</property>
-                                        <object class="wxComboBox" expanded="0">
+                                        <object class="CustomControl" expanded="1">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -1534,10 +1528,12 @@
                                             <property name="caption"></property>
                                             <property name="caption_visible">1</property>
                                             <property name="center_pane">0</property>
-                                            <property name="choices">&quot;&lt;не изменять&gt;&quot;</property>
+                                            <property name="class"></property>
                                             <property name="close_button">1</property>
+                                            <property name="construction">self.editor_ctrl_3 = controls.EditorCtrl( self.panel_editor )</property>
                                             <property name="context_help"></property>
                                             <property name="context_menu">1</property>
+                                            <property name="declaration"></property>
                                             <property name="default_pane">0</property>
                                             <property name="dock">Dock</property>
                                             <property name="dock_fixed">0</property>
@@ -1549,6 +1545,7 @@
                                             <property name="gripper">0</property>
                                             <property name="hidden">0</property>
                                             <property name="id">wxID_ANY</property>
+                                            <property name="include">import controls</property>
                                             <property name="max_size"></property>
                                             <property name="maximize_button">0</property>
                                             <property name="maximum_size"></property>
@@ -1556,7 +1553,7 @@
                                             <property name="minimize_button">0</property>
                                             <property name="minimum_size"></property>
                                             <property name="moveable">1</property>
-                                            <property name="name">combobox_3</property>
+                                            <property name="name">editor_ctrl_3</property>
                                             <property name="pane_border">1</property>
                                             <property name="pane_position"></property>
                                             <property name="pane_size"></property>
@@ -1564,23 +1561,16 @@
                                             <property name="pin_button">1</property>
                                             <property name="pos"></property>
                                             <property name="resize">Resizable</property>
-                                            <property name="selection">0</property>
+                                            <property name="settings"></property>
                                             <property name="show">1</property>
                                             <property name="size"></property>
-                                            <property name="style"></property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
-                                            <property name="validator_data_type"></property>
-                                            <property name="validator_style">wxFILTER_NONE</property>
-                                            <property name="validator_type">wxDefaultValidator</property>
-                                            <property name="validator_variable"></property>
-                                            <property name="value"></property>
                                             <property name="window_extra_style"></property>
                                             <property name="window_name"></property>
                                             <property name="window_style"></property>
                                             <event name="OnChar"></event>
-                                            <event name="OnCombobox"></event>
                                             <event name="OnEnterWindow"></event>
                                             <event name="OnEraseBackground"></event>
                                             <event name="OnKeyDown"></event>
@@ -1602,8 +1592,6 @@
                                             <event name="OnRightUp"></event>
                                             <event name="OnSetFocus"></event>
                                             <event name="OnSize"></event>
-                                            <event name="OnText"></event>
-                                            <event name="OnTextEnter"></event>
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
@@ -1668,7 +1656,7 @@
                                             <property name="resize">Resizable</property>
                                             <property name="show">1</property>
                                             <property name="size">120,-1</property>
-                                            <property name="style">wxALIGN_CENTRE</property>
+                                            <property name="style">wxALIGN_LEFT</property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
@@ -1701,11 +1689,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="0">
+                                    <object class="sizeritem" expanded="1">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALL|wxALIGN_CENTER_VERTICAL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
                                         <property name="proportion">1</property>
-                                        <object class="wxComboBox" expanded="0">
+                                        <object class="CustomControl" expanded="1">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -1719,10 +1707,12 @@
                                             <property name="caption"></property>
                                             <property name="caption_visible">1</property>
                                             <property name="center_pane">0</property>
-                                            <property name="choices">&quot;&lt;не изменять&gt;&quot;</property>
+                                            <property name="class"></property>
                                             <property name="close_button">1</property>
+                                            <property name="construction">self.editor_ctrl_4 = controls.EditorCtrl( self.panel_editor )</property>
                                             <property name="context_help"></property>
                                             <property name="context_menu">1</property>
+                                            <property name="declaration"></property>
                                             <property name="default_pane">0</property>
                                             <property name="dock">Dock</property>
                                             <property name="dock_fixed">0</property>
@@ -1734,6 +1724,7 @@
                                             <property name="gripper">0</property>
                                             <property name="hidden">0</property>
                                             <property name="id">wxID_ANY</property>
+                                            <property name="include">import controls</property>
                                             <property name="max_size"></property>
                                             <property name="maximize_button">0</property>
                                             <property name="maximum_size"></property>
@@ -1741,7 +1732,7 @@
                                             <property name="minimize_button">0</property>
                                             <property name="minimum_size"></property>
                                             <property name="moveable">1</property>
-                                            <property name="name">combobox_4</property>
+                                            <property name="name">editor_ctrl_4</property>
                                             <property name="pane_border">1</property>
                                             <property name="pane_position"></property>
                                             <property name="pane_size"></property>
@@ -1749,23 +1740,16 @@
                                             <property name="pin_button">1</property>
                                             <property name="pos"></property>
                                             <property name="resize">Resizable</property>
-                                            <property name="selection">0</property>
+                                            <property name="settings"></property>
                                             <property name="show">1</property>
                                             <property name="size"></property>
-                                            <property name="style"></property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
-                                            <property name="validator_data_type"></property>
-                                            <property name="validator_style">wxFILTER_NONE</property>
-                                            <property name="validator_type">wxDefaultValidator</property>
-                                            <property name="validator_variable"></property>
-                                            <property name="value"></property>
                                             <property name="window_extra_style"></property>
                                             <property name="window_name"></property>
                                             <property name="window_style"></property>
                                             <event name="OnChar"></event>
-                                            <event name="OnCombobox"></event>
                                             <event name="OnEnterWindow"></event>
                                             <event name="OnEraseBackground"></event>
                                             <event name="OnKeyDown"></event>
@@ -1787,8 +1771,6 @@
                                             <event name="OnRightUp"></event>
                                             <event name="OnSetFocus"></event>
                                             <event name="OnSize"></event>
-                                            <event name="OnText"></event>
-                                            <event name="OnTextEnter"></event>
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
@@ -1853,7 +1835,7 @@
                                             <property name="resize">Resizable</property>
                                             <property name="show">1</property>
                                             <property name="size">120,-1</property>
-                                            <property name="style">wxALIGN_CENTRE</property>
+                                            <property name="style">wxALIGN_LEFT</property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
@@ -1886,11 +1868,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="0">
+                                    <object class="sizeritem" expanded="1">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALL|wxALIGN_CENTER_VERTICAL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
                                         <property name="proportion">1</property>
-                                        <object class="wxComboBox" expanded="0">
+                                        <object class="CustomControl" expanded="1">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -1904,10 +1886,12 @@
                                             <property name="caption"></property>
                                             <property name="caption_visible">1</property>
                                             <property name="center_pane">0</property>
-                                            <property name="choices">&quot;&lt;не изменять&gt;&quot;</property>
+                                            <property name="class"></property>
                                             <property name="close_button">1</property>
+                                            <property name="construction">self.editor_ctrl_5 = controls.EditorCtrl( self.panel_editor )</property>
                                             <property name="context_help"></property>
                                             <property name="context_menu">1</property>
+                                            <property name="declaration"></property>
                                             <property name="default_pane">0</property>
                                             <property name="dock">Dock</property>
                                             <property name="dock_fixed">0</property>
@@ -1919,6 +1903,7 @@
                                             <property name="gripper">0</property>
                                             <property name="hidden">0</property>
                                             <property name="id">wxID_ANY</property>
+                                            <property name="include">import controls</property>
                                             <property name="max_size"></property>
                                             <property name="maximize_button">0</property>
                                             <property name="maximum_size"></property>
@@ -1926,7 +1911,7 @@
                                             <property name="minimize_button">0</property>
                                             <property name="minimum_size"></property>
                                             <property name="moveable">1</property>
-                                            <property name="name">combobox_5</property>
+                                            <property name="name">editor_ctrl_5</property>
                                             <property name="pane_border">1</property>
                                             <property name="pane_position"></property>
                                             <property name="pane_size"></property>
@@ -1934,23 +1919,16 @@
                                             <property name="pin_button">1</property>
                                             <property name="pos"></property>
                                             <property name="resize">Resizable</property>
-                                            <property name="selection">0</property>
+                                            <property name="settings"></property>
                                             <property name="show">1</property>
                                             <property name="size"></property>
-                                            <property name="style"></property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
-                                            <property name="validator_data_type"></property>
-                                            <property name="validator_style">wxFILTER_NONE</property>
-                                            <property name="validator_type">wxDefaultValidator</property>
-                                            <property name="validator_variable"></property>
-                                            <property name="value"></property>
                                             <property name="window_extra_style"></property>
                                             <property name="window_name"></property>
                                             <property name="window_style"></property>
                                             <event name="OnChar"></event>
-                                            <event name="OnCombobox"></event>
                                             <event name="OnEnterWindow"></event>
                                             <event name="OnEraseBackground"></event>
                                             <event name="OnKeyDown"></event>
@@ -1972,8 +1950,6 @@
                                             <event name="OnRightUp"></event>
                                             <event name="OnSetFocus"></event>
                                             <event name="OnSize"></event>
-                                            <event name="OnText"></event>
-                                            <event name="OnTextEnter"></event>
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
@@ -2038,7 +2014,7 @@
                                             <property name="resize">Resizable</property>
                                             <property name="show">1</property>
                                             <property name="size">120,-1</property>
-                                            <property name="style">wxALIGN_CENTRE</property>
+                                            <property name="style">wxALIGN_LEFT</property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
@@ -2071,11 +2047,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="0">
+                                    <object class="sizeritem" expanded="1">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALL|wxALIGN_CENTER_VERTICAL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
                                         <property name="proportion">1</property>
-                                        <object class="wxComboBox" expanded="0">
+                                        <object class="CustomControl" expanded="1">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -2089,10 +2065,12 @@
                                             <property name="caption"></property>
                                             <property name="caption_visible">1</property>
                                             <property name="center_pane">0</property>
-                                            <property name="choices">&quot;&lt;не изменять&gt;&quot;</property>
+                                            <property name="class"></property>
                                             <property name="close_button">1</property>
+                                            <property name="construction">self.editor_ctrl_6 = controls.EditorCtrl( self.panel_editor )</property>
                                             <property name="context_help"></property>
                                             <property name="context_menu">1</property>
+                                            <property name="declaration"></property>
                                             <property name="default_pane">0</property>
                                             <property name="dock">Dock</property>
                                             <property name="dock_fixed">0</property>
@@ -2104,6 +2082,7 @@
                                             <property name="gripper">0</property>
                                             <property name="hidden">0</property>
                                             <property name="id">wxID_ANY</property>
+                                            <property name="include">import controls</property>
                                             <property name="max_size"></property>
                                             <property name="maximize_button">0</property>
                                             <property name="maximum_size"></property>
@@ -2111,7 +2090,7 @@
                                             <property name="minimize_button">0</property>
                                             <property name="minimum_size"></property>
                                             <property name="moveable">1</property>
-                                            <property name="name">combobox_6</property>
+                                            <property name="name">editor_ctrl_6</property>
                                             <property name="pane_border">1</property>
                                             <property name="pane_position"></property>
                                             <property name="pane_size"></property>
@@ -2119,23 +2098,16 @@
                                             <property name="pin_button">1</property>
                                             <property name="pos"></property>
                                             <property name="resize">Resizable</property>
-                                            <property name="selection">0</property>
+                                            <property name="settings"></property>
                                             <property name="show">1</property>
                                             <property name="size"></property>
-                                            <property name="style"></property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
-                                            <property name="validator_data_type"></property>
-                                            <property name="validator_style">wxFILTER_NONE</property>
-                                            <property name="validator_type">wxDefaultValidator</property>
-                                            <property name="validator_variable"></property>
-                                            <property name="value"></property>
                                             <property name="window_extra_style"></property>
                                             <property name="window_name"></property>
                                             <property name="window_style"></property>
                                             <event name="OnChar"></event>
-                                            <event name="OnCombobox"></event>
                                             <event name="OnEnterWindow"></event>
                                             <event name="OnEraseBackground"></event>
                                             <event name="OnKeyDown"></event>
@@ -2157,8 +2129,6 @@
                                             <event name="OnRightUp"></event>
                                             <event name="OnSetFocus"></event>
                                             <event name="OnSize"></event>
-                                            <event name="OnText"></event>
-                                            <event name="OnTextEnter"></event>
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
@@ -2223,7 +2193,7 @@
                                             <property name="resize">Resizable</property>
                                             <property name="show">1</property>
                                             <property name="size">120,-1</property>
-                                            <property name="style">wxALIGN_CENTRE</property>
+                                            <property name="style">wxALIGN_LEFT</property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
@@ -2256,11 +2226,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="0">
+                                    <object class="sizeritem" expanded="1">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALL|wxALIGN_CENTER_VERTICAL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
                                         <property name="proportion">1</property>
-                                        <object class="wxComboBox" expanded="0">
+                                        <object class="CustomControl" expanded="1">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -2274,10 +2244,12 @@
                                             <property name="caption"></property>
                                             <property name="caption_visible">1</property>
                                             <property name="center_pane">0</property>
-                                            <property name="choices">&quot;&lt;не изменять&gt;&quot;</property>
+                                            <property name="class"></property>
                                             <property name="close_button">1</property>
+                                            <property name="construction">self.editor_ctrl_7 = controls.EditorCtrl( self.panel_editor )</property>
                                             <property name="context_help"></property>
                                             <property name="context_menu">1</property>
+                                            <property name="declaration"></property>
                                             <property name="default_pane">0</property>
                                             <property name="dock">Dock</property>
                                             <property name="dock_fixed">0</property>
@@ -2289,6 +2261,7 @@
                                             <property name="gripper">0</property>
                                             <property name="hidden">0</property>
                                             <property name="id">wxID_ANY</property>
+                                            <property name="include">import controls</property>
                                             <property name="max_size"></property>
                                             <property name="maximize_button">0</property>
                                             <property name="maximum_size"></property>
@@ -2296,7 +2269,7 @@
                                             <property name="minimize_button">0</property>
                                             <property name="minimum_size"></property>
                                             <property name="moveable">1</property>
-                                            <property name="name">combobox_7</property>
+                                            <property name="name">editor_ctrl_7</property>
                                             <property name="pane_border">1</property>
                                             <property name="pane_position"></property>
                                             <property name="pane_size"></property>
@@ -2304,23 +2277,16 @@
                                             <property name="pin_button">1</property>
                                             <property name="pos"></property>
                                             <property name="resize">Resizable</property>
-                                            <property name="selection">0</property>
+                                            <property name="settings"></property>
                                             <property name="show">1</property>
                                             <property name="size"></property>
-                                            <property name="style"></property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
-                                            <property name="validator_data_type"></property>
-                                            <property name="validator_style">wxFILTER_NONE</property>
-                                            <property name="validator_type">wxDefaultValidator</property>
-                                            <property name="validator_variable"></property>
-                                            <property name="value"></property>
                                             <property name="window_extra_style"></property>
                                             <property name="window_name"></property>
                                             <property name="window_style"></property>
                                             <event name="OnChar"></event>
-                                            <event name="OnCombobox"></event>
                                             <event name="OnEnterWindow"></event>
                                             <event name="OnEraseBackground"></event>
                                             <event name="OnKeyDown"></event>
@@ -2342,8 +2308,6 @@
                                             <event name="OnRightUp"></event>
                                             <event name="OnSetFocus"></event>
                                             <event name="OnSize"></event>
-                                            <event name="OnText"></event>
-                                            <event name="OnTextEnter"></event>
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
@@ -2408,7 +2372,7 @@
                                             <property name="resize">Resizable</property>
                                             <property name="show">1</property>
                                             <property name="size">120,-1</property>
-                                            <property name="style">wxALIGN_CENTRE</property>
+                                            <property name="style">wxALIGN_LEFT</property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
@@ -2441,11 +2405,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="0">
+                                    <object class="sizeritem" expanded="1">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALL|wxALIGN_CENTER_VERTICAL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
                                         <property name="proportion">1</property>
-                                        <object class="wxComboBox" expanded="0">
+                                        <object class="CustomControl" expanded="1">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -2459,10 +2423,12 @@
                                             <property name="caption"></property>
                                             <property name="caption_visible">1</property>
                                             <property name="center_pane">0</property>
-                                            <property name="choices">&quot;&lt;не изменять&gt;&quot;</property>
+                                            <property name="class"></property>
                                             <property name="close_button">1</property>
+                                            <property name="construction">self.editor_ctrl_8 = controls.EditorCtrl( self.panel_editor )</property>
                                             <property name="context_help"></property>
                                             <property name="context_menu">1</property>
+                                            <property name="declaration"></property>
                                             <property name="default_pane">0</property>
                                             <property name="dock">Dock</property>
                                             <property name="dock_fixed">0</property>
@@ -2474,6 +2440,7 @@
                                             <property name="gripper">0</property>
                                             <property name="hidden">0</property>
                                             <property name="id">wxID_ANY</property>
+                                            <property name="include">import controls</property>
                                             <property name="max_size"></property>
                                             <property name="maximize_button">0</property>
                                             <property name="maximum_size"></property>
@@ -2481,7 +2448,7 @@
                                             <property name="minimize_button">0</property>
                                             <property name="minimum_size"></property>
                                             <property name="moveable">1</property>
-                                            <property name="name">combobox_8</property>
+                                            <property name="name">editor_ctrl_8</property>
                                             <property name="pane_border">1</property>
                                             <property name="pane_position"></property>
                                             <property name="pane_size"></property>
@@ -2489,23 +2456,16 @@
                                             <property name="pin_button">1</property>
                                             <property name="pos"></property>
                                             <property name="resize">Resizable</property>
-                                            <property name="selection">0</property>
+                                            <property name="settings"></property>
                                             <property name="show">1</property>
                                             <property name="size"></property>
-                                            <property name="style"></property>
                                             <property name="subclass"></property>
                                             <property name="toolbar_pane">0</property>
                                             <property name="tooltip"></property>
-                                            <property name="validator_data_type"></property>
-                                            <property name="validator_style">wxFILTER_NONE</property>
-                                            <property name="validator_type">wxDefaultValidator</property>
-                                            <property name="validator_variable"></property>
-                                            <property name="value"></property>
                                             <property name="window_extra_style"></property>
                                             <property name="window_name"></property>
                                             <property name="window_style"></property>
                                             <event name="OnChar"></event>
-                                            <event name="OnCombobox"></event>
                                             <event name="OnEnterWindow"></event>
                                             <event name="OnEraseBackground"></event>
                                             <event name="OnKeyDown"></event>
@@ -2527,8 +2487,6 @@
                                             <event name="OnRightUp"></event>
                                             <event name="OnSetFocus"></event>
                                             <event name="OnSize"></event>
-                                            <event name="OnText"></event>
-                                            <event name="OnTextEnter"></event>
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
