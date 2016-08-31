@@ -250,6 +250,7 @@ SectionGroup /e "!${PROG_NAME}" secgrp_main
 		File "..\README"
 		File "..\CHANGELOG"
 		File "..\complist.py"
+		File "..\controls.py"
 		File "..\kicadsch.py"
 		File "..\settings.ini"
 		File "..\pattern.ods"

@@ -13,6 +13,7 @@ cp -f ../sample/* $INSTDIR/sample
 cp -f ../CHANGELOG $INSTDIR
 cp -f ../COPYING $INSTDIR
 cp -f ../complist.py $INSTDIR
+cp -f ../controls.py $INSTDIR
 cp -f ../gui.py $INSTDIR
 cp -f ../kicadbom2spec.pyw $INSTDIR
 cp -f ../kicadsch.py $INSTDIR
