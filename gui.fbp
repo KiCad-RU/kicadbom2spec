@@ -41,7 +41,7 @@
             <property name="hidden">0</property>
             <property name="id">wxID_ANY</property>
             <property name="maximum_size"></property>
-            <property name="minimum_size"></property>
+            <property name="minimum_size">500,200</property>
             <property name="name">MainFrame</property>
             <property name="pos"></property>
             <property name="size">700,500</property>
@@ -88,7 +88,7 @@
             <event name="OnSetFocus"></event>
             <event name="OnSize"></event>
             <event name="OnUpdateUI"></event>
-            <object class="wxMenuBar" expanded="0">
+            <object class="wxMenuBar" expanded="1">
                 <property name="bg"></property>
                 <property name="context_help"></property>
                 <property name="context_menu">1</property>
@@ -133,7 +133,7 @@
                 <event name="OnSetFocus"></event>
                 <event name="OnSize"></event>
                 <event name="OnUpdateUI"></event>
-                <object class="wxMenu" expanded="0">
+                <object class="wxMenu" expanded="1">
                     <property name="label">&amp;Файл</property>
                     <property name="name">menu_file</property>
                     <property name="permission">protected</property>
@@ -168,7 +168,7 @@
                         <property name="label">Со&amp;хранить схему</property>
                         <property name="name">menuitem_save_sch</property>
                         <property name="permission">none</property>
-                        <property name="shortcut">CTRL+W</property>
+                        <property name="shortcut">CTRL+S</property>
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">on_save_sch</event>
                         <event name="OnUpdateUI"></event>
@@ -183,7 +183,7 @@
                         <property name="label">Сох&amp;ранить схему как...</property>
                         <property name="name">menuitem_save_sch_as</property>
                         <property name="permission">none</property>
-                        <property name="shortcut">CTRL+SHIFT+W</property>
+                        <property name="shortcut">CTRL+SHIFT+S</property>
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">on_save_sch_as</event>
                         <event name="OnUpdateUI"></event>
@@ -257,7 +257,7 @@
                         <property name="label">&amp;Создать перечень элементов...</property>
                         <property name="name">menuitem_complist</property>
                         <property name="permission">none</property>
-                        <property name="shortcut">CTRL+S</property>
+                        <property name="shortcut">CTRL+G</property>
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">on_complist</event>
                         <event name="OnUpdateUI"></event>
@@ -282,7 +282,7 @@
                         <event name="OnUpdateUI"></event>
                     </object>
                 </object>
-                <object class="wxMenu" expanded="0">
+                <object class="wxMenu" expanded="1">
                     <property name="label">&amp;Правка</property>
                     <property name="name">menu_edit</property>
                     <property name="permission">protected</property>
@@ -330,7 +330,7 @@
                         <property name="label">&amp;Копировать</property>
                         <property name="name">menuitem_copy</property>
                         <property name="permission">none</property>
-                        <property name="shortcut"></property>
+                        <property name="shortcut">CTRL+C</property>
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">on_copy</event>
                         <event name="OnUpdateUI"></event>
@@ -345,7 +345,7 @@
                         <property name="label">&amp;Вырезать...</property>
                         <property name="name">menuitem_cut</property>
                         <property name="permission">none</property>
-                        <property name="shortcut"></property>
+                        <property name="shortcut">CTRL+X</property>
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">on_cut</event>
                         <event name="OnUpdateUI"></event>
@@ -360,7 +360,7 @@
                         <property name="label">В&amp;ставить...</property>
                         <property name="name">menuitem_paste</property>
                         <property name="permission">none</property>
-                        <property name="shortcut"></property>
+                        <property name="shortcut">CTRL+V</property>
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">on_paste</event>
                         <event name="OnUpdateUI"></event>
@@ -447,7 +447,7 @@
                         <property name="label">Пара&amp;метры...</property>
                         <property name="name">menuItem_settings</property>
                         <property name="permission">none</property>
-                        <property name="shortcut"></property>
+                        <property name="shortcut">CTRL+P</property>
                         <property name="unchecked_bitmap">Load From File;  </property>
                         <event name="OnMenuSelection">on_settings</event>
                         <event name="OnUpdateUI"></event>
@@ -1019,8 +1019,8 @@
             <property name="minimum_size">300,-1</property>
             <property name="name">EditorDialog</property>
             <property name="pos"></property>
-            <property name="size"></property>
-            <property name="style">wxCAPTION|wxCLOSE_BOX</property>
+            <property name="size">-1,-1</property>
+            <property name="style">wxCAPTION|wxCLOSE_BOX|wxRESIZE_BORDER</property>
             <property name="subclass"></property>
             <property name="title">Редактор полей</property>
             <property name="tooltip"></property>
@@ -1064,14 +1064,14 @@
             <event name="OnSize"></event>
             <event name="OnUpdateUI"></event>
             <object class="wxBoxSizer" expanded="1">
-                <property name="minimum_size"></property>
+                <property name="minimum_size">-1,-1</property>
                 <property name="name">sizer_editor</property>
                 <property name="orient">wxVERTICAL</property>
                 <property name="permission">none</property>
                 <object class="sizeritem" expanded="1">
                     <property name="border">5</property>
                     <property name="flag">wxEXPAND</property>
-                    <property name="proportion">1</property>
+                    <property name="proportion">0</property>
                     <object class="wxPanel" expanded="1">
                         <property name="BottomDockable">1</property>
                         <property name="LeftDockable">1</property>
@@ -1331,11 +1331,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="1">
+                                    <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND</property>
                                         <property name="proportion">1</property>
-                                        <object class="CustomControl" expanded="1">
+                                        <object class="CustomControl" expanded="0">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -1418,11 +1418,11 @@
                                     </object>
                                 </object>
                             </object>
-                            <object class="sizeritem" expanded="1">
+                            <object class="sizeritem" expanded="0">
                                 <property name="border">5</property>
                                 <property name="flag">wxEXPAND</property>
                                 <property name="proportion">0</property>
-                                <object class="wxBoxSizer" expanded="1">
+                                <object class="wxBoxSizer" expanded="0">
                                     <property name="minimum_size"></property>
                                     <property name="name">sizer_field_3</property>
                                     <property name="orient">wxHORIZONTAL</property>
@@ -1510,11 +1510,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="1">
+                                    <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND</property>
                                         <property name="proportion">1</property>
-                                        <object class="CustomControl" expanded="1">
+                                        <object class="CustomControl" expanded="0">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -1597,11 +1597,11 @@
                                     </object>
                                 </object>
                             </object>
-                            <object class="sizeritem" expanded="1">
+                            <object class="sizeritem" expanded="0">
                                 <property name="border">5</property>
                                 <property name="flag">wxEXPAND</property>
                                 <property name="proportion">0</property>
-                                <object class="wxBoxSizer" expanded="1">
+                                <object class="wxBoxSizer" expanded="0">
                                     <property name="minimum_size"></property>
                                     <property name="name">sizer_field_4</property>
                                     <property name="orient">wxHORIZONTAL</property>
@@ -1689,11 +1689,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="1">
+                                    <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND</property>
                                         <property name="proportion">1</property>
-                                        <object class="CustomControl" expanded="1">
+                                        <object class="CustomControl" expanded="0">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -1776,11 +1776,11 @@
                                     </object>
                                 </object>
                             </object>
-                            <object class="sizeritem" expanded="1">
+                            <object class="sizeritem" expanded="0">
                                 <property name="border">5</property>
                                 <property name="flag">wxEXPAND</property>
                                 <property name="proportion">0</property>
-                                <object class="wxBoxSizer" expanded="1">
+                                <object class="wxBoxSizer" expanded="0">
                                     <property name="minimum_size"></property>
                                     <property name="name">sizer_field_5</property>
                                     <property name="orient">wxHORIZONTAL</property>
@@ -1868,11 +1868,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="1">
+                                    <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND</property>
                                         <property name="proportion">1</property>
-                                        <object class="CustomControl" expanded="1">
+                                        <object class="CustomControl" expanded="0">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -1955,11 +1955,11 @@
                                     </object>
                                 </object>
                             </object>
-                            <object class="sizeritem" expanded="1">
+                            <object class="sizeritem" expanded="0">
                                 <property name="border">5</property>
                                 <property name="flag">wxEXPAND</property>
                                 <property name="proportion">0</property>
-                                <object class="wxBoxSizer" expanded="1">
+                                <object class="wxBoxSizer" expanded="0">
                                     <property name="minimum_size"></property>
                                     <property name="name">sizer_field_6</property>
                                     <property name="orient">wxHORIZONTAL</property>
@@ -2047,11 +2047,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="1">
+                                    <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND</property>
                                         <property name="proportion">1</property>
-                                        <object class="CustomControl" expanded="1">
+                                        <object class="CustomControl" expanded="0">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -2134,11 +2134,11 @@
                                     </object>
                                 </object>
                             </object>
-                            <object class="sizeritem" expanded="1">
+                            <object class="sizeritem" expanded="0">
                                 <property name="border">5</property>
                                 <property name="flag">wxEXPAND</property>
                                 <property name="proportion">0</property>
-                                <object class="wxBoxSizer" expanded="1">
+                                <object class="wxBoxSizer" expanded="0">
                                     <property name="minimum_size"></property>
                                     <property name="name">sizer_field_7</property>
                                     <property name="orient">wxHORIZONTAL</property>
@@ -2226,11 +2226,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="1">
+                                    <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND</property>
                                         <property name="proportion">1</property>
-                                        <object class="CustomControl" expanded="1">
+                                        <object class="CustomControl" expanded="0">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -2313,11 +2313,11 @@
                                     </object>
                                 </object>
                             </object>
-                            <object class="sizeritem" expanded="1">
+                            <object class="sizeritem" expanded="0">
                                 <property name="border">5</property>
                                 <property name="flag">wxEXPAND</property>
                                 <property name="proportion">0</property>
-                                <object class="wxBoxSizer" expanded="1">
+                                <object class="wxBoxSizer" expanded="0">
                                     <property name="minimum_size"></property>
                                     <property name="name">sizer_field_8</property>
                                     <property name="orient">wxHORIZONTAL</property>
@@ -2405,11 +2405,11 @@
                                             <event name="OnUpdateUI"></event>
                                         </object>
                                     </object>
-                                    <object class="sizeritem" expanded="1">
+                                    <object class="sizeritem" expanded="0">
                                         <property name="border">5</property>
-                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL</property>
+                                        <property name="flag">wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND</property>
                                         <property name="proportion">1</property>
-                                        <object class="CustomControl" expanded="1">
+                                        <object class="CustomControl" expanded="0">
                                             <property name="BottomDockable">1</property>
                                             <property name="LeftDockable">1</property>
                                             <property name="RightDockable">1</property>
@@ -2668,7 +2668,7 @@
                         <event name="OnSetFocus"></event>
                         <event name="OnSize"></event>
                         <event name="OnUpdateUI"></event>
-                        <object class="wxBoxSizer" expanded="0">
+                        <object class="wxBoxSizer" expanded="1">
                             <property name="minimum_size"></property>
                             <property name="name">sizer_fields</property>
                             <property name="orient">wxVERTICAL</property>

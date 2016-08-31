@@ -44,7 +44,7 @@ class MainFrame ( wx.Frame ):
 	def __init__( self, parent ):
 		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"kicadbom2spec", pos = wx.DefaultPosition, size = wx.Size( 700,500 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 		
-		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+		self.SetSizeHintsSz( wx.Size( 500,200 ), wx.DefaultSize )
 		
 		self.menubar = wx.MenuBar( 0 )
 		self.menu_file = wx.Menu()
@@ -55,12 +55,12 @@ class MainFrame ( wx.Frame ):
 		self.submenu_recent_sch = wx.Menu()
 		self.menu_file.AppendSubMenu( self.submenu_recent_sch, u"Нед&авние схемы" )
 		
-		self.menuitem_save_sch = wx.MenuItem( self.menu_file, ID_SAVE_SCH, u"Со&хранить схему"+ u"\t" + u"CTRL+W", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_save_sch = wx.MenuItem( self.menu_file, ID_SAVE_SCH, u"Со&хранить схему"+ u"\t" + u"CTRL+S", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_save_sch.SetBitmap( wx.Bitmap( u"bitmaps/document-save.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_file.AppendItem( self.menuitem_save_sch )
 		self.menuitem_save_sch.Enable( False )
 		
-		self.menuitem_save_sch_as = wx.MenuItem( self.menu_file, ID_SAVE_SCH_AS, u"Сох&ранить схему как..."+ u"\t" + u"CTRL+SHIFT+W", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_save_sch_as = wx.MenuItem( self.menu_file, ID_SAVE_SCH_AS, u"Сох&ранить схему как..."+ u"\t" + u"CTRL+SHIFT+S", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_save_sch_as.SetBitmap( wx.Bitmap( u"bitmaps/document-save-as.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_file.AppendItem( self.menuitem_save_sch_as )
 		self.menuitem_save_sch_as.Enable( False )
@@ -86,7 +86,7 @@ class MainFrame ( wx.Frame ):
 		
 		self.menu_file.AppendSeparator()
 		
-		self.menuitem_complist = wx.MenuItem( self.menu_file, ID_COMPLIST, u"&Создать перечень элементов..."+ u"\t" + u"CTRL+S", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_complist = wx.MenuItem( self.menu_file, ID_COMPLIST, u"&Создать перечень элементов..."+ u"\t" + u"CTRL+G", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_complist.SetBitmap( wx.Bitmap( u"bitmaps/document-export.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_file.AppendItem( self.menuitem_complist )
 		self.menuitem_complist.Enable( False )
@@ -112,17 +112,17 @@ class MainFrame ( wx.Frame ):
 		
 		self.menu_edit.AppendSeparator()
 		
-		self.menuitem_copy = wx.MenuItem( self.menu_edit, ID_COPY, u"&Копировать", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_copy = wx.MenuItem( self.menu_edit, ID_COPY, u"&Копировать"+ u"\t" + u"CTRL+C", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_copy.SetBitmap( wx.Bitmap( u"bitmaps/edit-copy.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_edit.AppendItem( self.menuitem_copy )
 		self.menuitem_copy.Enable( False )
 		
-		self.menuitem_cut = wx.MenuItem( self.menu_edit, ID_CUT, u"&Вырезать...", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_cut = wx.MenuItem( self.menu_edit, ID_CUT, u"&Вырезать..."+ u"\t" + u"CTRL+X", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_cut.SetBitmap( wx.Bitmap( u"bitmaps/edit-cut.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_edit.AppendItem( self.menuitem_cut )
 		self.menuitem_cut.Enable( False )
 		
-		self.menuitem_paste = wx.MenuItem( self.menu_edit, ID_PASTE, u"В&ставить...", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuitem_paste = wx.MenuItem( self.menu_edit, ID_PASTE, u"В&ставить..."+ u"\t" + u"CTRL+V", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuitem_paste.SetBitmap( wx.Bitmap( u"bitmaps/edit-paste.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_edit.AppendItem( self.menuitem_paste )
 		self.menuitem_paste.Enable( False )
@@ -153,7 +153,7 @@ class MainFrame ( wx.Frame ):
 		
 		self.menu_edit.AppendSeparator()
 		
-		self.menuItem_settings = wx.MenuItem( self.menu_edit, ID_SETTINGS, u"Пара&метры...", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuItem_settings = wx.MenuItem( self.menu_edit, ID_SETTINGS, u"Пара&метры..."+ u"\t" + u"CTRL+P", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuItem_settings.SetBitmap( wx.Bitmap( u"bitmaps/document-properties.png", wx.BITMAP_TYPE_ANY ) )
 		self.menu_edit.AppendItem( self.menuItem_settings )
 		
@@ -348,7 +348,7 @@ class MainFrame ( wx.Frame ):
 class EditorDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Редактор полей", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.CAPTION|wx.CLOSE_BOX )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Редактор полей", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
 		
 		self.SetSizeHintsSz( wx.Size( 300,-1 ), wx.DefaultSize )
 		
@@ -368,7 +368,7 @@ class EditorDialog ( wx.Dialog ):
 		sizer_field_1.Add( self.statictext_1, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.editor_ctrl_1 = controls.EditorCtrl( self.panel_editor )
-		sizer_field_1.Add( self.editor_ctrl_1, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		sizer_field_1.Add( self.editor_ctrl_1, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_1, 0, wx.EXPAND, 5 )
@@ -380,7 +380,7 @@ class EditorDialog ( wx.Dialog ):
 		sizer_field_3.Add( self.statictext_3, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.editor_ctrl_3 = controls.EditorCtrl( self.panel_editor )
-		sizer_field_3.Add( self.editor_ctrl_3, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		sizer_field_3.Add( self.editor_ctrl_3, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_3, 0, wx.EXPAND, 5 )
@@ -392,7 +392,7 @@ class EditorDialog ( wx.Dialog ):
 		sizer_field_4.Add( self.statictext_4, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.editor_ctrl_4 = controls.EditorCtrl( self.panel_editor )
-		sizer_field_4.Add( self.editor_ctrl_4, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		sizer_field_4.Add( self.editor_ctrl_4, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_4, 0, wx.EXPAND, 5 )
@@ -404,7 +404,7 @@ class EditorDialog ( wx.Dialog ):
 		sizer_field_5.Add( self.statictext_5, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.editor_ctrl_5 = controls.EditorCtrl( self.panel_editor )
-		sizer_field_5.Add( self.editor_ctrl_5, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		sizer_field_5.Add( self.editor_ctrl_5, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_5, 0, wx.EXPAND, 5 )
@@ -416,7 +416,7 @@ class EditorDialog ( wx.Dialog ):
 		sizer_field_6.Add( self.statictext_6, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.editor_ctrl_6 = controls.EditorCtrl( self.panel_editor )
-		sizer_field_6.Add( self.editor_ctrl_6, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		sizer_field_6.Add( self.editor_ctrl_6, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_6, 0, wx.EXPAND, 5 )
@@ -428,7 +428,7 @@ class EditorDialog ( wx.Dialog ):
 		sizer_field_7.Add( self.statictext_7, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.editor_ctrl_7 = controls.EditorCtrl( self.panel_editor )
-		sizer_field_7.Add( self.editor_ctrl_7, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		sizer_field_7.Add( self.editor_ctrl_7, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_7, 0, wx.EXPAND, 5 )
@@ -440,7 +440,7 @@ class EditorDialog ( wx.Dialog ):
 		sizer_field_8.Add( self.statictext_8, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.editor_ctrl_8 = controls.EditorCtrl( self.panel_editor )
-		sizer_field_8.Add( self.editor_ctrl_8, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		sizer_field_8.Add( self.editor_ctrl_8, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
 		
 		
 		sizer_fields.Add( sizer_field_8, 0, wx.EXPAND, 5 )
@@ -449,7 +449,7 @@ class EditorDialog ( wx.Dialog ):
 		self.panel_editor.SetSizer( sizer_fields )
 		self.panel_editor.Layout()
 		sizer_fields.Fit( self.panel_editor )
-		sizer_editor.Add( self.panel_editor, 1, wx.EXPAND, 5 )
+		sizer_editor.Add( self.panel_editor, 0, wx.EXPAND, 5 )
 		
 		dialog_buttons = wx.StdDialogButtonSizer()
 		self.dialog_buttonsOK = wx.Button( self, wx.ID_OK )

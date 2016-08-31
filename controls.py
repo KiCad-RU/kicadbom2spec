@@ -19,23 +19,331 @@ import re
 import sys
 import wx
 import wx.grid
+from operator import itemgetter
 
-class EditorCtrl(wx.ComboBox):
+class EditorCtrlPopup(wx.Dialog):
     """
-    Field value editor based on ComboBox.
+    Popup for EditorCtrl.
+
+    """
+
+    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY, style=wx.NO_BORDER, title=u'', name = u''):
+        """
+        Create popup for EditorCtrl.
+
+        """
+        wx.Dialog.__init__(self, parent, id, title, pos, size, style, name)
+
+        self.Bind(wx.EVT_ACTIVATE, self.on_activate)
+
+        # Variables
+        self.items = []
+        self.selected_item = None
+
+        sizer = wx.BoxSizer()
+        scrolled_window = wx.ScrolledWindow(
+            parent=self,
+            style=wx.VERTICAL
+            )
+        scrolled_window.ShowScrollbars(wx.SHOW_SB_NEVER, wx.SHOW_SB_DEFAULT)
+        scrolled_window.DisableKeyboardScrolling()
+        scrolled_window.SetScrollRate(5, 5)
+
+
+        sizer_items = wx.BoxSizer(wx.VERTICAL)
+
+        # Default value
+        if parent.default_value:
+            panel = wx.Panel(
+                parent=scrolled_window
+                )
+            panel.Bind(wx.EVT_LEFT_UP, self.on_left_up)
+            panel.Bind(wx.EVT_MOTION, self.on_item_select)
+            sizer_panel = wx.BoxSizer(wx.HORIZONTAL)
+            panel.text = wx.StaticText(
+                parent=panel,
+                label=parent.default_value
+                )
+            panel.text.Bind(wx.EVT_LEFT_UP, self.on_left_up)
+            panel.text.Bind(wx.EVT_MOTION, self.on_item_select)
+            font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+            font.SetWeight(wx.FONTWEIGHT_BOLD)
+            panel.text.SetFont(font)
+            sizer_panel.Add(
+                panel.text,
+                0,
+                wx.EXPAND | wx.ALL,
+                5
+                )
+            panel.SetSizer(sizer_panel)
+            panel.Layout()
+            sizer_items.Add(
+                panel,
+                0,
+                wx.EXPAND
+                )
+            self.items.append(panel)
+
+            # Separate default and other values
+            if parent.std_values or set(parent.values) - set(parent.std_values):
+                sizer_items.Add(
+                        wx.StaticLine(scrolled_window),
+                        0,
+                        wx.EXPAND
+                        )
+
+        # Standard values at the top.
+        for value in parent.std_values:
+            panel = wx.Panel(
+                parent=scrolled_window
+                )
+            panel.Bind(wx.EVT_LEFT_UP, self.on_left_up)
+            panel.Bind(wx.EVT_MOTION, self.on_item_select)
+            sizer_panel = wx.BoxSizer(wx.HORIZONTAL)
+            panel.text = wx.StaticText(
+                parent=panel,
+                label=value
+                )
+            panel.text.Bind(wx.EVT_LEFT_UP, self.on_left_up)
+            panel.text.Bind(wx.EVT_MOTION, self.on_item_select)
+            font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+            font.SetWeight(wx.FONTWEIGHT_BOLD)
+            panel.text.SetFont(font)
+            sizer_panel.Add(
+                panel.text,
+                0,
+                wx.EXPAND | wx.ALL,
+                5
+                )
+            panel.SetSizer(sizer_panel)
+            panel.Layout()
+            sizer_items.Add(
+                panel,
+                0,
+                wx.EXPAND
+                )
+            self.items.append(panel)
+
+        # Separate standard and common values
+        if parent.std_values and set(parent.values) - set(parent.std_values):
+            sizer_items.Add(
+                    wx.StaticLine(scrolled_window),
+                    0,
+                    wx.EXPAND
+                    )
+
+        # Common values
+        for value in parent.values:
+            if value in parent.std_values:
+                continue
+            panel = wx.Panel(
+                parent=scrolled_window
+                )
+            panel.Bind(wx.EVT_LEFT_UP, self.on_left_up)
+            panel.Bind(wx.EVT_MOTION, self.on_item_select)
+            sizer_panel = wx.BoxSizer(wx.HORIZONTAL)
+            panel.text = wx.StaticText(
+                parent=panel,
+                label=value
+                )
+            panel.text.Bind(wx.EVT_LEFT_UP, self.on_left_up)
+            panel.text.Bind(wx.EVT_MOTION, self.on_item_select)
+            sizer_panel.Add(
+                panel.text,
+                0,
+                wx.EXPAND | wx.ALL,
+                5
+                )
+            panel.SetSizer(sizer_panel)
+            panel.Layout()
+            sizer_items.Add(
+                panel,
+                0,
+                wx.EXPAND
+                )
+            self.items.append(panel)
+
+        self.select_item(0)
+        item_height = self.items[0].GetSize().GetHeight()
+
+        scrolled_window.SetSizer(sizer_items)
+        scrolled_window.Layout()
+        sizer_items.Fit(scrolled_window)
+
+        sizer.Add(
+            scrolled_window,
+            1,
+            wx.ALL | wx.EXPAND,
+            1
+            )
+        self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.SetSizer(sizer)
+        self.Layout()
+        self.Fit()
+
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key)
+
+        # Calculate optimal size and position of the popup
+        display_width, display_height = wx.DisplaySize()
+        parent_rect = parent.GetScreenRect()
+        # Internal border size = 1px
+        popup_height = sizer_items.GetSize().GetHeight() + 2
+        popup_max_height = 200
+        if popup_height > popup_max_height:
+            popup_height = popup_max_height
+
+        if popup_height + parent_rect.GetBottom() < display_height:
+            self.SetPosition(
+                wx.Point(
+                    parent_rect.GetLeft(),
+                    parent_rect.GetBottom()
+                    )
+                )
+        else:
+            self.SetPosition(
+                wx.Point(
+                    parent_rect.GetLeft(),
+                    parent_rect.GetTop() - popup_height
+                    )
+                )
+        self.SetSize(
+            wx.Size(
+                parent_rect.GetWidth(),
+                popup_height
+                )
+            )
+
+    def select_item(self, index):
+        """
+        Selecr item in popup by index.
+
+        """
+        # Reset previous selection
+        if self.selected_item != None:
+            self.items[self.selected_item].text.SetForegroundColour(wx.NullColour)
+            self.items[self.selected_item].SetBackgroundColour(wx.NullColour)
+            self.items[self.selected_item].Refresh()
+        # Select item
+        self.items[index].text.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT))
+        self.items[index].SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT))
+        self.items[index].SetFocus()
+        self.items[index].Refresh()
+        self.selected_item = index
+
+    def get_selected_value(self):
+        """
+        Return value of the selected item.
+
+        """
+        value = self.items[self.selected_item].text.GetLabel()
+        return value
+
+    def on_activate(self, event):
+        """
+        Close popup on losing focus.
+
+        """
+        if not event.GetActive():
+            self.Destroy()
+        event.Skip()
+
+    def on_key(self, event):
+        """
+        Process key events.
+
+        """
+        index = self.items.index(event.GetEventObject())
+        if event.GetKeyCode() == wx.WXK_ESCAPE:
+            self.EndModal(wx.ID_CANCEL)
+        elif event.GetKeyCode() == wx.WXK_RETURN:
+            self.EndModal(wx.ID_OK)
+        elif event.GetKeyCode() == wx.WXK_UP:
+            if index > 0:
+                self.select_item(index - 1)
+        elif event.GetKeyCode() == wx.WXK_DOWN:
+            if index < len(self.items) - 1:
+                self.select_item(index + 1)
+        else:
+            event.Skip()
+
+    def on_left_up(self, event):
+        """
+        Left click.
+
+        """
+        self.EndModal(wx.ID_OK)
+
+    def on_item_select(self, event):
+        """
+        Select item by mouse movement.
+
+        """
+        if event.GetEventObject().GetClassName() == 'wxStaticText':
+            panel = event.GetEventObject().GetParent()
+        else:
+            panel = event.GetEventObject()
+        index = self.items.index(panel)
+        if index != self.select_item:
+            self.select_item(self.items.index(panel))
+
+
+class EditorCtrl(wx.Control):
+    """
+    Custom field value editor.
 
     """
 
     def __init__(self, parent):
-        wx.ComboBox.__init__(self, parent)
+        wx.Control.__init__(self, parent, style=wx.NO_BORDER)
+
+        self.SetCanFocus(False)
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key)
+
+        # Text control
+        self.text_ctrl = wx.TextCtrl(
+            parent=self,
+            style=wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL
+            )
+        self.text_ctrl.Bind(wx.EVT_SET_FOCUS, self.on_text_ctrl_set_focus)
+        self.text_ctrl.Bind(wx.EVT_IDLE, self.on_text_ctrl_idle)
+        self.text_ctrl.Bind(wx.EVT_CONTEXT_MENU, self.on_text_ctrl_popup)
+        if sys.platform == 'win32':
+            self.Bind(wx.EVT_SET_FOCUS, lambda event: self.text_ctrl.SetFocus())
+
+        # Popup button
+        self.button = wx.Button(
+                parent=self,
+                label=u'☰',
+                style=wx.BU_EXACTFIT
+                )
+        self.button.SetCanFocus(False)
+        self.button.Enable(False)
+        self.button.Bind(wx.EVT_BUTTON, self.on_button)
+
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(
+            self.text_ctrl,
+            1,
+            wx.EXPAND,
+            0
+            )
+        sizer.Add(
+            self.button,
+            0,
+            wx.FIXED_MINSIZE,
+            0
+            )
+        self.SetSizer(sizer)
 
         # Common and standard values is stored separate.
         self.values = []
         self.std_values = []
+        self.default_value = None
 
-        self.skip_selecting = True
+        self.skip_selecting = False
         self.select_all = False
 
+        # Context menu ID
         self.copy_id = wx.NewId()
         self.cut_id = wx.NewId()
         self.paste_id = wx.NewId()
@@ -49,37 +357,70 @@ class EditorCtrl(wx.ComboBox):
         self.datasheet_id = wx.NewId()
         self.another_id = wx.NewId()
 
-        self.Bind(wx.EVT_CONTEXT_MENU, self.on_popup)
-        if sys.platform == 'win32':
-            self.Bind(wx.EVT_RIGHT_UP, self.on_popup)
-        else:
-            self.Bind(wx.EVT_RIGHT_DOWN, self.on_popup)
-
-        self.Bind(wx.EVT_SET_FOCUS, self.on_set_focus)
-        self.Bind(wx.EVT_IDLE, self.on_idle)
+        self.Layout()
 
     def set_items(self, values=None, std_values=None, default_value=None):
         """
         Fills the popup of the cell editor.
 
         """
-        self.Clear()
         if default_value:
-            self.SetValue(default_value)
-            self.Append(default_value)
+            self.default_value = default_value
+            self.text_ctrl.SetValue(default_value)
+            self.button.Enable(True)
         if values:
             self.values = values
+            self.button.Enable(True)
         if std_values:
             self.std_values = std_values
-        all_values = self.values + self.std_values
-        if all_values:
-            all_values = list(set(all_values))
-            all_values.sort()
-            self.AppendItems(all_values)
+            self.button.Enable(True)
 
-    def on_set_focus(self, event):
+    def clear_items(self):
         """
-        Set flag for selecting all text on activating combobox.
+        Remove all popup items.
+
+        """
+        self.default_value = None
+        self.values = []
+        self.std_values = []
+        self.button.Enable(False)
+
+    def on_key(self, event):
+        """
+        Controls from keyboard.
+
+        """
+        # Show popup
+        if event.GetKeyCode() == wx.WXK_DOWN:
+            if self.button.IsEnabled():
+                self.on_button(None)
+        # Skip UP key
+        elif event.GetKeyCode() == wx.WXK_UP:
+            pass
+        # Grid specific events
+        elif self.GetGrandParent().GetClassName() == 'wxGrid':
+            row = self.GetGrandParent().GetGridCursorRow()
+            col = self.GetGrandParent().GetGridCursorCol()
+            cur_value = self.GetGrandParent().GetCellValue(row, col)
+            # Close editor and restore previous value
+            if event.GetKeyCode() == wx.WXK_ESCAPE:
+                self.text_ctrl.SetValue(cur_value)
+                self.GetGrandParent().DisableCellEditControl()
+                self.GetGrandParent().SetGridCursor(row, col)
+                self.GetGrandParent().SetFocusIgnoringChildren()
+            # Close editor and apply new value
+            elif event.GetKeyCode() == wx.WXK_RETURN:
+                self.GetGrandParent().DisableCellEditControl()
+                self.GetGrandParent().SetGridCursor(row, col)
+                self.GetGrandParent().SetFocusIgnoringChildren()
+            else:
+                event.Skip()
+        else:
+            event.Skip()
+
+    def on_text_ctrl_set_focus(self, event):
+        """
+        Set flag for selecting all text on activating text control.
 
         """
         if not self.skip_selecting:
@@ -88,41 +429,61 @@ class EditorCtrl(wx.ComboBox):
             self.skip_selecting = False
         event.Skip()
 
-    def on_idle(self, event):
+    def on_text_ctrl_idle(self, event):
         """
-        Select all text in combobox after activating.
+        Select all text in text control after activating.
 
         """
         if self.select_all:
             self.select_all = False
-            self.SelectAll()
+            self.text_ctrl.SelectAll()
         event.Skip()
 
-    def on_popup(self, event):
+    def on_text_ctrl_popup(self, event):
         """
-        Create popup menu.
+        Create popup menu for text control.
 
         """
+        def on_copy(event):
+            self.text_ctrl.Copy()
+            self.skip_selecting = True
+
+        def on_cut(event):
+            self.text_ctrl.Cut()
+            self.skip_selecting = True
+
+        def on_paste(event):
+            self.text_ctrl.Paste()
+            self.skip_selecting = True
+
+        def on_delete(event):
+            self.text_ctrl.WriteText(u'')
+            self.skip_selecting = True
+
+        def on_select_all(event):
+            self.text_ctrl.SelectAll()
+            self.skip_selecting = True
+
         menu = wx.Menu()
         item = wx.MenuItem(menu, self.copy_id, u'Копировать')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy_small.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
-        menu.Bind(wx.EVT_MENU, lambda event: self.Copy(), item)
+        self.Bind(wx.EVT_MENU, on_copy, item)
 
         item = wx.MenuItem(menu, self.cut_id, u'Вырезать')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-cut_small.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
-        menu.Bind(wx.EVT_MENU, lambda event: self.Cut(), item)
+        self.Bind(wx.EVT_MENU, on_cut, item)
 
         item = wx.MenuItem(menu, self.paste_id, u'Вставить')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-paste_small.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
-        menu.Bind(wx.EVT_MENU, lambda event: self.Paste(), item)
+        self.Bind(wx.EVT_MENU, on_paste, item)
 
         item = wx.MenuItem(menu, self.delete_id, u'Удалить')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-delete_small.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
-        menu.Bind(wx.EVT_MENU, lambda event: self.WriteText(u''), item)
+        self.Bind(wx.EVT_MENU, on_delete, item)
 
         menu.Append(wx.ID_SEPARATOR)
 
@@ -134,9 +495,9 @@ class EditorCtrl(wx.ComboBox):
                 )
             )
         menu.AppendItem(item)
-        menu.Bind(wx.EVT_MENU, lambda event: self.SelectAll(), item)
+        self.Bind(wx.EVT_MENU, on_select_all, item)
 
-        cur_value = self.GetValue()
+        cur_value = self.text_ctrl.GetValue()
         if not cur_value in [u'', u'<не изменять>']:
             menu.Append(wx.ID_SEPARATOR)
             if cur_value in self.std_values:
@@ -154,7 +515,7 @@ class EditorCtrl(wx.ComboBox):
                         )
                     )
                 menu.AppendItem(item)
-                menu.Bind(wx.EVT_MENU, self.on_remove_std_value, item)
+                self.Bind(wx.EVT_MENU, self.on_remove_std_value, item)
             else:
                 if len(cur_value) > 15:
                     cur_value = cur_value[:10] + u'…' + cur_value[-5:]
@@ -169,7 +530,7 @@ class EditorCtrl(wx.ComboBox):
                             )
                         )
                 menu.AppendItem(item)
-                menu.Bind(wx.EVT_MENU, self.on_add_std_value, item)
+                self.Bind(wx.EVT_MENU, self.on_add_std_value, item)
 
         menu.Append(wx.ID_SEPARATOR)
 
@@ -177,23 +538,23 @@ class EditorCtrl(wx.ComboBox):
 
         item = wx.MenuItem(menu, self.ref_id, u'${Обозначение}')
         submenu.AppendItem(item)
-        submenu.Bind(wx.EVT_MENU, self.on_insert, item)
+        self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         item = wx.MenuItem(menu, self.value_id, u'${Значение}')
         submenu.AppendItem(item)
-        submenu.Bind(wx.EVT_MENU, self.on_insert, item)
+        self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         item = wx.MenuItem(menu, self.footprint_id, u'${Посад.место}')
         submenu.AppendItem(item)
-        submenu.Bind(wx.EVT_MENU, self.on_insert, item)
+        self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         item = wx.MenuItem(menu, self.datasheet_id, u'${Документация}')
         submenu.AppendItem(item)
-        submenu.Bind(wx.EVT_MENU, self.on_insert, item)
+        self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         item = wx.MenuItem(menu, self.another_id, u'Другую…')
         submenu.AppendItem(item)
-        submenu.Bind(wx.EVT_MENU, self.on_insert, item)
+        self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         submenu_item = wx.MenuItem(
                 menu,
@@ -211,19 +572,26 @@ class EditorCtrl(wx.ComboBox):
                 )
         submenu_item = menu.AppendItem(submenu_item)
 
-        if not self.CanCopy():
+        if not self.text_ctrl.CanCopy():
             menu.Enable(self.copy_id, False)
 
-        if not self.CanCut():
+        if not self.text_ctrl.CanCut():
             menu.Enable(self.cut_id, False)
 
-        if not self.CanPaste():
+        if not self.text_ctrl.CanPaste():
             menu.Enable(self.paste_id, False)
 
-        if not self.CanCopy():
+        if not self.text_ctrl.CanCopy():
             menu.Enable(self.delete_id, False)
 
-        self.PopupMenu(menu, event.GetPosition())
+        if event.GetPosition() == wx.DefaultPosition:
+            popup_position = wx.Point(
+                self.GetRect().GetWidth(),
+                self.GetRect().GetBottom()
+                )
+        else:
+            popup_position = self.ScreenToClient(wx.GetMousePosition())
+        self.PopupMenu(menu, popup_position)
         menu.Destroy()
 
     def on_add_std_value(self, event):
@@ -231,20 +599,18 @@ class EditorCtrl(wx.ComboBox):
         Add current value to standard values.
 
         """
-        cur_value = self.GetValue()
+        cur_value = self.text_ctrl.GetValue()
         self.std_values.append(cur_value)
-        self.set_items(default_value=u'<не изменять>')
-        self.SetValue(cur_value)
+        self.skip_selecting = True
 
     def on_remove_std_value(self, event):
         """
         Remove current value from standard values.
 
         """
-        cur_value = self.GetValue()
+        cur_value = self.text_ctrl.GetValue()
         self.std_values.remove(cur_value)
-        self.set_items(default_value=u'<не изменять>')
-        self.SetValue(cur_value)
+        self.skip_selecting = True
 
     def on_insert(self, event):
         """
@@ -254,16 +620,27 @@ class EditorCtrl(wx.ComboBox):
         cur_id = event.GetId()
         self.skip_selecting = True
         if cur_id == self.ref_id:
-            self.WriteText(u'${Обозначение}')
+            self.text_ctrl.WriteText(u'${Обозначение}')
         elif cur_id == self.value_id:
-            self.WriteText(u'${Значение}')
+            self.text_ctrl.WriteText(u'${Значение}')
         elif cur_id == self.footprint_id:
-            self.WriteText(u'${Посад.место}')
+            self.text_ctrl.WriteText(u'${Посад.место}')
         elif cur_id == self.datasheet_id:
-            self.WriteText(u'${Документация}')
+            self.text_ctrl.WriteText(u'${Документация}')
         elif cur_id == self.another_id:
-            self.WriteText(u'${}')
-            self.SetInsertionPoint(self.GetInsertionPoint() - 1)
+            self.text_ctrl.WriteText(u'${}')
+            self.text_ctrl.SetInsertionPoint(self.text_ctrl.GetInsertionPoint() - 1)
+
+    def on_button(self, event):
+        """
+        Show popup with all available values.
+
+        """
+        popup = EditorCtrlPopup(self)
+        result = popup.ShowModal()
+        if result == wx.ID_OK:
+            self.text_ctrl.SetValue(popup.get_selected_value())
+        self.text_ctrl.SetFocus()
 
 
 class CellEditor(wx.grid.PyGridCellEditor):
@@ -276,14 +653,11 @@ class CellEditor(wx.grid.PyGridCellEditor):
         wx.grid.PyGridCellEditor.__init__(self)
 
     def Create(self, parent, id, evtHandler):
-        self.editor = EditorCtrl(parent)
-        self.editor.SetInsertionPoint(0)
-        self.SetControl(self.editor)
-#        if evtHandler:
-#            self.editor.PushEventHandler(evtHandler)
+        self.control = EditorCtrl(parent)
+        self.SetControl(self.control)
 
     def SetSize(self, rect):
-        self.editor.SetDimensions(
+        self.control.SetDimensions(
             rect.x,
             rect.y,
             rect.width+2,
@@ -292,33 +666,41 @@ class CellEditor(wx.grid.PyGridCellEditor):
             )
     def BeginEdit(self, row, col, grid):
         self.start_value = grid.GetTable().GetValue(row, col)
-        self.editor.SetValue(self.start_value)
-        self.editor.SetInsertionPointEnd()
-        self.editor.SetFocus()
+        self.control.skip_selecting = True
+        self.control.text_ctrl.SetValue(self.start_value)
+        self.control.text_ctrl.SetInsertionPointEnd()
+        self.control.SetFocus()
 
     def EndEdit(self, row, col, grid, old_value):
-        cur_value = self.editor.GetValue()
+        cur_value = self.control.text_ctrl.GetValue()
         if cur_value != old_value:
             return cur_value
         else:
             return None
 
+    def IsAcceptedKey(self, event):
+        """
+        Disable starting editor from keyboard.
+        """
+        return False
+
     def ApplyEdit(self, row, col, grid):
-        value = self.editor.GetValue()
+        value = self.control.text_ctrl.GetValue()
         grid.GetTable().SetValue(row, col, value)
         self.start_value = ''
-        self.editor.SetValue('')
-        self.editor.Clear()
+        self.control.text_ctrl.SetValue('')
+        self.control.clear_items()
 
     def Reset(self):
-        self.editor.SetValue(self.start_value)
-        self.editor.SetInsertionPointEnd()
+        self.control.skip_selecting = True
+        self.control.text_ctrl.SetValue(self.start_value)
+        self.control.text_ctrl.SetInsertionPointEnd()
 
     def Clone(self):
         return CellEditor()
 
     def set_items(self, values, std_values, default_value=None):
-        self.editor.set_items(
+        self.control.set_items(
             values,
             std_values,
             default_value
@@ -380,6 +762,10 @@ class Grid(wx.grid.Grid):
         self.Bind(
             wx.grid.EVT_GRID_EDITOR_SHOWN,
             self.on_editor_shown
+            )
+        self.Bind(
+            wx.grid.EVT_GRID_EDITOR_HIDDEN,
+            self.on_editor_hidden
             )
 
         # Columns
@@ -690,10 +1076,15 @@ class Grid(wx.grid.Grid):
             else:
                 self.set_cell_value(cur_row, cur_col, '1')
             self.on_grid_change()
+        elif event.GetKeyCode() == ord('A') and event.ControlDown():
+            self.SelectAll()
+        elif event.GetKeyCode() == wx.WXK_RETURN:
+            if cur_col != 0 and not self.IsReadOnly(cur_row, cur_col):
+                self.EnableCellEditControl()
         else:
             event.Skip()
 
-    def on_sort(self, event):
+    def on_sort(self, event=None):
         """
         Sort table rows by selected column values.
 
@@ -729,7 +1120,10 @@ class Grid(wx.grid.Grid):
             num_val = int(matches.group(1))
             return num_val
 
-        sort_col = event.GetCol()
+        if event:
+            sort_col = event.GetCol()
+        else:
+            sort_col = 2
         grid_data = self.get_values()
         if sort_col == 2 and not self.window.library:
             sorted_data = sorted(grid_data, key=compare_num)
@@ -745,7 +1139,8 @@ class Grid(wx.grid.Grid):
         self.set_values(sorted_data, False)
         self.last_sorted_col = sort_col
         self.update_attributes()
-        event.Skip()
+        if event:
+            event.Skip()
 
     def on_editor_created(self, event):
         """
@@ -769,3 +1164,12 @@ class Grid(wx.grid.Grid):
         """
         cell_editor = CellEditor()
         self.SetDefaultEditor(cell_editor)
+
+    def on_editor_hidden(self, event):
+        """
+        Sync values after closing editor.
+
+        """
+        cell_editor = self.GetCellEditor(event.GetRow(), event.GetCol())
+        self.window.values_dict[self.window.values_dict_keys[event.GetCol()]] = cell_editor.control.std_values
+

@@ -428,7 +428,7 @@ class Window(gui.MainFrame):
         self.panel_components.Layout()
         sizer.Fit(self.panel_components)
         self.Layout()
-
+        self.grid.SetFocus()
 
         # Restore column width
         if hasattr(self, 'settings'):
@@ -967,20 +967,21 @@ class Window(gui.MainFrame):
         Paste values to the fields of the selected components from buffer.
 
         """
-        sel_rows = self.grid.get_selected_rows()
-        sel_cols = self.get_checked_cols()
-        for row in sel_rows:
-            for col in sel_cols:
-                # Ref is read only
-                if col == 2:
-                    continue
-                self.grid.set_cell_value(
-                    row,
-                    col,
-                    self.buffer[col - 1]
-                    )
-        if self.grid.is_changed():
-            self.on_grid_change()
+        if len(self.grid.get_selected_rows()) > 1:
+            sel_rows = self.grid.get_selected_rows()
+            sel_cols = self.get_checked_cols()
+            for row in sel_rows:
+                for col in sel_cols:
+                    # Ref is read only
+                    if col == 2:
+                        continue
+                    self.grid.set_cell_value(
+                        row,
+                        col,
+                        self.buffer[col - 1]
+                        )
+            if self.grid.is_changed():
+                self.on_grid_change()
 
     def on_select(self, event):
         """
@@ -1063,6 +1064,7 @@ class Window(gui.MainFrame):
             self.grid.set_values(sch_values)
             self.grid.undo_buffer = []
             self.grid.redo_buffer = []
+            self.grid.on_sort()
             self.on_grid_change()
             self.saved = True
 
@@ -1246,6 +1248,7 @@ class Window(gui.MainFrame):
             self.grid.set_values(lib_values)
             self.grid.undo_buffer = []
             self.grid.redo_buffer = []
+            self.grid.on_sort()
             self.on_grid_change()
             self.saved = True
 
@@ -1471,7 +1474,13 @@ class Window(gui.MainFrame):
         Open specialized window for editing fields of selected components.
 
         """
+        def on_idle(event):
+            if editor.GetMinSize().GetHeight() == -1:
+                editor.SetMinSize(editor.GetSize())
+                editor.SetMaxSize(wx.Size(-1, editor.GetSize().GetHeight()))
+
         editor = gui.EditorDialog(self)
+        editor.Bind(wx.EVT_IDLE, on_idle)
         selected_rows = self.grid.get_selected_rows()
         col_num = self.grid.GetNumberCols()
         all_choices = self.grid.get_choices(selected_rows, range(0, col_num))
@@ -1501,7 +1510,7 @@ class Window(gui.MainFrame):
                 for col in range(1, 9):
                     if col == 2:
                         continue
-                    new_value = getattr(editor, 'editor_ctrl_%i' % col).GetValue()
+                    new_value = getattr(editor, 'editor_ctrl_%i' % col).text_ctrl.GetValue()
                     if new_value == u'<не изменять>':
                         continue
                     else:
