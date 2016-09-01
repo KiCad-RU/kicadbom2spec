@@ -797,9 +797,8 @@ class Window(gui.MainFrame):
         Update GUI after changes.
 
         """
-        # This event handler is overwrites the "on_change" in the Grid class.
-        # So, it does not invoked directly by event.
-        self.grid.on_change(event)
+        self.grid.undo_buffer.append(self.grid.get_values())
+        self.grid.redo_buffer = []
         self.menuitem_redo.Enable(False)
         if len(self.grid.undo_buffer) > 1:
             self.menuitem_undo.Enable(True)
@@ -1427,7 +1426,7 @@ class Window(gui.MainFrame):
                 row[2] = row[2].rstrip('*')
                 if (row[0] == u'1') | all_components:
                     fields = row[1:-1]
-                    fields.insert(1, re.search(r'[A-Z]+', fields[1]).group())
+                    fields.insert(1, re.search(r'[^0-9]+', fields[1]).group())
                     fields[2] = re.search(r'[0-9]+', fields[2]).group()
                     fields.append('1')
                     comp_fields.append(fields)

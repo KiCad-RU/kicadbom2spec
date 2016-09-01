@@ -752,10 +752,6 @@ class Grid(wx.grid.Grid):
             self.on_sort
             )
         self.Bind(
-            wx.grid.EVT_GRID_CELL_CHANGE,
-            self.on_change
-            )
-        self.Bind(
             wx.grid.EVT_GRID_EDITOR_CREATED,
             self.on_editor_created
             )
@@ -966,29 +962,6 @@ class Grid(wx.grid.Grid):
                 choices.append(column_choices)
         return choices
 
-    def on_change(self, event=None):
-        """
-        Put the grid data into undo buffer if changes made.
-
-        """
-        # If changed original comp (like "C111*") also apply changes to copies
-        # of it (like "C222(C111)")
-        if event:
-            ref_orig = self.GetCellValue(event.GetRow(), 2)
-            if ref_orig.endswith('*'):
-                ref_orig = ref_orig.rstrip('*')
-                row = event.GetRow()
-                col = event.GetCol()
-                value = self.GetCellValue(event.GetRow(), event.GetCol())
-                rows = self.GetNumberRows()
-                for cur_row in range(rows):
-                    cur_row_ref = self.GetCellValue(cur_row, 2)
-                    if cur_row_ref.endswith('(' + ref_orig + ')'):
-                        self.SetCellValue(cur_row, col, value)
-
-        self.undo_buffer.append(self.get_values())
-        self.redo_buffer = []
-
     def on_left_click(self, event):
         """
         Switch state of the checkbox in 0 column
@@ -1016,7 +989,8 @@ class Grid(wx.grid.Grid):
                     event.GetCol(),
                     '1'
                     )
-            self.on_grid_change()
+            if hasattr(self.GetGrandParent(), 'on_grid_change'):
+                self.GetGrandParent().on_grid_change()
         else:
             event.Skip()
 
@@ -1075,7 +1049,8 @@ class Grid(wx.grid.Grid):
                 self.set_cell_value(cur_row, cur_col, '0')
             else:
                 self.set_cell_value(cur_row, cur_col, '1')
-            self.on_grid_change()
+            if hasattr(self.GetGrandParent(), 'on_grid_change'):
+                self.GetGrandParent().on_grid_change()
         elif event.GetKeyCode() == ord('A') and event.ControlDown():
             self.SelectAll()
         elif event.GetKeyCode() == wx.WXK_RETURN:
@@ -1101,7 +1076,7 @@ class Grid(wx.grid.Grid):
             ref = ref.split('(')[0]
             ref = ref.rstrip('*')
 
-            matches = re.search(r'^([A-Z]+)\d+', ref)
+            matches = re.search(r'^([^0-9]+)[0-9]+', ref)
             ref_val = matches.group(1)
             return ref_val
 
@@ -1116,7 +1091,7 @@ class Grid(wx.grid.Grid):
             ref = ref.split('(')[0]
             ref = ref.rstrip('*')
 
-            matches = re.search(r'^[A-Z]+(\d+)', ref)
+            matches = re.search(r'^[^0-9]+([0-9]+)', ref)
             num_val = int(matches.group(1))
             return num_val
 

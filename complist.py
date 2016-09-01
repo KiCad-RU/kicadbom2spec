@@ -336,7 +336,7 @@ class CompList():
                 else:
                     temp = []
                     temp.append(get_text_from_field(comp, u'Группа'))
-                    ref_type = re.search(r'[A-Z]+', comp.fields[0].text).group()
+                    ref_type = re.search(r'[^0-9]+', comp.fields[0].text).group()
                     ref_num = re.search(r'[0-9]+', comp.fields[0].text).group()
                     temp.extend([ref_type, ref_num])
                     temp.append(get_text_from_field(comp, u'Марка'))
@@ -358,7 +358,7 @@ class CompList():
                                     break
                             else:
                                 new_temp = list(temp)
-                                new_temp[1] = re.search(r'[A-Z]+', ref[1]).group()
+                                new_temp[1] = re.search(r'[^0-9]+', ref[1]).group()
                                 new_temp[2] = re.search(r'[0-9]+', ref[1]).group()
                                 comp_array.append(new_temp)
                     else:
