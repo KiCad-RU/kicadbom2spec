@@ -29,6 +29,7 @@ from odf import dc, meta
 
 from kicadsch import *
 
+REF_REGULAR_EXPRESSION = r'(.*[^0-9])([0-9]+)'
 
 class CompList():
     """
@@ -329,6 +330,9 @@ class CompList():
                 # Skip unannotated components
                 if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
                     continue
+                # Skip components with not supported ref type
+                if not re.match(REF_REGULAR_EXPRESSION, comp.fields[0].text):
+                    continue
                 # Skip parts of the same component
                 for row in comp_array:
                     if comp.fields[0].text == (row[1] + row[2]):
@@ -336,8 +340,8 @@ class CompList():
                 else:
                     temp = []
                     temp.append(get_text_from_field(comp, u'Группа'))
-                    ref_type = re.search(r'[^0-9]+', comp.fields[0].text).group()
-                    ref_num = re.search(r'[0-9]+', comp.fields[0].text).group()
+                    ref_type = re.search(REF_REGULAR_EXPRESSION, comp.fields[0].text).group(1)
+                    ref_num = re.search(REF_REGULAR_EXPRESSION, comp.fields[0].text).group(2)
                     temp.extend([ref_type, ref_num])
                     temp.append(get_text_from_field(comp, u'Марка'))
                     temp.append(comp.fields[1].text)
@@ -358,8 +362,8 @@ class CompList():
                                     break
                             else:
                                 new_temp = list(temp)
-                                new_temp[1] = re.search(r'[^0-9]+', ref[1]).group()
-                                new_temp[2] = re.search(r'[0-9]+', ref[1]).group()
+                                new_temp[1] = re.search(REF_REGULAR_EXPRESSION, ref[1]).group(1)
+                                new_temp[2] = re.search(REF_REGULAR_EXPRESSION, ref[1]).group(2)
                                 comp_array.append(new_temp)
                     else:
                         comp_array.append(temp)

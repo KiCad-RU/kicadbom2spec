@@ -1426,8 +1426,8 @@ class Window(gui.MainFrame):
                 row[2] = row[2].rstrip('*')
                 if (row[0] == u'1') | all_components:
                     fields = row[1:-1]
-                    fields.insert(1, re.search(r'[^0-9]+', fields[1]).group())
-                    fields[2] = re.search(r'[0-9]+', fields[2]).group()
+                    fields.insert(1, re.search(REF_REGULAR_EXPRESSION, fields[1]).group(1))
+                    fields[2] = re.search(REF_REGULAR_EXPRESSION, fields[2]).group(2)
                     fields.append('1')
                     comp_fields.append(fields)
             try:

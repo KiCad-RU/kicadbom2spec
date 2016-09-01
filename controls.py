@@ -20,6 +20,7 @@ import sys
 import wx
 import wx.grid
 from operator import itemgetter
+from complist import REF_REGULAR_EXPRESSION
 
 class EditorCtrlPopup(wx.Dialog):
     """
@@ -1076,7 +1077,7 @@ class Grid(wx.grid.Grid):
             ref = ref.split('(')[0]
             ref = ref.rstrip('*')
 
-            matches = re.search(r'^([^0-9]+)[0-9]+', ref)
+            matches = re.search(REF_REGULAR_EXPRESSION, ref)
             ref_val = matches.group(1)
             return ref_val
 
@@ -1091,8 +1092,8 @@ class Grid(wx.grid.Grid):
             ref = ref.split('(')[0]
             ref = ref.rstrip('*')
 
-            matches = re.search(r'^[^0-9]+([0-9]+)', ref)
-            num_val = int(matches.group(1))
+            matches = re.search(REF_REGULAR_EXPRESSION, ref)
+            num_val = int(matches.group(2))
             return num_val
 
         if event:
