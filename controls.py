@@ -236,8 +236,11 @@ class EditorCtrlPopup(wx.Dialog):
         Return value of the selected item.
 
         """
-        value = self.items[self.selected_item].text.GetLabel()
-        return value
+        if self.selected_item != None:
+            value = self.items[self.selected_item].text.GetLabel()
+            return value
+        else:
+            return None
 
     def on_activate(self, event):
         """
@@ -245,7 +248,8 @@ class EditorCtrlPopup(wx.Dialog):
 
         """
         if not event.GetActive():
-            self.Destroy()
+            self.selected_item = None
+            self.Show(False)
         event.Skip()
 
     def on_key(self, event):
@@ -255,9 +259,10 @@ class EditorCtrlPopup(wx.Dialog):
         """
         index = self.items.index(event.GetEventObject())
         if event.GetKeyCode() == wx.WXK_ESCAPE:
-            self.EndModal(wx.ID_CANCEL)
+            self.selected_item = None
+            self.Show(False)
         elif event.GetKeyCode() == wx.WXK_RETURN:
-            self.EndModal(wx.ID_OK)
+            self.Show(False)
         elif event.GetKeyCode() == wx.WXK_UP:
             if index > 0:
                 self.select_item(index - 1)
@@ -272,7 +277,7 @@ class EditorCtrlPopup(wx.Dialog):
         Left click.
 
         """
-        self.EndModal(wx.ID_OK)
+        self.Show(False)
 
     def on_item_select(self, event):
         """
@@ -335,6 +340,8 @@ class EditorCtrl(wx.Control):
             0
             )
         self.SetSizer(sizer)
+
+        self.popup = None
 
         # Common and standard values is stored separate.
         self.values = []
@@ -632,15 +639,26 @@ class EditorCtrl(wx.Control):
             self.text_ctrl.WriteText(u'${}')
             self.text_ctrl.SetInsertionPoint(self.text_ctrl.GetInsertionPoint() - 1)
 
+    def on_popup_show(self, event):
+        """
+        Get value from popup when it hidden.
+
+        """
+        if self.popup:
+            if not event.IsShown():
+                new_value = self.popup.get_selected_value()
+                if new_value != None:
+                    self.text_ctrl.SetValue(new_value)
+                self.popup.Destroy()
+
     def on_button(self, event):
         """
         Show popup with all available values.
 
         """
-        popup = EditorCtrlPopup(self)
-        result = popup.ShowModal()
-        if result == wx.ID_OK:
-            self.text_ctrl.SetValue(popup.get_selected_value())
+        self.popup = EditorCtrlPopup(self)
+        self.popup.Bind(wx.EVT_SHOW, self.on_popup_show)
+        self.popup.Show()
         self.text_ctrl.SetFocus()
 
 
