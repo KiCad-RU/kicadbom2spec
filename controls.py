@@ -735,19 +735,19 @@ class Grid(wx.grid.Grid):
 
         # Events
         if not self.window.library:
-            self.Bind(
-                wx.grid.EVT_GRID_CELL_LEFT_CLICK,
-                handler=self.on_left_click
-                )
-            self.Bind(
-                wx.EVT_KEY_DOWN,
-                handler=self.on_key_down
-                )
             # For copies of the component (like "R123(R321)")
             self.Bind(
                 wx.grid.EVT_GRID_CELL_LEFT_DCLICK,
                 handler=self.on_left_dclick
                 )
+        self.Bind(
+            wx.grid.EVT_GRID_CELL_LEFT_CLICK,
+            handler=self.on_left_click
+            )
+        self.Bind(
+            wx.EVT_KEY_DOWN,
+            handler=self.on_key_down
+            )
         self.Bind(
             wx.grid.EVT_GRID_LABEL_LEFT_CLICK,
             self.on_sort
@@ -972,7 +972,8 @@ class Grid(wx.grid.Grid):
         # Copies of the component (like "R123(R321)") is read only
         ref = self.GetCellValue(event.GetRow(), 2)
         if event.GetCol() == 0 and \
-                not ('(' in ref and ')' in ref):
+                not ('(' in ref and ')' in ref) and \
+                not self.window.library:
 
             cell_value = self.GetCellValue(
                 event.GetRow(),
@@ -1044,7 +1045,8 @@ class Grid(wx.grid.Grid):
         # Copies of the component (like "R123(R321)") is read only
         ref = self.GetCellValue(cur_row, 2)
         if event.GetKeyCode() == wx.WXK_SPACE and cur_col == 0 and \
-                not ('(' in ref and ')' in ref):
+                not ('(' in ref and ')' in ref) and \
+                not self.window.library:
             cell_value = self.GetCellValue(cur_row, cur_col)
             if cell_value == '1':
                 self.set_cell_value(cur_row, cur_col, '0')

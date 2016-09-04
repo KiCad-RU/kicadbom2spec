@@ -966,21 +966,49 @@ class Window(gui.MainFrame):
         Paste values to the fields of the selected components from buffer.
 
         """
-        if len(self.grid.get_selected_rows()) > 1:
-            sel_rows = self.grid.get_selected_rows()
-            sel_cols = self.get_checked_cols()
-            for row in sel_rows:
-                for col in sel_cols:
-                    # Ref is read only
-                    if col == 2:
-                        continue
-                    self.grid.set_cell_value(
-                        row,
-                        col,
-                        self.buffer[col - 1]
-                        )
-            if self.grid.is_changed():
-                self.on_grid_change()
+        if len(self.grid.get_selected_rows()) >= 1:
+            def on_idle(event):
+                if editor.GetMinSize().GetHeight() == -1:
+                    editor.SetMinSize(editor.GetSize())
+                    editor.SetMaxSize(wx.Size(-1, editor.GetSize().GetHeight()))
+
+            editor = gui.EditorDialog(self)
+            editor.SetTitle(u'Вставка полей')
+            editor.checkbox.Hide()
+            col_num = self.grid.GetNumberCols()
+            for i in range(1, col_num):
+                if i == 2:
+                    continue
+                cur_editor_ctrl = getattr(editor, 'editor_ctrl_%i' % i)
+                cur_editor_ctrl.set_items(
+                    [self.buffer[i - 1]],
+                    None,
+                    u'<не изменять>'
+                    )
+                cur_editor_ctrl.text_ctrl.SetValue(self.buffer[i - 1])
+            if self.library:
+                editor.statictext_4.Hide()
+                editor.editor_ctrl_4.Hide()
+                editor.Layout()
+            editor.GetSizer().Fit(editor)
+            editor.Layout()
+            editor.Bind(wx.EVT_IDLE, on_idle)
+            result = editor.ShowModal()
+            if result == wx.ID_OK:
+                selected_rows = self.grid.get_selected_rows()
+                for row in selected_rows:
+                    for col in range(1, col_num):
+                        if col == 2:
+                            continue
+                        if self.library and col == 4:
+                            continue
+                        new_value = getattr(editor, 'editor_ctrl_%i' % col).text_ctrl.GetValue()
+                        if new_value == u'<не изменять>':
+                            continue
+                        else:
+                            self.grid.set_cell_value(row, col, new_value)
+                if self.grid.is_changed():
+                    self.on_grid_change()
 
     def on_select(self, event):
         """
@@ -1479,12 +1507,11 @@ class Window(gui.MainFrame):
                 editor.SetMaxSize(wx.Size(-1, editor.GetSize().GetHeight()))
 
         editor = gui.EditorDialog(self)
-        editor.Bind(wx.EVT_IDLE, on_idle)
         selected_rows = self.grid.get_selected_rows()
         col_num = self.grid.GetNumberCols()
         all_choices = self.grid.get_choices(selected_rows, range(0, col_num))
         for i in range(1, col_num):
-            if i == 0 or i == 2:
+            if i == 2:
                 continue
             cur_editor_ctrl = getattr(editor, 'editor_ctrl_%i' % i)
             cur_editor_ctrl.set_items(
@@ -1495,10 +1522,11 @@ class Window(gui.MainFrame):
         if self.library:
             editor.checkbox.Hide()
             editor.statictext_4.Hide()
-            editor.combobox_4.Hide()
+            editor.editor_ctrl_4.Hide()
             editor.Layout()
-            editor.GetSizer().Fit(editor)
+        editor.GetSizer().Fit(editor)
         editor.Layout()
+        editor.Bind(wx.EVT_IDLE, on_idle)
         result = editor.ShowModal()
         if result == wx.ID_OK:
             for row in selected_rows:
@@ -1506,7 +1534,7 @@ class Window(gui.MainFrame):
                     self.grid.set_cell_value(row, 0, '1')
                 else:
                     self.grid.set_cell_value(row, 0, '0')
-                for col in range(1, 9):
+                for col in range(1, col_num):
                     if col == 2:
                         continue
                     new_value = getattr(editor, 'editor_ctrl_%i' % col).text_ctrl.GetValue()
