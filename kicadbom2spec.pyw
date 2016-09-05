@@ -1036,7 +1036,7 @@ class Window(gui.MainFrame):
         if not self.saved:
             if wx.MessageBox(
                 u'Последние изменения в полях компонентов не были сохранены!\n' \
-                u'Продолжить?',
+                u'Выйти из приложения?',
                 u'Внимание!',
                 wx.ICON_QUESTION|wx.YES_NO, self
                 ) == wx.NO:
@@ -1227,7 +1227,7 @@ class Window(gui.MainFrame):
         if not self.saved:
             if wx.MessageBox(
                 u'Последние изменения в полях компонентов не были сохранены!\n' \
-                u'Продолжить?',
+                u'Выйти из приложения?',
                 u'Внимание!',
                 wx.ICON_QUESTION|wx.YES_NO, self
                 ) == wx.NO:
@@ -1766,7 +1766,7 @@ class Window(gui.MainFrame):
         """
         if not self.saved:
             if wx.MessageBox(
-                u'Имеются не сохраненные изменения!\nПродолжить?',
+                u'Имеются не сохраненные изменения!\nВыйти из приложения?',
                 u'Внимание!',
                 wx.ICON_QUESTION|wx.YES_NO, self
                 ) == wx.NO:
