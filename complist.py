@@ -22,7 +22,7 @@ from copy import deepcopy
 from operator import itemgetter
 
 import odf.opendocument
-from odf.text import P
+from odf.text import P, LineBreak
 from odf.table import *
 from odf.style import Style, ParagraphProperties, TextProperties
 from odf import dc, meta
@@ -108,7 +108,14 @@ class CompList():
                                 text = text.decode('string_escape')
                                 # Decoding escapes from KiCad
                                 text = text.decode('string_escape')
-                                p_data.data = text.decode('utf-8')
+                                text = text.decode('utf-8')
+                                text_lines = text.split(u'\n')
+                                p_data.data = text_lines[0]
+                                # Line breaks
+                                if len(text_lines) > 1:
+                                    for line in text_lines[1:]:
+                                        new_p = P(text=line)
+                                        cell.addElement(new_p)
                                 if group == True:
                                     # Set center align and underline for ghoup name
                                     curStyleName = cell.getAttribute(u'stylename')
@@ -597,7 +604,7 @@ class CompList():
         The correction of the title.
 
         """
-        suffix = u'\\nПеречень элементов'
+        suffix = u'Перечень элементов'
         title_parts = title.rsplit(u'Схема электрическая ', 1)
         sch_types = (
             u'структурная',
@@ -609,8 +616,10 @@ class CompList():
             u'расположения'
             )
         if len(title_parts) > 1 and title_parts[1] in sch_types:
-            if title_parts[0].endswith(u'\\n'):
-                suffix = suffix.replace(u'\\n', u'')
+            if not title_parts[0].endswith(u'\\n'):
+                suffix = u'\\n' + suffix
             return title_parts[0] + suffix
         else:
+            if title != u'':
+                suffix = u'\\n' + suffix
             return title + suffix

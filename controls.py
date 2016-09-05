@@ -216,7 +216,7 @@ class EditorCtrlPopup(wx.Dialog):
 
     def select_item(self, index):
         """
-        Selecr item in popup by index.
+        Select item in popup by index.
 
         """
         # Reset previous selection
@@ -510,7 +510,7 @@ class EditorCtrl(wx.Control):
             menu.Append(wx.ID_SEPARATOR)
             if cur_value in self.std_values:
                 if len(cur_value) > 15:
-                    cur_value = cur_value[:10] + u'…' + cur_value[-5:]
+                    cur_value = cur_value[:9] + u'…' + cur_value[-5:]
                 item = wx.MenuItem(
                     menu,
                     self.remove_std_value_id,
@@ -526,7 +526,7 @@ class EditorCtrl(wx.Control):
                 self.Bind(wx.EVT_MENU, self.on_remove_std_value, item)
             else:
                 if len(cur_value) > 15:
-                    cur_value = cur_value[:10] + u'…' + cur_value[-5:]
+                    cur_value = cur_value[:9] + u'…' + cur_value[-5:]
                 item = wx.MenuItem(
                         menu,
                         self.add_std_value_id,
@@ -1016,7 +1016,7 @@ class Grid(wx.grid.Grid):
 
     def on_left_dclick(self, event):
         """
-        Show info abut editing copies of the component like "R123(R321)".
+        Show info about editing copies of the component like "R123(R321)".
 
         """
         # Copies of the component (like "R123(R321)") is read only
