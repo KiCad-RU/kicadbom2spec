@@ -659,7 +659,6 @@ class EditorCtrl(wx.Control):
         self.popup = EditorCtrlPopup(self)
         self.popup.Bind(wx.EVT_SHOW, self.on_popup_show)
         self.popup.Show()
-        self.text_ctrl.SetFocus()
 
 
 class CellEditor(wx.grid.PyGridCellEditor):
