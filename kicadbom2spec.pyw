@@ -966,16 +966,34 @@ class Window(gui.MainFrame):
         Paste values to the fields of the selected components from buffer.
 
         """
+        def on_idle(event):
+            if editor.GetMinSize().GetHeight() == -1:
+                editor.SetMinSize(editor.GetSize())
+                editor.SetMaxSize(wx.Size(-1, editor.GetSize().GetHeight()))
+
+        def on_button(event):
+            for row in selected_rows:
+                for col in range(1, col_num):
+                    if col == 2:
+                        continue
+                    if self.library and col == 4:
+                        continue
+                    new_value = getattr(editor, 'editor_ctrl_%i' % col).text_ctrl.GetValue()
+                    if new_value == u'<не изменять>':
+                        continue
+                    else:
+                        self.grid.set_cell_value(row, col, new_value)
+            if self.grid.is_changed():
+                self.on_grid_change()
+            event.Skip()
+
         if len(self.grid.get_selected_rows()) >= 1:
-            def on_idle(event):
-                if editor.GetMinSize().GetHeight() == -1:
-                    editor.SetMinSize(editor.GetSize())
-                    editor.SetMaxSize(wx.Size(-1, editor.GetSize().GetHeight()))
 
             editor = gui.EditorDialog(self)
             editor.SetTitle(u'Вставка полей')
             editor.checkbox.Hide()
             col_num = self.grid.GetNumberCols()
+            selected_rows = self.grid.get_selected_rows()
             for i in range(1, col_num):
                 if i == 2:
                     continue
@@ -993,22 +1011,10 @@ class Window(gui.MainFrame):
             editor.GetSizer().Fit(editor)
             editor.Layout()
             editor.Bind(wx.EVT_IDLE, on_idle)
-            result = editor.ShowModal()
-            if result == wx.ID_OK:
-                selected_rows = self.grid.get_selected_rows()
-                for row in selected_rows:
-                    for col in range(1, col_num):
-                        if col == 2:
-                            continue
-                        if self.library and col == 4:
-                            continue
-                        new_value = getattr(editor, 'editor_ctrl_%i' % col).text_ctrl.GetValue()
-                        if new_value == u'<не изменять>':
-                            continue
-                        else:
-                            self.grid.set_cell_value(row, col, new_value)
-                if self.grid.is_changed():
-                    self.on_grid_change()
+            editor.dialog_buttonsOK.Bind(wx.EVT_BUTTON, on_button)
+            # Need to use Show instead of ShowModal otherwise EditorCtrlPopup
+            # was freezed.
+            editor.Show()
 
     def on_select(self, event):
         """
@@ -1506,6 +1512,25 @@ class Window(gui.MainFrame):
                 editor.SetMinSize(editor.GetSize())
                 editor.SetMaxSize(wx.Size(-1, editor.GetSize().GetHeight()))
 
+        def on_button(event):
+            for row in selected_rows:
+                if editor.checkbox.IsChecked():
+                    self.grid.set_cell_value(row, 0, '1')
+                else:
+                    self.grid.set_cell_value(row, 0, '0')
+                for col in range(1, col_num):
+                    if col == 2:
+                        continue
+                    new_value = getattr(editor, 'editor_ctrl_%i' % col).text_ctrl.GetValue()
+                    if new_value == u'<не изменять>':
+                        continue
+                    else:
+                        self.grid.set_cell_value(row, col, new_value)
+            if self.grid.is_changed():
+                self.on_grid_change()
+
+            event.Skip()
+
         editor = gui.EditorDialog(self)
         selected_rows = self.grid.get_selected_rows()
         col_num = self.grid.GetNumberCols()
@@ -1527,23 +1552,10 @@ class Window(gui.MainFrame):
         editor.GetSizer().Fit(editor)
         editor.Layout()
         editor.Bind(wx.EVT_IDLE, on_idle)
-        result = editor.ShowModal()
-        if result == wx.ID_OK:
-            for row in selected_rows:
-                if editor.checkbox.IsChecked():
-                    self.grid.set_cell_value(row, 0, '1')
-                else:
-                    self.grid.set_cell_value(row, 0, '0')
-                for col in range(1, col_num):
-                    if col == 2:
-                        continue
-                    new_value = getattr(editor, 'editor_ctrl_%i' % col).text_ctrl.GetValue()
-                    if new_value == u'<не изменять>':
-                        continue
-                    else:
-                        self.grid.set_cell_value(row, col, new_value)
-            if self.grid.is_changed():
-                self.on_grid_change()
+        editor.dialog_buttonsOK.Bind(wx.EVT_BUTTON, on_button)
+        # Need to use Show instead of ShowModal otherwise EditorCtrlPopup was
+        # freezed.
+        editor.Show()
 
     def on_settings(self, event):
         """
