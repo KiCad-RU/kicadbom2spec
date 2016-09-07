@@ -593,9 +593,9 @@ class CompList():
         of the schematic type).
 
         """
-        num_parts = num.rsplit(u' Э', 1)
+        num_parts = num.rsplit(u'Э', 1)
         if len(num_parts) > 1 and num_parts[1] in u'1234567':
-            return u' ПЭ'.join(num_parts)
+            return u'ПЭ'.join(num_parts)
         else:
             return num
 
