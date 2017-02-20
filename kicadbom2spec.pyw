@@ -2004,7 +2004,7 @@ class Window(gui.MainFrame):
 
         """
         exec_dir = os.path.dirname(os.path.abspath(__file__))
-        help_file = os.path.join(exec_dir, 'doc/user_manual.html')
+        help_file = os.path.join(exec_dir, 'doc', 'user_manual.html')
         webbrowser.open_new(help_file)
 
 
