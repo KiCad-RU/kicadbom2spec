@@ -10,7 +10,7 @@
 :sectnumlevels: 4
 :imagesdir: images
 
-:version: 3.10
+:version: 3.11
 
 
 = kicadbom2spec
