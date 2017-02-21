@@ -183,6 +183,13 @@ class CompList():
         Fill the line in list of the components using element's fields.
 
         """
+        def isreal(s):
+            try:
+                float(s.replace(',', '.'))
+                return True
+            except:
+                return False
+
         # Reference
         ref = u''
         if int(element[8]) > 1:
@@ -196,10 +203,12 @@ class CompList():
         self.replace_text(self.cur_table, u'#1:%d' % self.cur_line, ref)
         # Value
         val = element[2] + element[3]
-        if self.add_units:
+        if self.add_units and element[3] != '':
             if element[0] == u'C' and element[3][-1:] != u'Ф':
                 if element[3].isdigit():
                     val += u'п'
+                elif isreal(element[3]):
+                    val += u'мк'
                 val += u'Ф'
             elif element[0] == u'L' and element[3][-2:] != u'Гн':
                 val += u'Гн'
