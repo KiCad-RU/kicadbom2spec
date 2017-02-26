@@ -121,7 +121,7 @@ class Window(gui.MainFrame):
 
     def load_settings(self, settings_file_name=default_settings_file_name, select=False):
         """
-        Loads setttings from configuration file.
+        Loads settings from configuration file.
 
         """
         import_settings= {
@@ -319,7 +319,7 @@ class Window(gui.MainFrame):
 
     def save_settings(self, settings_file_name=default_settings_file_name):
         """
-        Save setttings to configuration file.
+        Save settings to configuration file.
 
         """
         if self.save_window_size_pos:
@@ -881,7 +881,7 @@ class Window(gui.MainFrame):
 
     def on_redo(self, event):
         """
-        Redo previos change to the grid.
+        Redo previous change to the grid.
 
         """
         self.grid.undo_buffer.append(self.grid.redo_buffer[-1])
@@ -916,7 +916,7 @@ class Window(gui.MainFrame):
         if len(self.grid.get_selected_rows()) > 1:
             if wx.MessageBox(
                 u'В таблице выделено несколько элементов!\n' \
-                u'Будут скопированы поля только из первого выделеного элемента.\n' \
+                u'Будут скопированы поля только из первого выделенного элемента.\n' \
                 u'Продолжить?',
                 u'Внимание!',
                 wx.ICON_QUESTION|wx.YES_NO, self
@@ -940,7 +940,7 @@ class Window(gui.MainFrame):
         if len(self.grid.get_selected_rows()) > 1:
             if wx.MessageBox(
                     u'В таблице выделено несколько элементов!\n' \
-                    u'Будут вырезаны поля только из первого выделеного элемента.\n' \
+                    u'Будут вырезаны поля только из первого выделенного элемента.\n' \
                     u'Продолжить?',
                     u'Внимание!',
                     wx.ICON_QUESTION|wx.YES_NO, self
@@ -1857,7 +1857,7 @@ class Window(gui.MainFrame):
 
         def on_find_prev(event):
             """
-            Find previos match.
+            Find previous match.
 
             """
             find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
@@ -1920,7 +1920,7 @@ class Window(gui.MainFrame):
             replace_str = event.GetEventObject().GetGrandParent().textctrl_replace.GetValue()
             if find_str not in cell_value:
                 wx.MessageBox(
-                    u'В выделеной ячейке не найдено совпадений для замены!',
+                    u'В выделенной ячейке не найдено совпадений для замены!',
                     u'Замена',
                     wx.ICON_ERROR | wx.OK, self
                     )
@@ -1940,7 +1940,7 @@ class Window(gui.MainFrame):
 
         def on_esc_key(event):
             """
-            Close find/replace dialog if ESK key pressed.
+            Close find/replace dialog if ESC key pressed.
 
             """
             key_code = event.GetKeyCode()
@@ -2017,7 +2017,7 @@ def main():
     parser = argparse.ArgumentParser(
         description=(
             u'Приложение создает файл перечня элементов оформленный ' \
-            u'в соответствии с ЕСКД для схемы выполненой в САПР KiCad.\n'
+            u'в соответствии с ЕСКД для схемы выполненной в САПР KiCad.\n'
             )
         )
     parser.add_argument(
@@ -2032,7 +2032,7 @@ def main():
         default='',
         nargs='?',
         type=str,
-        help=u'полное или относительное имя файла перечня элеменнтов'
+        help=u'полное или относительное имя файла перечня элементов'
         )
     parser.add_argument(
         '-v', '--version',
