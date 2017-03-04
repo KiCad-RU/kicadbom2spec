@@ -475,6 +475,9 @@ class Schematic:
                               'size', 'flags', 'hjustify')
                 for item in range(len(item_names)):
                     setattr(self, item_names[item], items[item])
+                # make valid empty value field
+                if self.number == 1 and self.text == '~':
+                    self.text = ''
                 self.pos_x = int(self.pos_x)
                 self.pos_y = int(self.pos_y)
                 self.size = int(self.size)
@@ -488,12 +491,17 @@ class Schematic:
                     sch_file (file) - file for writing.
 
                 """
+                # make valid empty value field
+                if self.number == 1 and self.text == '':
+                    vtext = '~'
+                else:
+                    vtext = self.text
                 name = ''
                 if hasattr(self, 'name'):
                     name = ' "{}"'.format(self.name)
                 field_str = 'F {number} "{text}" {orient} {pos_x:<3} {pos_y:<3} {size:<3} {flags} {hjustify} {vjustify}{italic}{bold}{name}\n'.format(
                             number = self.number,
-                            text = self.text,
+                            text = vtext,
                             orient = self.orientation,
                             pos_x = self.pos_x,
                             pos_y = self.pos_y,
