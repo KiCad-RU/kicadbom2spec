@@ -872,12 +872,12 @@ class Window(gui.MainFrame):
         self.grid.set_values(self.grid.undo_buffer[-1])
         if len(self.grid.undo_buffer) == 1:
             self.menuitem_undo.Enable(False)
-            self.saved = True
-            if self.library:
-                self.menuitem_save_lib.Enable(False)
-            else:
-                self.menuitem_save_sch.Enable(False)
         self.menuitem_redo.Enable(True)
+        self.saved = False
+        if self.library:
+            self.menuitem_save_lib.Enable(True)
+        else:
+            self.menuitem_save_sch.Enable(True)
 
     def on_redo(self, event):
         """
@@ -1042,7 +1042,7 @@ class Window(gui.MainFrame):
         if not self.saved:
             if wx.MessageBox(
                 u'Последние изменения в полях компонентов не были сохранены!\n' \
-                u'Выйти из приложения?',
+                u'Продолжить?',
                 u'Внимание!',
                 wx.ICON_QUESTION|wx.YES_NO, self
                 ) == wx.NO:
@@ -1233,7 +1233,7 @@ class Window(gui.MainFrame):
         if not self.saved:
             if wx.MessageBox(
                 u'Последние изменения в полях компонентов не были сохранены!\n' \
-                u'Выйти из приложения?',
+                u'Продолжить?',
                 u'Внимание!',
                 wx.ICON_QUESTION|wx.YES_NO, self
                 ) == wx.NO:
