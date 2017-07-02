@@ -382,6 +382,13 @@ class EditorCtrl(wx.Control):
         if std_values:
             self.std_values = std_values
             self.button.Enable(True)
+        (w, h) = (-1, -1)
+        max_width = -1
+        for value in self.values:
+                (w, h) = self.text_ctrl.GetTextExtent(value)
+                max_width = max(max_width, w)
+        border_size = self.text_ctrl.GetWindowBorderSize()
+        self.text_ctrl.SetMinSize((max_width + border_size.GetWidth() * 2, -1))
 
     def clear_items(self):
         """
@@ -1167,4 +1174,3 @@ class Grid(wx.grid.Grid):
         """
         cell_editor = self.GetCellEditor(event.GetRow(), event.GetCol())
         self.window.values_dict[self.window.values_dict_keys[event.GetCol()]] = cell_editor.control.std_values
-

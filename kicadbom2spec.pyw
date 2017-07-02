@@ -990,6 +990,7 @@ class Window(gui.MainFrame):
         if len(self.grid.get_selected_rows()) >= 1:
 
             editor = gui.EditorDialog(self)
+            editor.SetMaxSize((self.GetSize().GetWidth(), -1))
             editor.SetTitle(u'Вставка полей')
             editor.checkbox.Hide()
             col_num = self.grid.GetNumberCols()
@@ -1009,6 +1010,7 @@ class Window(gui.MainFrame):
                 editor.editor_ctrl_4.Hide()
                 editor.Layout()
             editor.GetSizer().Fit(editor)
+            editor.CenterOnParent()
             editor.Layout()
             editor.Bind(wx.EVT_IDLE, on_idle)
             editor.dialog_buttonsOK.Bind(wx.EVT_BUTTON, on_button)
@@ -1532,6 +1534,7 @@ class Window(gui.MainFrame):
             event.Skip()
 
         editor = gui.EditorDialog(self)
+        editor.SetMaxSize((self.GetSize().GetWidth(), -1))
         selected_rows = self.grid.get_selected_rows()
         col_num = self.grid.GetNumberCols()
         all_choices = self.grid.get_choices(selected_rows, range(0, col_num))
@@ -1550,6 +1553,7 @@ class Window(gui.MainFrame):
             editor.editor_ctrl_4.Hide()
             editor.Layout()
         editor.GetSizer().Fit(editor)
+        editor.CenterOnParent()
         editor.Layout()
         editor.Bind(wx.EVT_IDLE, on_idle)
         editor.dialog_buttonsOK.Bind(wx.EVT_BUTTON, on_button)

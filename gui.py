@@ -808,7 +808,7 @@ class SettingsDialog ( wx.Dialog ):
 		general_tab_sizer = wx.BoxSizer( wx.VERTICAL )
 		
 		self.window_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Сохранять положение и размер окна", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.window_checkbox.SetToolTipString( u"Если этот параметр установлен, то при закрытии программы будут сохарнены положение и размер окна и при следующем запуске они будут восстановлены." )
+		self.window_checkbox.SetToolTipString( u"Если этот параметр установлен, то при закрытии программы будут сохранены положение и размер окна и при следующем запуске они будут восстановлены." )
 		
 		general_tab_sizer.Add( self.window_checkbox, 0, wx.EXPAND|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
 		
