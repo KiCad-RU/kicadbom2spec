@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Aug  1 2016)
+## Python code generated with wxFormBuilder (version Mar  1 2017)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -808,7 +808,7 @@ class SettingsDialog ( wx.Dialog ):
 		general_tab_sizer = wx.BoxSizer( wx.VERTICAL )
 		
 		self.window_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Сохранять положение и размер окна", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.window_checkbox.SetToolTipString( u"Если этот параметр установлен, то при закрытии программы будут сохранены положение и размер окна и при следующем запуске они будут восстановлены." )
+		self.window_checkbox.SetToolTipString( u"Если этот параметр установлен, то при закрытии программы будут сохарнены положение и размер окна и при следующем запуске они будут восстановлены." )
 		
 		general_tab_sizer.Add( self.window_checkbox, 0, wx.EXPAND|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
 		
@@ -955,6 +955,98 @@ class SettingsDialog ( wx.Dialog ):
 		self.values_tab_panel.Layout()
 		values_tab_sizer.Fit( self.values_tab_panel )
 		self.settings_tabs.AddPage( self.values_tab_panel, u"Значения полей", False )
+		self.separators_panel = wx.Panel( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		separators_common_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		header_sizer = wx.GridSizer( 1, 3, 0, 0 )
+		
+		self.prefix_header_label = wx.StaticText( self.separators_panel, wx.ID_ANY, u"Префикс", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.prefix_header_label.Wrap( -1 )
+		self.prefix_header_label.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		
+		header_sizer.Add( self.prefix_header_label, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+		
+		self.field_header_label = wx.StaticText( self.separators_panel, wx.ID_ANY, u"Поле", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.field_header_label.Wrap( -1 )
+		self.field_header_label.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		
+		header_sizer.Add( self.field_header_label, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+		
+		self.suffix_header_label = wx.StaticText( self.separators_panel, wx.ID_ANY, u"Суффикс", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.suffix_header_label.Wrap( -1 )
+		self.suffix_header_label.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		
+		header_sizer.Add( self.suffix_header_label, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+		
+		
+		separators_common_sizer.Add( header_sizer, 0, wx.EXPAND, 5 )
+		
+		self.m_staticline14 = wx.StaticLine( self.separators_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		separators_common_sizer.Add( self.m_staticline14, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		separators_sizer = wx.GridSizer( 5, 3, 0, 0 )
+		
+		self.separator1_prefix_text = wx.TextCtrl( self.separators_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_RIGHT )
+		separators_sizer.Add( self.separator1_prefix_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.SHAPED, 5 )
+		
+		self.separator1_label = wx.StaticText( self.separators_panel, wx.ID_ANY, u"Марка", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.separator1_label.Wrap( -1 )
+		separators_sizer.Add( self.separator1_label, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.separator1_suffix_text = wx.TextCtrl( self.separators_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		separators_sizer.Add( self.separator1_suffix_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.SHAPED, 5 )
+		
+		self.separator2_prefix_text = wx.TextCtrl( self.separators_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_RIGHT )
+		separators_sizer.Add( self.separator2_prefix_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.SHAPED, 5 )
+		
+		self.separator2_label = wx.StaticText( self.separators_panel, wx.ID_ANY, u"Значение", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.separator2_label.Wrap( -1 )
+		separators_sizer.Add( self.separator2_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		
+		self.separator2_suffix_text = wx.TextCtrl( self.separators_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		separators_sizer.Add( self.separator2_suffix_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.SHAPED, 5 )
+		
+		self.separator3_prefix_text = wx.TextCtrl( self.separators_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_RIGHT )
+		separators_sizer.Add( self.separator3_prefix_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.SHAPED, 5 )
+		
+		self.separator3_label = wx.StaticText( self.separators_panel, wx.ID_ANY, u"Класс точности", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.separator3_label.Wrap( -1 )
+		separators_sizer.Add( self.separator3_label, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.separator3_suffix_text = wx.TextCtrl( self.separators_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		separators_sizer.Add( self.separator3_suffix_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.SHAPED, 5 )
+		
+		self.separator4_prefix_text = wx.TextCtrl( self.separators_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_RIGHT )
+		separators_sizer.Add( self.separator4_prefix_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.SHAPED, 5 )
+		
+		self.separator4_label = wx.StaticText( self.separators_panel, wx.ID_ANY, u"Тип", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.separator4_label.Wrap( -1 )
+		separators_sizer.Add( self.separator4_label, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.separator4_suffix_text = wx.TextCtrl( self.separators_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		separators_sizer.Add( self.separator4_suffix_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.SHAPED, 5 )
+		
+		self.separator5_prefix_text = wx.TextCtrl( self.separators_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_RIGHT )
+		separators_sizer.Add( self.separator5_prefix_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.SHAPED, 5 )
+		
+		self.separator5_label = wx.StaticText( self.separators_panel, wx.ID_ANY, u"Стандарт", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.separator5_label.Wrap( -1 )
+		separators_sizer.Add( self.separator5_label, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.separator5_suffix_text = wx.TextCtrl( self.separators_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		separators_sizer.Add( self.separator5_suffix_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.SHAPED, 5 )
+		
+		
+		separators_common_sizer.Add( separators_sizer, 0, wx.EXPAND, 5 )
+		
+		
+		separators_common_sizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		
+		self.separators_panel.SetSizer( separators_common_sizer )
+		self.separators_panel.Layout()
+		separators_common_sizer.Fit( self.separators_panel )
+		self.settings_tabs.AddPage( self.separators_panel, u"Разделители", False )
 		
 		sizer_settings_dialog.Add( self.settings_tabs, 1, wx.EXPAND |wx.ALL, 5 )
 		
@@ -1032,6 +1124,12 @@ class SettingsSelector ( wx.Dialog ):
 		self.checkbox_auto_filling_groups.SetToolTipString( u"Наборы значений и их состояние для\nавтоматического заполенения поля\n\"Группа\" при отрытии файлов схем и\nбиблиотек." )
 		
 		sizer_settings.Add( self.checkbox_auto_filling_groups, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.checkbox_separators = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Разделители наименования", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_separators.Hide()
+		self.checkbox_separators.SetToolTipString( u"Разделители - это символы, которые\nдобавляются в виде префиксов или\nсуффиксов к полям при формировании\nнаименования элемента в перечне." )
+		
+		sizer_settings.Add( self.checkbox_separators, 0, wx.ALL, 5 )
 		
 		self.checkbox_complist = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры создания перечня\nэлементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_complist.Hide()

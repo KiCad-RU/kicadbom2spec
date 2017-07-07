@@ -86,7 +86,6 @@ class CompList():
         self.decimal_num = u''
         self.title = u''
         self.comp = u''
-        self.add_units = False
         self.need_changes_sheet = True
 
     def replace_text(self, table, label, text, group=False):
@@ -183,39 +182,19 @@ class CompList():
         Fill the line in list of the components using element's fields.
 
         """
-        def isreal(s):
-            try:
-                float(s.replace(',', '.'))
-                return True
-            except:
-                return False
-
         # Reference
         ref = u''
         if int(element[8]) > 1:
             # Reference number: '5, 6'; '25-28' etc.
             ref = re.search(r'(\d+)(-|,\s?)(\d+)', element[1]).groups()
-            # Reference: 'VD1, 2'; 'C8-C11' etc.
+            # Reference: 'VD1, VD2'; 'C8-C11' etc.
             ref = (element[0] + u'%s%s' + element[0] + u'%s') % ref
         else:
             # Reference: 'R5'; 'VT13' etc.
             ref = element[0] + element[1]
         self.replace_text(self.cur_table, u'#1:%d' % self.cur_line, ref)
-        # Value
-        val = element[2] + element[3]
-        if self.add_units and element[3] != '':
-            if element[0] == u'C' and element[3][-1:] != u'Ф':
-                if element[3].isdigit():
-                    val += u'п'
-                elif isreal(element[3]):
-                    val += u'мк'
-                val += u'Ф'
-            elif element[0] == u'L' and element[3][-2:] != u'Гн':
-                val += u'Гн'
-            elif element[0] == u'R' and element[3][-2:] != u'Ом':
-                val += u'Ом'
-        val += element[4] + element[5] + element[6]
-        self.replace_text(self.cur_table, u'#2:%d' % self.cur_line, val)
+        # Value - concatenate elements 2..6
+        self.replace_text(self.cur_table, u'#2:%d' % self.cur_line, ''.join(element[2:7]))
         # Count
         self.replace_text(self.cur_table, u'#3:%d' % self.cur_line, element[8])
         # Coment

@@ -131,6 +131,7 @@ class Window(gui.MainFrame):
             'values':False,
             'remember_selection':False,
             'auto_filling_groups':False,
+            'separators':False,
             'complist':False,
             'recent_sch':False,
             'recent_lib':False
@@ -172,6 +173,10 @@ class Window(gui.MainFrame):
                 if temp_settings.has_section('auto filling groups'):
                     selector.checkbox_auto_filling_groups.SetValue(True)
                     selector.checkbox_auto_filling_groups.Show()
+                if temp_settings.has_section('prefixes') or \
+                       temp_settings.has_section('suffixes'):
+                    selector.checkbox_separators.SetValue(True)
+                    selector.checkbox_separators.Show()
                 if temp_settings.has_section('complist'):
                     selector.checkbox_complist.SetValue(True)
                     selector.checkbox_complist.Show()
@@ -223,6 +228,19 @@ class Window(gui.MainFrame):
                             if value.startswith(u'1'):
                                 self.auto_groups_dict[param.upper()] = value[1:]
                             self.settings.set('auto filling groups', param, value)
+                    if import_settings['separators']:
+                        if not self.settings.has_section('prefixes'):
+                            self.settings.add_section('prefixes')
+                        if temp_settings.has_section('prefixes'):
+                            for item in self.separators_dict.keys():
+                                if temp_settings.has_option('prefixes', item):
+                                    self.separators_dict[item][0] = temp_settings.get('prefixes', item)[1:-1]
+                        if not self.settings.has_section('suffixes'):
+                            self.settings.add_section('suffixes')
+                        if temp_settings.has_section('suffixes'):
+                            for item in self.separators_dict.keys():
+                                if temp_settings.has_option('suffixes', item):
+                                    self.separators_dict[item][1] = temp_settings.get('suffixes', item)[1:-1]
                     if import_settings['complist']:
                         if not self.settings.has_section('complist'):
                             self.settings.add_section('complist')
@@ -254,6 +272,13 @@ class Window(gui.MainFrame):
                     u'тип':[],
                     u'стандарт':[],
                     u'примечание':[]
+                    }
+                self.separators_dict = {
+                    u'марка':['',''],
+                    u'значение':['',''],
+                    u'класс точности':['',''],
+                    u'тип':['',''],
+                    u'стандарт':['','']
                     }
                 # Load settings from file
                 self.settings.readfp(codecs.open(
@@ -304,6 +329,16 @@ class Window(gui.MainFrame):
                         value = self.settings.get('auto filling groups', param)
                         if value.startswith(u'1'):
                             self.auto_groups_dict[param.upper()] = value[1:]
+
+                if self.settings.has_section('prefixes'):
+                    for item in self.separators_dict.keys():
+                        if self.settings.has_option('prefixes', item):
+                            self.separators_dict[item][0] = self.settings.get('prefixes', item)[1:-1]
+
+                if self.settings.has_section('suffixes'):
+                    for item in self.separators_dict.keys():
+                        if self.settings.has_option('suffixes', item):
+                            self.separators_dict[item][1] = self.settings.get('suffixes', item)[1:-1]
 
                 if self.settings.has_section('recent sch'):
                     recent_files = []
@@ -356,6 +391,16 @@ class Window(gui.MainFrame):
                 self.settings.set('values', field, field_values)
         if not self.settings.options('values'):
             self.settings.remove_section('values')
+
+        if not self.settings.has_section('prefixes'):
+            self.settings.add_section('prefixes')
+        for field in self.separators_dict.keys():
+            self.settings.set('prefixes', field, '"%s"' % self.separators_dict[field][0])
+
+        if not self.settings.has_section('suffixes'):
+            self.settings.add_section('suffixes')
+        for field in self.separators_dict.keys():
+            self.settings.set('suffixes', field, '"%s"' % self.separators_dict[field][1])
 
         if not self.settings.has_section('general'):
             self.settings.add_section('general')
@@ -765,6 +810,17 @@ class Window(gui.MainFrame):
                 if getattr(selector, 'checkbox_' + str(i)).IsChecked():
                     selected_cols.append(i)
         return selected_cols
+
+    def isreal(self, s):
+        """
+        Return true if string contain real number.
+
+        """
+        try:
+            float(s.replace(',', '.'))
+            return True
+        except:
+            return False
 
     def on_recent_sch(self, event):
         """
@@ -1462,13 +1518,56 @@ class Window(gui.MainFrame):
                 row[2] = row[2].rstrip('*')
                 if (row[0] == u'1') | all_components:
                     fields = row[1:-1]
+                    # Split reference on index and number
                     fields.insert(1, re.search(REF_REGULAR_EXPRESSION, fields[1]).group(1))
                     fields[2] = re.search(REF_REGULAR_EXPRESSION, fields[2]).group(2)
+                    # Automatically units addition
+                    if add_units and fields[4] != '':
+                        if fields[1] == u'C' and fields[4][-1:] != u'Ф':
+                            if fields[4].isdigit():
+                                fields[4] += u'п'
+                            elif self.isreal(fields[4]):
+                                fields[4] += u'мк'
+                            fields[4] += u'Ф'
+                        elif fields[1] == u'L' and fields[4][-2:] != u'Гн':
+                            fields[4] += u'Гн'
+                        elif fields[1] == u'R' and fields[4][-2:] != u'Ом':
+                            fields[4] += u'Ом'
+                    # Adding separators
+                    if fields[3]:
+                        fields[3] = "{prefix}{value}{suffix}".format(
+                                prefix = self.separators_dict[u'марка'][0],
+                                value = fields[3],
+                                suffix = self.separators_dict[u'марка'][1]
+                                )
+                    if fields[4]:
+                        fields[4] = "{prefix}{value}{suffix}".format(
+                                prefix = self.separators_dict[u'значение'][0],
+                                value = fields[4],
+                                suffix = self.separators_dict[u'значение'][1]
+                                )
+                    if fields[5]:
+                        fields[5] = "{prefix}{value}{suffix}".format(
+                                prefix = self.separators_dict[u'класс точности'][0],
+                                value = fields[5],
+                                suffix = self.separators_dict[u'класс точности'][1]
+                                )
+                    if fields[6]:
+                        fields[6] = "{prefix}{value}{suffix}".format(
+                                prefix = self.separators_dict[u'тип'][0],
+                                value = fields[6],
+                                suffix = self.separators_dict[u'тип'][1]
+                                )
+                    if fields[7]:
+                        fields[7] = "{prefix}{value}{suffix}".format(
+                                prefix = self.separators_dict[u'стандарт'][0],
+                                value = fields[7],
+                                suffix = self.separators_dict[u'стандарт'][1]
+                                )
                     fields.append('1')
                     comp_fields.append(fields)
             try:
                 complist = CompList()
-                complist.add_units = add_units
                 complist.need_changes_sheet = need_changes_sheet
                 complist.load(self.schematic_file, comp_fields)
                 complist.save(self.complist_file)
@@ -1654,6 +1753,21 @@ class Window(gui.MainFrame):
             for value in values:
                 field_text.AppendText(value + '\n')
 
+        separators_field_names = (
+            u'марка',
+            u'значение',
+            u'класс точности',
+            u'тип',
+            u'стандарт',
+            )
+        for i in range(len(separators_field_names)):
+            prefix_text = getattr(settings_editor, 'separator{}_prefix_text'.format(i + 1))
+            suffix_text = getattr(settings_editor, 'separator{}_suffix_text'.format(i + 1))
+            prefix = self.separators_dict[separators_field_names[i]][0]
+            suffix = self.separators_dict[separators_field_names[i]][1]
+            prefix_text.SetValue(prefix)
+            suffix_text.SetValue(suffix)
+
         settings_editor.window_checkbox.SetValue(self.save_window_size_pos)
 
         settings_editor.col_size_checkbox.SetValue(self.save_col_size)
@@ -1678,6 +1792,15 @@ class Window(gui.MainFrame):
                     line_text = field_text.GetLineText(line)
                     if line_text:
                         self.values_dict[field_names[i]].append(line_text)
+
+            for i in range(len(separators_field_names)):
+                prefix_text = getattr(settings_editor, 'separator{}_prefix_text'.format(i + 1))
+                suffix_text = getattr(settings_editor, 'separator{}_suffix_text'.format(i + 1))
+                self.separators_dict[separators_field_names[i]] = ['','']
+                prefix = prefix_text.GetValue()
+                suffix = suffix_text.GetValue()
+                self.separators_dict[separators_field_names[i]][0] = prefix
+                self.separators_dict[separators_field_names[i]][1] = suffix
 
             if not self.settings.has_section('values'):
                 self.settings.add_section('values')
