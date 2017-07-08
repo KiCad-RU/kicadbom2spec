@@ -74,17 +74,6 @@ class Window(gui.MainFrame):
         self.saved = True
         self.not_found = False
         self.settings_file = ''
-        self.values_dict_keys = [
-            u'',
-            u'группа',
-            u'',
-            u'марка',
-            u'значение',
-            u'класс точности',
-            u'тип',
-            u'стандарт',
-            u'примечание'
-            ]
 
         self.init_grid()
 
@@ -132,6 +121,7 @@ class Window(gui.MainFrame):
             'remember_selection':False,
             'auto_filling_groups':False,
             'separators':False,
+            'aliases':False,
             'complist':False,
             'recent_sch':False,
             'recent_lib':False
@@ -177,6 +167,9 @@ class Window(gui.MainFrame):
                        temp_settings.has_section('suffixes'):
                     selector.checkbox_separators.SetValue(True)
                     selector.checkbox_separators.Show()
+                if temp_settings.has_section('aliases'):
+                    selector.checkbox_aliases.SetValue(True)
+                    selector.checkbox_aliases.Show()
                 if temp_settings.has_section('complist'):
                     selector.checkbox_complist.SetValue(True)
                     selector.checkbox_complist.Show()
@@ -241,6 +234,15 @@ class Window(gui.MainFrame):
                             for item in self.separators_dict.keys():
                                 if temp_settings.has_option('suffixes', item):
                                     self.separators_dict[item][1] = temp_settings.get('suffixes', item)[1:-1]
+                    if import_settings['aliases']:
+                        if not self.settings.has_section('aliases'):
+                            self.settings.add_section('aliases')
+                        for item in self.aliases_dict.keys():
+                            if temp_settings.has_option('aliases', item):
+                                alias_value = temp_settings.get('aliases', item)
+                                # Empty alias - default value
+                                if alias_value != '':
+                                    self.aliases_dict[item] = alias_value
                     if import_settings['complist']:
                         if not self.settings.has_section('complist'):
                             self.settings.add_section('complist')
@@ -280,6 +282,16 @@ class Window(gui.MainFrame):
                     u'тип':['',''],
                     u'стандарт':['','']
                     }
+                self.aliases_dict = {
+                    u'группа':u'Группа',
+                    u'марка':u'Марка',
+                    u'значение':u'',
+                    u'класс точности':u'Класс точности',
+                    u'тип':u'Тип',
+                    u'стандарт':u'Стандарт',
+                    u'примечание':u'Примечание'
+                    }
+
                 # Load settings from file
                 self.settings.readfp(codecs.open(
                     settings_file_name,
@@ -339,6 +351,14 @@ class Window(gui.MainFrame):
                     for item in self.separators_dict.keys():
                         if self.settings.has_option('suffixes', item):
                             self.separators_dict[item][1] = self.settings.get('suffixes', item)[1:-1]
+
+                if self.settings.has_section('aliases'):
+                    for item in self.aliases_dict.keys():
+                        if self.settings.has_option('aliases', item):
+                            alias_value = self.settings.get('aliases', item)
+                            # Empty alias - default value
+                            if alias_value != '':
+                                self.aliases_dict[item] = self.settings.get('aliases', item)
 
                 if self.settings.has_section('recent sch'):
                     recent_files = []
@@ -401,6 +421,15 @@ class Window(gui.MainFrame):
             self.settings.add_section('suffixes')
         for field in self.separators_dict.keys():
             self.settings.set('suffixes', field, '"%s"' % self.separators_dict[field][1])
+
+        if not self.settings.has_section('aliases'):
+            self.settings.add_section('aliases')
+        for field in self.aliases_dict.keys():
+            if field.capitalize() == self.aliases_dict[field] and field != u'значение':
+                # Default value stored as empty string
+                self.settings.set('aliases', field, '')
+            else:
+                self.settings.set('aliases', field, self.aliases_dict[field])
 
         if not self.settings.has_section('general'):
             self.settings.add_section('general')
@@ -569,8 +598,7 @@ class Window(gui.MainFrame):
                     continue
                 # Skip parts of the same component
                 for row in values:
-                    if comp.fields[0].text == row[2] and \
-                       sheet.sch_name == row[9]:
+                    if comp.fields[0].text == row[2]:
                         break
                 else:
                     row = [
@@ -578,28 +606,33 @@ class Window(gui.MainFrame):
                         u'',  # Group
                         comp.fields[0].text,  # Reference
                         u'',  # Mark
-                        comp.fields[1].text,  # Value
+                        u'',  # Value
                         u'',  # Accuracy
                         u'',  # Type
                         u'',  # GOST
                         u'',  # Comment
                         sheet.sch_name  # Sheet name
                         ]
+                    if self.aliases_dict[u'значение'] == u'':
+                        row[4] = comp.fields[1].text
                     for field in comp.fields:
                         if hasattr(field, 'name'):
                             if field.name == u'Исключён из ПЭ':
                                 row[0] = u'0'
-                            elif field.name == u'Группа':
+                            if field.name == self.aliases_dict[u'группа']:
                                 row[1] = field.text
-                            elif field.name == u'Марка':
+                            if field.name == self.aliases_dict[u'марка']:
                                 row[3] = field.text
-                            elif field.name == u'Класс точности':
+                            if self.aliases_dict[u'значение'] != u'' and \
+                                    field.name == self.aliases_dict[u'значение']:
+                                row[4] = field.text
+                            if field.name == self.aliases_dict[u'класс точности']:
                                 row[5] = field.text
-                            elif field.name == u'Тип':
+                            if field.name == self.aliases_dict[u'тип']:
                                 row[6] = field.text
-                            elif field.name == u'Стандарт':
+                            if field.name == self.aliases_dict[u'стандарт']:
                                 row[7] = field.text
-                            elif field.name == u'Примечание':
+                            if field.name == self.aliases_dict[u'примечание']:
                                 row[8] = field.text
                     if row[1] == u'':
                         for sufix in self.auto_groups_dict.keys():
@@ -644,12 +677,13 @@ class Window(gui.MainFrame):
         """
         sorted_values = sorted(values, key=itemgetter(-1))
         field_names = {
-            1:u'Группа',
-            3:u'Марка',
-            5:u'Класс точности',
-            6:u'Тип',
-            7:u'Стандарт',
-            8:u'Примечание'
+            1:self.aliases_dict[u'группа'],
+            3:self.aliases_dict[u'марка'],
+            4:self.aliases_dict[u'значение'],
+            5:self.aliases_dict[u'класс точности'],
+            6:self.aliases_dict[u'тип'],
+            7:self.aliases_dict[u'стандарт'],
+            8:self.aliases_dict[u'примечание']
             }
         for sheet in self.sheets:
             for item in sheet.items:
@@ -661,17 +695,22 @@ class Window(gui.MainFrame):
                                 continue
                             if value[2].rstrip('*') == item.fields[0].text \
                                     and value[-1] == sheet.sch_name:
-                                item.fields[1].text = value[4]
-                                for ind, field_name in field_names.items():
-                                    if value[ind] != u'':
+                                # Default field of "value"
+                                if field_names[4] == u'':
+                                    item.fields[1].text = value[4]
+                                for index, field_name in field_names.items():
+                                    # Skip "value" if used standard field for it
+                                    if index == 4 and field_names == u'':
+                                        continue
+                                    if value[index] != u'':
                                         for field in item.fields:
                                             if hasattr(field, 'name'):
                                                 if field.name == field_name:
-                                                    field.text = value[ind]
+                                                    field.text = value[index]
                                                     break
                                         else:
                                             str_field = u'F ' + str(len(item.fields))
-                                            str_field += u' "' + value[ind] + u'" '
+                                            str_field += u' "' + value[index] + u'" '
                                             str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
                                             str_field += u' 0001 C CNN'
                                             str_field += u' "' + field_name + '"'
@@ -723,17 +762,17 @@ class Window(gui.MainFrame):
                 ]
             for field in comp.fields:
                 if hasattr(field, 'name'):
-                    if field.name == u'Группа':
+                    if field.name == self.aliases_dict[u'группа']:
                         row[1] = field.text
-                    elif field.name == u'Марка':
+                    if field.name == self.aliases_dict[u'марка']:
                         row[3] = field.text
-                    elif field.name == u'Класс точности':
+                    if field.name == self.aliases_dict[u'класс точности']:
                         row[5] = field.text
-                    elif field.name == u'Тип':
+                    if field.name == self.aliases_dict[u'тип']:
                         row[6] = field.text
-                    elif field.name == u'Стандарт':
+                    if field.name == self.aliases_dict[u'стандарт']:
                         row[7] = field.text
-                    elif field.name == u'Примечание':
+                    if field.name == self.aliases_dict[u'примечание']:
                         row[8] = field.text
             values.append(row)
         return values
@@ -745,27 +784,27 @@ class Window(gui.MainFrame):
         """
         sorted_values = values[:]
         field_names = {
-            1:u'Группа',
-            3:u'Марка',
-            5:u'Класс точности',
-            6:u'Тип',
-            7:u'Стандарт',
-            8:u'Примечание'
+            1:self.aliases_dict[u'группа'],
+            3:self.aliases_dict[u'марка'],
+            5:self.aliases_dict[u'класс точности'],
+            6:self.aliases_dict[u'тип'],
+            7:self.aliases_dict[u'стандарт'],
+            8:self.aliases_dict[u'примечание']
             }
         for comp in self.library.components:
             if not comp.reference.startswith('#'):
                 for value in sorted_values:
                     if value[4] == comp.name:
-                        for ind, field_name in field_names.items():
-                            if value[ind] != u'':
+                        for index, field_name in field_names.items():
+                            if value[index] != u'':
                                 for field in comp.fields:
                                     if hasattr(field, 'name'):
                                         if field.name == field_name:
-                                            field.text = value[ind]
+                                            field.text = value[index]
                                             break
                                 else:
                                     str_field = u'F' + str(len(comp.fields))
-                                    str_field += u' "' + value[ind] + u'" '
+                                    str_field += u' "' + value[index] + u'" '
                                     str_field += u' 0 0 60 H I C CNN'
                                     str_field += u' "' + field_name + '"'
                                     comp.fields.append(self.library.Component.Field(str_field.encode('utf-8')))
@@ -1637,13 +1676,24 @@ class Window(gui.MainFrame):
         selected_rows = self.grid.get_selected_rows()
         col_num = self.grid.GetNumberCols()
         all_choices = self.grid.get_choices(selected_rows, range(0, col_num))
+        values_dict_keys = [
+            u'',
+            u'группа',
+            u'',
+            u'марка',
+            u'значение',
+            u'класс точности',
+            u'тип',
+            u'стандарт',
+            u'примечание'
+            ]
         for i in range(1, col_num):
             if i == 2:
                 continue
             cur_editor_ctrl = getattr(editor, 'editor_ctrl_%i' % i)
             cur_editor_ctrl.set_items(
                 all_choices[i],
-                self.values_dict[self.values_dict_keys[i]],
+                self.values_dict[values_dict_keys[i]],
                 u'<не изменять>'
                 )
         if self.library:
@@ -1749,9 +1799,17 @@ class Window(gui.MainFrame):
             )
         for i in range(len(field_names)):
             field_text = getattr(settings_editor, 'field{}_text'.format(i + 1))
+            alias_text = getattr(settings_editor, 'alias{}_text'.format(i + 1))
             values = self.values_dict[field_names[i]]
             for value in values:
                 field_text.AppendText(value + '\n')
+            alias_value = self.aliases_dict[field_names[i]]
+            # Default alias shows as empty field
+            if field_names[i] == u'значение':
+                # "Value" field accessed by index
+                alias_text.SetValue(self.aliases_dict[field_names[i]])
+            elif alias_value != field_names[i].capitalize():
+                alias_text.SetValue(self.aliases_dict[field_names[i]])
 
         separators_field_names = (
             u'марка',
@@ -1787,11 +1845,19 @@ class Window(gui.MainFrame):
         if result == wx.ID_OK:
             for i in range(len(field_names)):
                 field_text = getattr(settings_editor, 'field{}_text'.format(i + 1))
+                alias_text = getattr(settings_editor, 'alias{}_text'.format(i + 1))
                 self.values_dict[field_names[i]] = []
                 for line in range(field_text.GetNumberOfLines()):
                     line_text = field_text.GetLineText(line)
                     if line_text:
                         self.values_dict[field_names[i]].append(line_text)
+                alias_value = alias_text.GetValue()
+                if alias_value == '' and field_names[i] != u'значение':
+                    # Default value
+                    self.aliases_dict[field_names[i]] = field_names[i].capitalize()
+                else:
+                    self.aliases_dict[field_names[i]] = alias_value
+
 
             for i in range(len(separators_field_names)):
                 prefix_text = getattr(settings_editor, 'separator{}_prefix_text'.format(i + 1))

@@ -865,7 +865,7 @@ class SettingsDialog ( wx.Dialog ):
 		self.general_tab_scrolledwindow.SetSizer( general_tab_sizer )
 		self.general_tab_scrolledwindow.Layout()
 		general_tab_sizer.Fit( self.general_tab_scrolledwindow )
-		self.settings_tabs.AddPage( self.general_tab_scrolledwindow, u"Основные", True )
+		self.settings_tabs.AddPage( self.general_tab_scrolledwindow, u"Основные", False )
 		self.values_tab_panel = wx.Panel( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		values_tab_sizer = wx.BoxSizer( wx.VERTICAL )
 		
@@ -979,7 +979,7 @@ class SettingsDialog ( wx.Dialog ):
 		header_sizer.Add( self.suffix_header_label, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 		
 		
-		separators_common_sizer.Add( header_sizer, 0, wx.EXPAND, 5 )
+		separators_common_sizer.Add( header_sizer, 0, wx.EXPAND|wx.TOP, 5 )
 		
 		self.m_staticline14 = wx.StaticLine( self.separators_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		separators_common_sizer.Add( self.m_staticline14, 0, wx.EXPAND |wx.ALL, 5 )
@@ -1047,6 +1047,137 @@ class SettingsDialog ( wx.Dialog ):
 		self.separators_panel.Layout()
 		separators_common_sizer.Fit( self.separators_panel )
 		self.settings_tabs.AddPage( self.separators_panel, u"Разделители", False )
+		self.alises_scrollpanel = wx.ScrolledWindow( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
+		self.alises_scrollpanel.SetScrollRate( 5, 5 )
+		alias_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		alias_header_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.alias_field_header_panel = wx.Panel( self.alises_scrollpanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		alias_field_header_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.alias_field_header_label = wx.StaticText( self.alias_field_header_panel, wx.ID_ANY, u"Поле", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias_field_header_label.Wrap( -1 )
+		self.alias_field_header_label.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		
+		alias_field_header_sizer.Add( self.alias_field_header_label, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		
+		
+		self.alias_field_header_panel.SetSizer( alias_field_header_sizer )
+		self.alias_field_header_panel.Layout()
+		alias_field_header_sizer.Fit( self.alias_field_header_panel )
+		alias_header_sizer.Add( self.alias_field_header_panel, 1, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.alias_value_header_panel = wx.Panel( self.alises_scrollpanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		alias_value_header_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.alias_value_header_label = wx.StaticText( self.alias_value_header_panel, wx.ID_ANY, u"Псевдоним", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias_value_header_label.Wrap( -1 )
+		self.alias_value_header_label.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		
+		alias_value_header_sizer.Add( self.alias_value_header_label, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		
+		
+		self.alias_value_header_panel.SetSizer( alias_value_header_sizer )
+		self.alias_value_header_panel.Layout()
+		alias_value_header_sizer.Fit( self.alias_value_header_panel )
+		alias_header_sizer.Add( self.alias_value_header_panel, 2, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
+		
+		
+		alias_sizer.Add( alias_header_sizer, 0, wx.EXPAND, 5 )
+		
+		self.m_staticline15 = wx.StaticLine( self.alises_scrollpanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		alias_sizer.Add( self.m_staticline15, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		alias1_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.alias1_label = wx.StaticText( self.alises_scrollpanel, wx.ID_ANY, u"Группа", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias1_label.Wrap( -1 )
+		alias1_sizer.Add( self.alias1_label, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.alias1_text = wx.TextCtrl( self.alises_scrollpanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		alias1_sizer.Add( self.alias1_text, 2, wx.ALL, 5 )
+		
+		
+		alias_sizer.Add( alias1_sizer, 0, wx.EXPAND, 5 )
+		
+		alias2_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.alias2_label = wx.StaticText( self.alises_scrollpanel, wx.ID_ANY, u"Марка", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias2_label.Wrap( -1 )
+		alias2_sizer.Add( self.alias2_label, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.alias2_text = wx.TextCtrl( self.alises_scrollpanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		alias2_sizer.Add( self.alias2_text, 2, wx.ALL, 5 )
+		
+		
+		alias_sizer.Add( alias2_sizer, 0, wx.EXPAND, 5 )
+		
+		alias3_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.alias3_label = wx.StaticText( self.alises_scrollpanel, wx.ID_ANY, u"Значение", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias3_label.Wrap( -1 )
+		alias3_sizer.Add( self.alias3_label, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.alias3_text = wx.TextCtrl( self.alises_scrollpanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		alias3_sizer.Add( self.alias3_text, 2, wx.ALL, 5 )
+		
+		
+		alias_sizer.Add( alias3_sizer, 0, wx.EXPAND, 5 )
+		
+		alias4_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.alias4_label = wx.StaticText( self.alises_scrollpanel, wx.ID_ANY, u"Класс точности", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias4_label.Wrap( -1 )
+		alias4_sizer.Add( self.alias4_label, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.alias4_text = wx.TextCtrl( self.alises_scrollpanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		alias4_sizer.Add( self.alias4_text, 2, wx.ALL, 5 )
+		
+		
+		alias_sizer.Add( alias4_sizer, 1, wx.EXPAND, 5 )
+		
+		alias5_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.alias5_label = wx.StaticText( self.alises_scrollpanel, wx.ID_ANY, u"Тип", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias5_label.Wrap( -1 )
+		alias5_sizer.Add( self.alias5_label, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.alias5_text = wx.TextCtrl( self.alises_scrollpanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		alias5_sizer.Add( self.alias5_text, 2, wx.ALL, 5 )
+		
+		
+		alias_sizer.Add( alias5_sizer, 1, wx.EXPAND, 5 )
+		
+		alias6_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.alias6_label = wx.StaticText( self.alises_scrollpanel, wx.ID_ANY, u"Стандарт", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias6_label.Wrap( -1 )
+		alias6_sizer.Add( self.alias6_label, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.alias6_text = wx.TextCtrl( self.alises_scrollpanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		alias6_sizer.Add( self.alias6_text, 2, wx.ALL, 5 )
+		
+		
+		alias_sizer.Add( alias6_sizer, 1, wx.EXPAND, 5 )
+		
+		alias7_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.alias7_label = wx.StaticText( self.alises_scrollpanel, wx.ID_ANY, u"Примечание", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias7_label.Wrap( -1 )
+		alias7_sizer.Add( self.alias7_label, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.alias7_text = wx.TextCtrl( self.alises_scrollpanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		alias7_sizer.Add( self.alias7_text, 2, wx.ALL, 5 )
+		
+		
+		alias_sizer.Add( alias7_sizer, 1, wx.EXPAND, 5 )
+		
+		
+		self.alises_scrollpanel.SetSizer( alias_sizer )
+		self.alises_scrollpanel.Layout()
+		alias_sizer.Fit( self.alises_scrollpanel )
+		self.settings_tabs.AddPage( self.alises_scrollpanel, u"Псевдонимы", False )
 		
 		sizer_settings_dialog.Add( self.settings_tabs, 1, wx.EXPAND |wx.ALL, 5 )
 		
@@ -1130,6 +1261,12 @@ class SettingsSelector ( wx.Dialog ):
 		self.checkbox_separators.SetToolTipString( u"Разделители - это символы, которые\nдобавляются в виде префиксов или\nсуффиксов к полям при формировании\nнаименования элемента в перечне." )
 		
 		sizer_settings.Add( self.checkbox_separators, 0, wx.ALL, 5 )
+		
+		self.checkbox_aliases = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Псевдонимы полей", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_aliases.Hide()
+		self.checkbox_aliases.SetToolTipString( u"Псевдонимы позволяют использовать\nлюбые пользователские поля для \nработы с приложением." )
+		
+		sizer_settings.Add( self.checkbox_aliases, 0, wx.ALL, 5 )
 		
 		self.checkbox_complist = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры создания перечня\nэлементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_complist.Hide()

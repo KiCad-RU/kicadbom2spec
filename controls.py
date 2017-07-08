@@ -1156,7 +1156,10 @@ class Grid(wx.grid.Grid):
         rows = range(0, row_num)
         cols = [col]
         choices = self.get_choices(rows, cols)
-        std_values = self.window.values_dict[self.window.values_dict_keys[col]]
+        col_title = self.GetColLabelValue(event.GetCol())
+        col_title = col_title.replace(u' ▲', u'')
+        col_title = col_title.replace(u' ▼', u'')
+        std_values = self.window.values_dict[col_title.lower()]
         cell_editor.set_items(choices[col], std_values)
 
     def on_editor_shown(self, event):
@@ -1173,4 +1176,7 @@ class Grid(wx.grid.Grid):
 
         """
         cell_editor = self.GetCellEditor(event.GetRow(), event.GetCol())
-        self.window.values_dict[self.window.values_dict_keys[event.GetCol()]] = cell_editor.control.std_values
+        col_title = self.GetColLabelValue(event.GetCol())
+        col_title = col_title.replace(u' ▲', u'')
+        col_title = col_title.replace(u' ▼', u'')
+        self.window.values_dict[col_title.lower()] = cell_editor.control.std_values
