@@ -113,6 +113,46 @@ class Window(gui.MainFrame):
         Loads settings from configuration file.
 
         """
+        # Default values
+        self.settings = SafeConfigParser()
+        self.save_window_size_pos = False
+        self.save_selected_mark = False
+        self.save_col_size = False
+        self.auto_groups_dict = {}
+        self.values_dict = {
+            u'группа':[],
+            u'марка':[],
+            u'значение':[],
+            u'класс точности':[],
+            u'тип':[],
+            u'стандарт':[],
+            u'примечание':[]
+            }
+        self.separators_dict = {
+            u'марка':['',''],
+            u'значение':['',''],
+            u'класс точности':['',''],
+            u'тип':['',''],
+            u'стандарт':['','']
+            }
+        self.aliases_dict = {
+            u'группа':u'Группа',
+            u'марка':u'Марка',
+            u'значение':u'',
+            u'класс точности':u'Класс точности',
+            u'тип':u'Тип',
+            u'стандарт':u'Стандарт',
+            u'примечание':u'Примечание'
+            }
+        self.stamp_dict = {
+            'decimal_num':u'',
+            'developer':u'',
+            'verifier':u'',
+            'inspector':u'',
+            'approver':u'',
+            'comp':u'',
+            'title':u''
+            }
         import_settings= {
             'position':False,
             'size':False,
@@ -128,7 +168,6 @@ class Window(gui.MainFrame):
             }
 
         if os.path.isfile(settings_file_name):
-
             # Select settings to loading
             if select and hasattr(self, 'settings'):
 
@@ -260,38 +299,6 @@ class Window(gui.MainFrame):
                             recent_files.append(temp_settings.get('recent lib', recent))
                         self.build_recent_menu(recent_files, 'lib')
             else:
-                # Default values
-                self.settings = SafeConfigParser()
-                self.save_window_size_pos = False
-                self.save_selected_mark = False
-                self.save_col_size = False
-                self.auto_groups_dict = {}
-                self.values_dict = {
-                    u'группа':[],
-                    u'марка':[],
-                    u'значение':[],
-                    u'класс точности':[],
-                    u'тип':[],
-                    u'стандарт':[],
-                    u'примечание':[]
-                    }
-                self.separators_dict = {
-                    u'марка':['',''],
-                    u'значение':['',''],
-                    u'класс точности':['',''],
-                    u'тип':['',''],
-                    u'стандарт':['','']
-                    }
-                self.aliases_dict = {
-                    u'группа':u'Группа',
-                    u'марка':u'Марка',
-                    u'значение':u'',
-                    u'класс точности':u'Класс точности',
-                    u'тип':u'Тип',
-                    u'стандарт':u'Стандарт',
-                    u'примечание':u'Примечание'
-                    }
-
                 # Load settings from file
                 self.settings.readfp(codecs.open(
                     settings_file_name,
@@ -827,7 +834,6 @@ class Window(gui.MainFrame):
             Check/uncheck all fields in field seletor.
 
             """
-            selector = event.GetEventObject().GetGrandParent()
             state = selector.checkbox_all.GetValue()
             for col in (1, 3, 4, 5, 6, 7, 8):
                 checkbox = getattr(selector, 'checkbox_{}'.format(col))
@@ -1198,6 +1204,15 @@ class Window(gui.MainFrame):
             self.on_grid_change()
             self.saved = True
 
+            # Stamp fields
+            sch = Schematic(self.schematic_file)
+            self.stamp_dict['decimal_num'] = sch.descr.comment1.decode('utf-8')
+            self.stamp_dict['developer'] = sch.descr.comment2.decode('utf-8')
+            self.stamp_dict['verifier'] = sch.descr.comment3.decode('utf-8')
+            self.stamp_dict['approver'] = sch.descr.comment4.decode('utf-8')
+            self.stamp_dict['comp'] = sch.descr.comp.decode('utf-8')
+            self.stamp_dict['title'] = sch.descr.title.decode('utf-8')
+
             # Menu & Toolbar
             self.menuitem_complist.Enable(True)
             self.menuitem_save_sch.Enable(False)
@@ -1256,6 +1271,15 @@ class Window(gui.MainFrame):
         comp_values = self.grid.get_values()
         self.set_schematic_values(comp_values)
         for sheet in self.sheets:
+            if sheet.sch_name == self.schematic_file:
+                # Stamp fields
+                sheet.descr.comment1 = self.stamp_dict['decimal_num']
+                sheet.descr.comment2 = self.stamp_dict['developer']
+                sheet.descr.comment3 = self.stamp_dict['verifier']
+                sheet.descr.comment4 = self.stamp_dict['approver']
+                sheet.descr.comp = self.stamp_dict['comp']
+                sheet.descr.title = self.stamp_dict['title']
+
             try:
                 if os.path.exists(sheet.sch_name + '.tmp'):
                     os.remove(sheet.sch_name + '.tmp')
@@ -1287,6 +1311,15 @@ class Window(gui.MainFrame):
         self.set_schematic_values(comp_values)
         new_schematic_file = ''
         for sheet in self.sheets:
+            if sheet.sch_name == self.schematic_file:
+                # Stamp fields
+                sheet.descr.comment1 = self.stamp_dict['decimal_num']
+                sheet.descr.comment2 = self.stamp_dict['developer']
+                sheet.descr.comment3 = self.stamp_dict['verifier']
+                sheet.descr.comment4 = self.stamp_dict['approver']
+                sheet.descr.comp = self.stamp_dict['comp']
+                sheet.descr.title = self.stamp_dict['title']
+
             try:
                 save_sch_dialog = wx.FileDialog(
                     self,
@@ -1506,7 +1539,30 @@ class Window(gui.MainFrame):
         Make list of the components.
 
         """
+        def on_decimal_num_changed(event):
+            """
+            Show converted value of decimal number.
+
+            """
+            value = complist_dialog.stamp_decimal_num_text.GetValue()
+            value = complist.convert_decimal_num(value)
+            complist_dialog.stamp_decimal_num_converted.SetLabel(value)
+
+        def on_title_changed(event):
+            """
+            Show converted value of title.
+
+            """
+            value = complist_dialog.stamp_title_text.GetValue()
+            value = value.replace('\n', '\\n')
+            value = complist.convert_title(value)
+            value = value.replace('\\n', '\n')
+            complist_dialog.stamp_title_converted.SetLabel(value)
+
+        complist = CompList()
         complist_dialog = gui.CompListDialog(self)
+        complist_dialog.stamp_decimal_num_text.Bind(wx.EVT_TEXT, on_decimal_num_changed)
+        complist_dialog.stamp_title_text.Bind(wx.EVT_TEXT, on_title_changed)
         # Load settings
         all_components = False
         add_units = False
@@ -1521,12 +1577,22 @@ class Window(gui.MainFrame):
                 need_changes_sheet = self.settings.getboolean('complist', 'changes_sheet')
             if self.settings.has_option('complist', 'open'):
                 open_complist = self.settings.getboolean('complist', 'open')
+            if self.settings.has_option('complist', 'inspector'):
+                self.stamp_dict['inspector'] = self.settings.get('complist', 'inspector')
 
+        # Options
         complist_dialog.filepicker_complist.SetPath(self.complist_file)
         complist_dialog.checkbox_add_units.SetValue(add_units)
         complist_dialog.checkbox_all_components.SetValue(all_components)
         complist_dialog.checkbox_changes_sheet.SetValue(need_changes_sheet)
         complist_dialog.checkbox_open.SetValue(open_complist)
+        # Stamp
+        for field in self.stamp_dict.keys():
+            field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
+            value = self.stamp_dict[field]
+            value = value.replace('\\\\n', '\n')
+            value = value.replace('\\"', '"')
+            field_text.SetValue(value)
 
         result = complist_dialog.ShowModal()
 
@@ -1540,6 +1606,13 @@ class Window(gui.MainFrame):
             add_units = complist_dialog.checkbox_add_units.IsChecked()
             need_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
             open_complist = complist_dialog.checkbox_open.GetValue()
+            # Stamp
+            for field in self.stamp_dict.keys():
+                field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
+                value = field_text.GetValue()
+                value = value.replace('\n', '\\\\n')
+                value = value.replace('"', '\\"')
+                self.stamp_dict[field] = value
 
             if not self.settings.has_section('complist'):
                 self.settings.add_section('complist')
@@ -1547,6 +1620,7 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'units', str(add_units))
             self.settings.set('complist', 'changes_sheet', str(need_changes_sheet))
             self.settings.set('complist', 'open', str(open_complist))
+            self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
             self.complist_file = complist_dialog.filepicker_complist.GetPath()
             self.complist_file = os.path.splitext(self.complist_file)[0] + '.ods'
             comp_fields = []
@@ -1606,8 +1680,8 @@ class Window(gui.MainFrame):
                     fields.append('1')
                     comp_fields.append(fields)
             try:
-                complist = CompList()
                 complist.need_changes_sheet = need_changes_sheet
+                complist.inspector = self.stamp_dict['inspector']
                 complist.load(self.schematic_file, comp_fields)
                 complist.save(self.complist_file)
             except:
@@ -1733,7 +1807,6 @@ class Window(gui.MainFrame):
             Enable buttons when item selected.
 
             """
-            settings_editor = event.GetEventObject().GetGrandParent().GetParent()
             settings_editor.auto_groups_edit_button.Enable(True)
             settings_editor.auto_groups_remove_button.Enable(True)
 
@@ -1742,7 +1815,6 @@ class Window(gui.MainFrame):
             Add an element to auto_groups_checklistbox.
 
             """
-            settings_editor = event.GetEventObject().GetGrandParent().GetParent()
             add_dialog = gui.EditAutoGroupsDialog(self)
             add_dialog.SetTitle(u'Добавить элемент списка')
             result = add_dialog.ShowModal()
@@ -1757,7 +1829,6 @@ class Window(gui.MainFrame):
             Edit selected element in auto_groups_checklistbox.
 
             """
-            settings_editor = event.GetEventObject().GetGrandParent().GetParent()
             edit_dialog = gui.EditAutoGroupsDialog(self)
             edit_dialog.SetTitle(u'Изменить элемент списка')
             index = settings_editor.auto_groups_checklistbox.GetSelections()[0]
@@ -1777,7 +1848,6 @@ class Window(gui.MainFrame):
             Remove selected element from auto_groups_checklistbox.
 
             """
-            settings_editor = event.GetEventObject().GetGrandParent().GetParent()
             index = settings_editor.auto_groups_checklistbox.GetSelections()[0]
             settings_editor.auto_groups_checklistbox.Delete(index)
 
@@ -2005,9 +2075,9 @@ class Window(gui.MainFrame):
             Find next match.
 
             """
-            find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
-            case_sensitive = event.GetEventObject().GetGrandParent().checkbox_case_sensitive.GetValue()
-            whole_word = event.GetEventObject().GetGrandParent().checkbox_whole_word.GetValue()
+            find_str = find_dialog.textctrl_find.GetValue()
+            case_sensitive = find_dialog.checkbox_case_sensitive.GetValue()
+            whole_word = find_dialog.checkbox_whole_word.GetValue()
             if not find_str:
                 return
 
@@ -2053,9 +2123,9 @@ class Window(gui.MainFrame):
             Find previous match.
 
             """
-            find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
-            case_sensitive = event.GetEventObject().GetGrandParent().checkbox_case_sensitive.GetValue()
-            whole_word = event.GetEventObject().GetGrandParent().checkbox_whole_word.GetValue()
+            find_str = find_dialog.textctrl_find.GetValue()
+            case_sensitive = find_dialog.checkbox_case_sensitive.GetValue()
+            whole_word = find_dialog.checkbox_whole_word.GetValue()
             if not find_str:
                 return
             rows = self.grid.GetNumberRows()
@@ -2101,7 +2171,7 @@ class Window(gui.MainFrame):
             Replace the text in selected cell.
 
             """
-            replace_str = event.GetEventObject().GetGrandParent().textctrl_replace.GetValue()
+            replace_str = find_dialog.textctrl_replace.GetValue()
             if not replace_str:
                 return
             cur_col = self.grid.GetGridCursorCol()
@@ -2109,8 +2179,8 @@ class Window(gui.MainFrame):
                 return
             cur_row = self.grid.GetGridCursorRow()
             cell_value = self.grid.GetCellValue(cur_row, cur_col)
-            find_str = event.GetEventObject().GetGrandParent().textctrl_find.GetValue()
-            replace_str = event.GetEventObject().GetGrandParent().textctrl_replace.GetValue()
+            find_str = find_dialog.textctrl_find.GetValue()
+            replace_str = find_dialog.textctrl_replace.GetValue()
             if find_str not in cell_value:
                 wx.MessageBox(
                     u'В выделенной ячейке не найдено совпадений для замены!',
@@ -2138,8 +2208,7 @@ class Window(gui.MainFrame):
             """
             key_code = event.GetKeyCode()
             if key_code == wx.WXK_ESCAPE:
-                find_replace_dialog = event.GetEventObject().GetGrandParent()
-                find_replace_dialog.Close()
+                find_dialog.Close()
             else:
                 event.Skip()
 

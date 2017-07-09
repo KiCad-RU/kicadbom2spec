@@ -81,7 +81,8 @@ class CompList():
 
         # Some variables for filling the list
         self.developer = u''
-        self.verifer = u''
+        self.verifier = u''
+        self.inspector = u''
         self.approver = u''
         self.decimal_num = u''
         self.title = u''
@@ -207,7 +208,7 @@ class CompList():
         """
         sch = Schematic(sch_file_name)
         self.developer = sch.descr.comment2.decode('utf-8')
-        self.verifer = sch.descr.comment3.decode('utf-8')
+        self.verifier = sch.descr.comment3.decode('utf-8')
         self.approver = sch.descr.comment4.decode('utf-8')
         self.decimal_num = self.convert_decimal_num(sch.descr.comment1)
         self.title = self.convert_title(sch.descr.title)
@@ -538,13 +539,14 @@ class CompList():
                     pg_cnt = str(pg_cnt)
 
                 self.replace_text(table, u'#5:1', self.developer)
-                self.replace_text(table, u'#5:2', self.verifer)
-                self.replace_text(table, u'#5:3', self.approver)
-                self.replace_text(table, u'#5:4', self.decimal_num)
-                self.replace_text(table, u'#5:5', self.title)
-                self.replace_text(table, u'#5:6', str(index + 1))
-                self.replace_text(table, u'#5:7', pg_cnt)
-                self.replace_text(table, u'#5:8', self.comp)
+                self.replace_text(table, u'#5:2', self.verifier)
+                self.replace_text(table, u'#5:3', self.inspector)
+                self.replace_text(table, u'#5:4', self.approver)
+                self.replace_text(table, u'#5:5', self.decimal_num)
+                self.replace_text(table, u'#5:6', self.title)
+                self.replace_text(table, u'#5:7', str(index + 1))
+                self.replace_text(table, u'#5:8', pg_cnt)
+                self.replace_text(table, u'#5:9', self.comp)
 
             # Other pages - smal stamp
             else:
