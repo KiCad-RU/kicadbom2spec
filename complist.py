@@ -529,14 +529,10 @@ class CompList():
         if self.need_changes_sheet:
             self.append_changes_sheet()
         # Fill stamp fields on each page
+        pg_cnt = len(self.complist.spreadsheet.getElementsByType(Table))
         for index, table in enumerate(self.complist.spreadsheet.getElementsByType(Table)):
             # First page - big stamp
             if index == 0:
-                pg_cnt = len(self.complist.spreadsheet.getElementsByType(Table))
-                if pg_cnt == 1:
-                    pg_cnt = u''
-                else:
-                    pg_cnt = str(pg_cnt)
 
                 self.replace_text(table, u'#5:1', self.developer)
                 self.replace_text(table, u'#5:2', self.verifier)
@@ -544,8 +540,9 @@ class CompList():
                 self.replace_text(table, u'#5:4', self.approver)
                 self.replace_text(table, u'#5:5', self.decimal_num)
                 self.replace_text(table, u'#5:6', self.title)
-                self.replace_text(table, u'#5:7', str(index + 1))
-                self.replace_text(table, u'#5:8', pg_cnt)
+                if pg_cnt > 1:
+                    self.replace_text(table, u'#5:7', str(index + 1))
+                self.replace_text(table, u'#5:8', str(pg_cnt))
                 self.replace_text(table, u'#5:9', self.comp)
 
             # Other pages - smal stamp
