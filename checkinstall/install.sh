@@ -23,3 +23,7 @@ cp -f ../settings.ini $INSTDIR
 cp -f ../version $INSTDIR
 cp -f kicadbom2spec.desktop /usr/share/applications/
 cp -f ../bitmaps/icon.svg /usr/share/icons/kicadbom2spec.svg
+chmod -R a+r $INSTDIR/*
+chmod a+x $INSTDIR/kicadbom2spec.pyw
+chmod a+r /usr/share/applications/kicadbom2spec.desktop
+chmod a+r /usr/share/icons/kicadbom2spec.svg
