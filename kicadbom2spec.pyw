@@ -77,44 +77,7 @@ class Window(gui.MainFrame):
 
         self.init_grid()
 
-        if sys.platform == 'win32':
-            icon = wx.Icon('bitmaps/icon.ico', wx.BITMAP_TYPE_ICO)
-            self.SetIcon(icon)
-
-            self.settings_file = os.path.join(
-                    os.environ['APPDATA'],
-                    'kicadbom2spec'
-                    )
-        else:
-            icon = wx.Icon('bitmaps/icon.xpm', wx.BITMAP_TYPE_XPM)
-            self.SetIcon(icon)
-
-            self.settings_file = os.path.join(
-                    os.path.expanduser('~/.config'),
-                    'kicadbom2spec'
-                    )
-
-        # At this moment in settings_file contains path only
-        if not os.path.exists(self.settings_file):
-            os.makedirs(self.settings_file)
-
-        self.settings_file = os.path.join(
-                self.settings_file,
-                default_settings_file_name
-                )
-
-        if not os.path.exists(self.settings_file):
-            shutil.copy2(default_settings_file_name, self.settings_file)
-
-        self.load_settings(self.settings_file)
-
-    def load_settings(self, settings_file_name=default_settings_file_name, select=False):
-        """
-        Loads settings from configuration file.
-
-        """
-        # Default values
-        self.settings = SafeConfigParser()
+        # Default settings
         self.save_window_size_pos = False
         self.save_selected_mark = False
         self.save_col_size = False
@@ -153,24 +116,60 @@ class Window(gui.MainFrame):
             'comp':u'',
             'title':u''
             }
-        import_settings= {
-            'position':False,
-            'size':False,
-            'column_sizes':False,
-            'values':False,
-            'remember_selection':False,
-            'auto_filling_groups':False,
-            'separators':False,
-            'aliases':False,
-            'complist':False,
-            'recent_sch':False,
-            'recent_lib':False
-            }
 
+        if sys.platform == 'win32':
+            icon = wx.Icon('bitmaps/icon.ico', wx.BITMAP_TYPE_ICO)
+            self.SetIcon(icon)
+
+            self.settings_file = os.path.join(
+                    os.environ['APPDATA'],
+                    'kicadbom2spec'
+                    )
+        else:
+            icon = wx.Icon('bitmaps/icon.xpm', wx.BITMAP_TYPE_XPM)
+            self.SetIcon(icon)
+
+            self.settings_file = os.path.join(
+                    os.path.expanduser('~/.config'),
+                    'kicadbom2spec'
+                    )
+
+        # At this moment in settings_file contains path only
+        if not os.path.exists(self.settings_file):
+            os.makedirs(self.settings_file)
+
+        self.settings_file = os.path.join(
+                self.settings_file,
+                default_settings_file_name
+                )
+
+        if not os.path.exists(self.settings_file):
+            shutil.copy2(default_settings_file_name, self.settings_file)
+
+        self.load_settings(self.settings_file)
+
+    def load_settings(self, settings_file_name=default_settings_file_name, select=False):
+        """
+        Loads settings from configuration file.
+
+        """
+        self.settings = SafeConfigParser()
         if os.path.isfile(settings_file_name):
             # Select settings to loading
             if select and hasattr(self, 'settings'):
-
+                import_settings= {
+                    'position':False,
+                    'size':False,
+                    'column_sizes':False,
+                    'values':False,
+                    'remember_selection':False,
+                    'auto_filling_groups':False,
+                    'separators':False,
+                    'aliases':False,
+                    'complist':False,
+                    'recent_sch':False,
+                    'recent_lib':False
+                    }
                 # Load settings from file
                 temp_settings = SafeConfigParser()
                 temp_settings.readfp(codecs.open(
