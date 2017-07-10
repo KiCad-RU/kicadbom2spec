@@ -256,9 +256,7 @@ class Window(gui.MainFrame):
                             self.settings.add_section('auto filling groups')
                         for param in temp_settings.options('auto filling groups'):
                             value = temp_settings.get('auto filling groups', param)
-                            if value.startswith(u'1'):
-                                self.auto_groups_dict[param.upper()] = value[1:]
-                            self.settings.set('auto filling groups', param, value)
+                            self.auto_groups_dict[param.upper()] = value
                     if import_settings['separators']:
                         if not self.settings.has_section('prefixes'):
                             self.settings.add_section('prefixes')
@@ -345,8 +343,7 @@ class Window(gui.MainFrame):
                 if self.settings.has_section('auto filling groups'):
                     for param in self.settings.options('auto filling groups'):
                         value = self.settings.get('auto filling groups', param)
-                        if value.startswith(u'1'):
-                            self.auto_groups_dict[param.upper()] = value[1:]
+                        self.auto_groups_dict[param.upper()] = value
 
                 if self.settings.has_section('prefixes'):
                     for item in self.separators_dict.keys():
@@ -413,29 +410,33 @@ class Window(gui.MainFrame):
         for field in self.values_dict.keys():
             field_values = settings_separator.join(self.values_dict[field])
             field_values = field_values.replace('%', '%%')
-            if field_values:
-                self.settings.set('values', field, field_values)
-        if not self.settings.options('values'):
-            self.settings.remove_section('values')
+            self.settings.set('values', field, field_values)
+
+        self.settings.remove_section('auto filling groups')
+        if self.auto_groups_dict:
+            if not self.settings.has_section('auto filling groups'):
+                self.settings.add_section('auto filling groups')
+            for suffix, value in self.auto_groups_dict.items():
+                self.settings.set('auto filling groups', suffix, value)
 
         if not self.settings.has_section('prefixes'):
             self.settings.add_section('prefixes')
-        for field in self.separators_dict.keys():
-            self.settings.set('prefixes', field, '"%s"' % self.separators_dict[field][0])
+        for field, separators in self.separators_dict.items():
+            self.settings.set('prefixes', field, '"%s"' % separators[0])
 
         if not self.settings.has_section('suffixes'):
             self.settings.add_section('suffixes')
-        for field in self.separators_dict.keys():
-            self.settings.set('suffixes', field, '"%s"' % self.separators_dict[field][1])
+        for field, separators in self.separators_dict.items():
+            self.settings.set('suffixes', field, '"%s"' % separators[1])
 
         if not self.settings.has_section('aliases'):
             self.settings.add_section('aliases')
-        for field in self.aliases_dict.keys():
-            if field.capitalize() == self.aliases_dict[field] and field != u'значение':
+        for field, alias in self.aliases_dict.items():
+            if field.capitalize() == alias and field != u'значение':
                 # Default value stored as empty string
                 self.settings.set('aliases', field, '')
             else:
-                self.settings.set('aliases', field, self.aliases_dict[field])
+                self.settings.set('aliases', field, alias)
 
         if not self.settings.has_section('general'):
             self.settings.add_section('general')
@@ -446,22 +447,24 @@ class Window(gui.MainFrame):
             )
 
         self.settings.remove_section('recent sch')
-        self.settings.add_section('recent sch')
-        for index, menuitem in enumerate(self.submenu_recent_sch.GetMenuItems()):
-            self.settings.set(
-                    'recent sch',
-                    str(index),
-                    menuitem.GetItemLabel()
-                    )
+        if self.submenu_recent_sch.GetMenuItemCount() > 0:
+            self.settings.add_section('recent sch')
+            for index, menuitem in enumerate(self.submenu_recent_sch.GetMenuItems()):
+                self.settings.set(
+                        'recent sch',
+                        str(index),
+                        menuitem.GetItemLabel()
+                        )
 
         self.settings.remove_section('recent lib')
-        self.settings.add_section('recent lib')
-        for index, menuitem in enumerate(self.submenu_recent_lib.GetMenuItems()):
-            self.settings.set(
-                    'recent lib',
-                    str(index),
-                    menuitem.GetItemLabel()
-                    )
+        if self.submenu_recent_lib.GetMenuItemCount() > 0:
+            self.settings.add_section('recent lib')
+            for index, menuitem in enumerate(self.submenu_recent_lib.GetMenuItems()):
+                self.settings.set(
+                        'recent lib',
+                        str(index),
+                        menuitem.GetItemLabel()
+                        )
 
         self.settings.write(codecs.open(settings_file_name, 'w', encoding='utf-8'))
 
@@ -641,9 +644,9 @@ class Window(gui.MainFrame):
                             if field.name == self.aliases_dict[u'примечание']:
                                 row[8] = field.text
                     if row[1] == u'':
-                        for sufix in self.auto_groups_dict.keys():
-                            if row[2].startswith(sufix):
-                                row[1] = self.auto_groups_dict[sufix]
+                        for suffix in self.auto_groups_dict.keys():
+                            if row[2].startswith(suffix) and self.auto_groups_dict[suffix].startswith('1'):
+                                row[1] = self.auto_groups_dict[suffix][1:]
                                 break
                     if hasattr(comp, 'path_and_ref'):
                         prefix = '*'
@@ -1901,14 +1904,11 @@ class Window(gui.MainFrame):
 
         settings_editor.remember_selection_checkbox.SetValue(self.save_selected_mark)
 
-        if self.settings.has_section('auto filling groups'):
-            settings_editor.auto_groups_checklistbox.Clear()
-            for param in self.settings.options('auto filling groups'):
-                value = self.settings.get('auto filling groups', param)
-                checked = {'1':True, '0':False}[value[0]]
-                value = u'{} - "{}"'.format(param.upper(), value[1:])
-                index = settings_editor.auto_groups_checklistbox.Append(value)
-                settings_editor.auto_groups_checklistbox.Check(index, checked)
+        for suffix, value in self.auto_groups_dict.items():
+            checked = {'1':True, '0':False}[value[:1]]
+            value = u'{} - "{}"'.format(suffix, value[1:])
+            index = settings_editor.auto_groups_checklistbox.Append(value)
+            settings_editor.auto_groups_checklistbox.Check(index, checked)
 
         result = settings_editor.ShowModal()
         if result == wx.ID_OK:
@@ -1959,20 +1959,13 @@ class Window(gui.MainFrame):
                 )
 
             auto_groups_items_count = settings_editor.auto_groups_checklistbox.GetCount()
-            self.settings.remove_section('auto filling groups')
             self.auto_groups_dict = {}
-            if not self.settings.has_section('auto filling groups') and auto_groups_items_count:
-                self.settings.add_section('auto filling groups')
-                for item in range(auto_groups_items_count):
-                    value = {True:u'1', False:u'0'}[settings_editor.auto_groups_checklistbox.IsChecked(item)]
-                    text = settings_editor.auto_groups_checklistbox.GetString(item)
-                    param = split_auto_groups_item(text)
-                    if param:
-                        value += param[1]
-                        param = param[0]
-                        self.settings.set('auto filling groups', param, value)
-                        if value.startswith('1'):
-                            self.auto_groups_dict[param] = value[1:]
+            for item in range(auto_groups_items_count):
+                value = {True:u'1', False:u'0'}[settings_editor.auto_groups_checklistbox.IsChecked(item)]
+                text = settings_editor.auto_groups_checklistbox.GetString(item)
+                parts = split_auto_groups_item(text)
+                if parts:
+                    self.auto_groups_dict[parts[0]] = value + parts[1]
 
 
     def on_settings_import(self, event):
