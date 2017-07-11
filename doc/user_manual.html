@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 1.5.4">
+<meta name="generator" content="Asciidoctor 1.5.5">
 <meta name="author" content="Барановский Константин">
 <title>kicadbom2spec</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
@@ -18,7 +18,6 @@ audio:not([controls]){display:none;height:0}
 [hidden],template{display:none}
 script{display:none!important}
 html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}
-body{margin:0}
 a{background:transparent}
 a:focus{outline:thin dotted}
 a:active,a:hover{outline:0}
@@ -53,7 +52,7 @@ textarea{overflow:auto;vertical-align:top}
 table{border-collapse:collapse;border-spacing:0}
 *,*:before,*:after{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}
 html,body{font-size:100%}
-body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto}
+body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto;tab-size:4;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased}
 a:hover{cursor:pointer}
 img,object,embed{max-width:100%;height:auto}
 object,embed{height:100%}
@@ -65,7 +64,6 @@ img{-ms-interpolation-mode:bicubic}
 .text-center{text-align:center!important}
 .text-justify{text-align:justify!important}
 .hide{display:none}
-body{-webkit-font-smoothing:antialiased}
 img,object,svg{display:inline-block;vertical-align:middle}
 textarea{height:auto;min-height:50px}
 select{width:100%}
@@ -120,13 +118,16 @@ table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:
 table tr th,table tr td{padding:.5625em .625em;font-size:inherit;color:rgba(0,0,0,.8)}
 table tr.even,table tr.alt,table tr:nth-of-type(even){background:#f8f8f7}
 table thead tr th,table tfoot tr th,table tbody tr td,table tr td,table tfoot tr td{display:table-cell;line-height:1.6}
-body{tab-size:4}
 h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2;word-spacing:-.05em}
 h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title strong,h4 strong,h5 strong,h6 strong{font-weight:400}
 .clearfix:before,.clearfix:after,.float-group:before,.float-group:after{content:" ";display:table}
 .clearfix:after,.float-group:after{clear:both}
-*:not(pre)>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background-color:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
+*:not(pre)>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background-color:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed;word-wrap:break-word}
+*:not(pre)>code.nobreak{word-wrap:normal}
+*:not(pre)>code.nowrap{white-space:nowrap}
 pre,pre>code{line-height:1.45;color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;text-rendering:optimizeSpeed}
+em em{font-style:normal}
+strong strong{font-weight:400}
 .keyseq{color:rgba(51,51,51,.8)}
 kbd{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;display:inline-block;color:rgba(0,0,0,.8);font-size:.65em;line-height:1.45;background-color:#f7f7f7;border:1px solid #ccc;-webkit-border-radius:3px;border-radius:3px;-webkit-box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em white inset;box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em #fff inset;margin:0 .15em;padding:.2em .5em;vertical-align:middle;position:relative;top:-.1em;white-space:nowrap}
 .keyseq kbd:first-child{margin-left:0}
@@ -428,71 +429,69 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc2">
 <div id="toctitle">Содержание</div>
 <ul class="sectlevel1">
-<li><a href="#_Введение">Введение</a></li>
-<li><a href="#_Быстрый_старт">Быстрый старт</a></li>
-<li><a href="#_Графический_интерфейс_пользователя">1. Графический интерфейс пользователя</a>
+<li><a href="#_введение">Введение</a></li>
+<li><a href="#_быстрый_старт">Быстрый старт</a></li>
+<li><a href="#_графический_интерфейс_пользователя">1. Графический интерфейс пользователя</a>
 <ul class="sectlevel2">
-<li><a href="#_Меню">1.1. Меню</a>
+<li><a href="#_меню">1.1. Меню</a>
 <ul class="sectlevel3">
-<li><a href="#_Файл">1.1.1. Файл</a></li>
-<li><a href="#_Правка">1.1.2. Правка</a></li>
-<li><a href="#_Вид">1.1.3. Вид</a></li>
-<li><a href="#_Справка">1.1.4. Справка</a></li>
+<li><a href="#_файл">1.1.1. Файл</a></li>
+<li><a href="#_правка">1.1.2. Правка</a></li>
+<li><a href="#_вид">1.1.3. Вид</a></li>
+<li><a href="#_справка">1.1.4. Справка</a></li>
 </ul>
 </li>
-<li><a href="#_Панель_инструментов">1.2. Панель инструментов</a></li>
-<li><a href="#_Таблица_полей_элементов">1.3. Таблица полей элементов</a>
+<li><a href="#_панель_инструментов">1.2. Панель инструментов</a></li>
+<li><a href="#_таблица_полей_элементов">1.3. Таблица полей элементов</a>
 <ul class="sectlevel3">
-<li><a href="#_Контекстное_меню_таблицы">1.3.1. Контекстное меню таблицы</a></li>
-<li><a href="#_Редактор_ячеек_таблицы">1.3.2. Редактор ячеек таблицы</a>
+<li><a href="#_контекстное_меню_таблицы">1.3.1. Контекстное меню таблицы</a></li>
+<li><a href="#_редактор_ячеек_таблицы">1.3.2. Редактор ячеек таблицы</a>
 <ul class="sectlevel4">
-<li><a href="#_Контекстное_меню_редактора_ячеек">1.3.2.1. Контекстное меню редактора ячеек</a></li>
+<li><a href="#_контекстное_меню_редактора_ячеек">1.3.2.1. Контекстное меню редактора ячеек</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#_Работа_с_программой">2. Работа с программой</a>
+<li><a href="#_работа_с_программой">2. Работа с программой</a>
 <ul class="sectlevel2">
-<li><a href="#_Основные_принципы">2.1. Основные принципы</a></li>
-<li><a href="#_Работа_с_таблицей_полей_элементов">2.2. Работа с таблицей полей элементов</a>
+<li><a href="#_основные_принципы">2.1. Основные принципы</a></li>
+<li><a href="#_работа_с_таблицей_полей_элементов">2.2. Работа с таблицей полей элементов</a>
 <ul class="sectlevel3">
-<li><a href="#_Сортировка_элементов">2.2.1. Сортировка элементов</a></li>
-<li><a href="#_Выделение_элементов">2.2.2. Выделение элементов</a></li>
-<li><a href="#_Поиск_замена_текста">2.2.3. Поиск/замена текста</a></li>
-<li><a href="#_Редактирование_полей">2.2.4. Редактирование полей</a></li>
-<li><a href="#_Редактирование_полей_нескольких_элементов_одновременно">2.2.5. Редактирование полей нескольких элементов одновременно</a></li>
-<li><a href="#_Работа_с_буфером_обмена">2.2.6. Работа с буфером обмена</a></li>
-<li><a href="#_Редактирование_полей_компонентов_иерархических_схем">2.2.7. Редактирование полей компонентов иерархических схем</a></li>
-<li><a href="#_Подстановки_полей">2.2.8. Подстановки полей</a></li>
+<li><a href="#_сортировка_элементов">2.2.1. Сортировка элементов</a></li>
+<li><a href="#_выделение_элементов">2.2.2. Выделение элементов</a></li>
+<li><a href="#_поиск_замена_текста">2.2.3. Поиск/замена текста</a></li>
+<li><a href="#_редактирование_полей">2.2.4. Редактирование полей</a></li>
+<li><a href="#_редактирование_полей_нескольких_элементов_одновременно">2.2.5. Редактирование полей нескольких элементов одновременно</a></li>
+<li><a href="#_работа_с_буфером_обмена">2.2.6. Работа с буфером обмена</a></li>
+<li><a href="#_редактирование_полей_компонентов_иерархических_схем">2.2.7. Редактирование полей компонентов иерархических схем</a></li>
+<li><a href="#_подстановки_полей">2.2.8. Подстановки полей</a></li>
 </ul>
 </li>
-<li><a href="#_Создание_перечня_элементов">2.3. Создание перечня элементов</a></li>
+<li><a href="#_создание_перечня_элементов">2.3. Создание перечня элементов</a></li>
 </ul>
 </li>
-<li><a href="#_Настройка_программы">3. Настройка программы</a>
+<li><a href="#_настройка_программы">3. Настройка программы</a>
 <ul class="sectlevel2">
-<li><a href="#_Основные_параметры">3.1. Основные параметры</a></li>
-<li><a href="#_Значения_полей">3.2. Значения полей</a></li>
-<li><a href="#_Импорт_экспорт_параметров">3.3. Импорт/экспорт параметров</a></li>
+<li><a href="#_основные_параметры">3.1. Основные параметры</a></li>
+<li><a href="#_значения_полей">3.2. Значения полей</a></li>
+<li><a href="#_разделители">3.3. Разделители</a></li>
+<li><a href="#_псевдонимы">3.4. Псевдонимы</a></li>
+<li><a href="#_импорт_экспорт_параметров">3.5. Импорт/экспорт параметров</a></li>
 </ul>
 </li>
-<li><a href="#_Параметры_командной_строки">4. Параметры командной строки</a>
+<li><a href="#_параметры_командной_строки">4. Параметры командной строки</a>
 <ul class="sectlevel2">
-<li><a href="#_Первый_позиционный_аргумент_em_strong_schematic_strong_em">4.1. Первый позиционный аргумент <em><strong>schematic</strong></em></a></li>
-<li><a href="#_Второй_позиционный_аргумент_em_strong_complist_strong_em">4.2. Второй позиционный аргумент <em><strong>complist</strong></em></a></li>
-<li><a href="#_Параметр_em_strong_h_help_strong_em">4.3. Параметр <em><strong>-h, --help</strong></em></a></li>
-<li><a href="#_Параметр_em_strong_v_version_strong_em">4.4. Параметр <em><strong>-v, --version</strong></em></a></li>
+<li><a href="#_первый_позиционный_аргумент_em_strong_schematic_strong_em">4.1. Первый позиционный аргумент <em><strong>schematic</strong></em></a></li>
+<li><a href="#_второй_позиционный_аргумент_em_strong_complist_strong_em">4.2. Второй позиционный аргумент <em><strong>complist</strong></em></a></li>
+<li><a href="#_параметр_em_strong_h_help_strong_em">4.3. Параметр <em><strong>-h, --help</strong></em></a></li>
+<li><a href="#_параметр_em_strong_v_version_strong_em">4.4. Параметр <em><strong>-v, --version</strong></em></a></li>
 </ul>
 </li>
-<li><a href="#_Настройка_em_strong_kicad_strong_em_для_работы_с_em_strong_kicadbom2spec_strong_em">5. Настройка <em><strong>KiCad</strong></em> для работы с <em><strong>kicadbom2spec</strong></em></a>
+<li><a href="#_настройка_em_strong_kicad_strong_em_для_работы_с_em_strong_kicadbom2spec_strong_em">5. Настройка <em><strong>KiCad</strong></em> для работы с <em><strong>kicadbom2spec</strong></em></a>
 <ul class="sectlevel2">
-<li><a href="#_Настройка_редактора_схем_em_strong_eeschema_strong_em">5.1. Настройка редактора схем <em><strong>Eeschema</strong></em></a>
-<ul class="sectlevel3">
-<li><a href="#_Создание_и_настройка_плагина">5.1.1. Создание и настройка плагина</a></li>
-</ul>
-</li>
+<li><a href="#_создание_и_настройка_плагина">5.1. Создание и настройка плагина</a></li>
 </ul>
 </li>
 </ul>
@@ -505,30 +504,30 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Руководство пользователя</p>
 </div>
 <div class="paragraph">
-<p>Версия 3.10</p>
+<p>Версия 3.11</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_Введение">Введение</h2>
+<h2 id="_введение">Введение</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p><strong>kicadbom2spec</strong>&#8201;&#8212;&#8201;приложение для создания перечней элементов схем,
 выполненных в <strong>KiCad</strong>.</p>
 </div>
 <div class="paragraph">
-<p>Перечни создаются в виде таблиц <em>*.ods</em> в формате <em>Open Document Format</em> и
-оформляются в соответствии с требованиями <em>ЕСКД</em>.</p>
+<p>Перечень создается в виде таблицы <em>*.ods</em> в формате <em>Open Document Format</em>
+и оформляется в соответствии с требованиями <em>ЕСКД</em>.</p>
 </div>
 <div class="paragraph">
-<p>Кроме создания перечня элементов, с помощью этой программы можно редактировать
-необходимые пользовательские поля элементов как в файлах схем (<em>*.sch</em>) так
-и в файлах библиотек (<em>*.lib</em>).</p>
+<p>Кроме создания перечня элементов, с помощью данной программы можно
+редактировать необходимые пользовательские поля элементов как в файлах схем
+(<em>*.sch</em>) так и в файлах библиотек (<em>*.lib</em>).</p>
 </div>
 <div class="paragraph">
-<p>В данном руководстве представлена вся необходимая информация для успешного
+<p>В этом руководстве представлена вся необходимая информация для успешного
 создания перечней элементов и редактирования необходимых полей компонентов
-схемы/библиотеки.</p>
+схем/библиотек.</p>
 </div>
 <div class="paragraph">
 <p>Все изображения были созданы в операционной системе Ubuntu, но в других ОС
@@ -539,11 +538,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="_Быстрый_старт">Быстрый старт</h2>
+<h2 id="_быстрый_старт">Быстрый старт</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Для демонстрации работы программы <strong>kicadbom2spec</strong> в её директории имеется
-каталог <em>sample</em>, в котором находятся файлы небольшой схемы:</p>
+<p>Для демонстрации работы программы, <strong>kicadbom2spec</strong> поставляется в с небольшим
+проектом KiCad&#8201;&#8212;&#8201;<em>sample</em>. Он состоит из следующих файлов:</p>
 </div>
 <div id="содержимое_папки_sample" class="imageblock">
 <div class="content">
@@ -569,7 +568,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </div>
 <div class="paragraph">
-<p>Итак, чтобы создать перечень элементов для схемы <em>sample.sch</em> нужно запустить
+<p>Чтобы создать перечень элементов для схемы <em>sample.sch</em> нужно запустить
 <strong>kicadbom2spec</strong>, выполнить команду <em>Файл&#8594;Открыть схему&#8230;&#8203;</em> и выбрать файл
 примера схемы. По умолчанию, он находится по следующему пути:</p>
 </div>
@@ -586,9 +585,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </dl>
 </div>
 <div class="paragraph">
-<p>После этого в таблицу <strong>kicadbom2spec</strong> будут загружены элементы и станет
-доступной команда <em>Файл&#8594;Создать перечень элементов&#8230;&#8203;</em> (и соответствующая
-кнопка на панели инструментов):</p>
+<p>В результате в таблицу <strong>kicadbom2spec</strong> будут загружены элементы схемы и
+станет доступной команда <em>Файл&#8594;Создать перечень элементов&#8230;&#8203;</em> (и
+соответствующая кнопка на панели инструментов):</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -597,11 +596,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="title">Окно программы kicadbom2spec с загруженными элементами из sample.sch</div>
 </div>
 <div class="paragraph">
-<p>На данном этапе можно приступить к редактированию полей элементов и сохранить
-изменения в файл схемы. Но в приведенном примере ничего редактировать не нужно,
-все поля уже заполнены, поэтому сразу переходим к созданию перечня. Нужно
-выполнить команду <em>Файл&#8594;Создать перечень элементов&#8230;&#8203;</em>&#8201;&#8212;&#8201;откроется диалог
-создания перечня элементов:</p>
+<p>На данном этапе, обычно, выполняется редактирование полей элементов с
+последующим сохранением изменений в файл схемы. Но в приведенном примере
+ничего редактировать не нужно, все поля уже заполнены и готовы к созданию
+перечня. Выполните команду <em>Файл&#8594;Создать перечень элементов&#8230;&#8203;</em>&#8201;&#8212;&#8201;откроется диалог создания перечня элементов:</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -616,10 +614,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 него. Нужно изменить место сохранения перечня, нажав кнопку справа от
 текстового поля&#8201;&#8212;&#8201;откроется диалог выбора файла. В нём нужно указать каталог,
 к которому пользователь может легко получить доступ, например&#8201;&#8212;&#8201;<em>"Рабочий
-стол"</em>. Имя файла перечня элементов остается без изменений&#8201;&#8212;&#8201;<em>"sample.ods"</em>.</p>
+стол"</em>. Имя файла перечня элементов оставить без изменений&#8201;&#8212;&#8201;<em>"sample.ods"</em>.</p>
 </div>
 <div class="paragraph">
-<p>Из параметров нужно оставить отметку только для опции <em>Добавлять единицы
+<p>Из параметров нужно оставить отметку только для опции <em>Добавить единицы
 измерения</em> и завершить создание перечня нажав кнопку <em>Ок</em>. После завершения
 генерации перечня элементов будет показано сообщение:</p>
 </div>
@@ -630,7 +628,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="title">Сообщение о создании перечня элементов</div>
 </div>
 <div class="paragraph">
-<p>И в указанном ранее каталоге (на <em>Рабочем столе</em>) появится новый файл
+<p>В указанном ранее каталоге (на <em>Рабочем столе</em>) появится новый файл
 <em>sample.ods</em>:</p>
 </div>
 <div class="imageblock">
@@ -640,13 +638,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="title">Созданный файл перечня элементов</div>
 </div>
 <div class="paragraph">
-<p>Готово&#8201;&#8212;&#8201;перечень элементов создан. Чтобы убедится что все выполнено верно,
-можно сравнить полученный перечень с образцом <em>sample.pdf</em>.</p>
+<p>Готово&#8201;&#8212;&#8201;перечень элементов создан. Чтобы убедится что все выполнено верно и
+приложение <strong>kicadbom2spec</strong> работает корректно, можно сравнить полученный
+перечень с образцом <em>sample.pdf</em>.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_Графический_интерфейс_пользователя">1. Графический интерфейс пользователя</h2>
+<h2 id="_графический_интерфейс_пользователя">1. Графический интерфейс пользователя</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Внешний вид приложения <strong>kicadbom2spec</strong> показан на рисунке ниже.</p>
@@ -677,7 +676,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Рассмотрим дальше каждый из этих элементов отдельно.</p>
 </div>
 <div class="sect2">
-<h3 id="_Меню">1.1. Меню</h3>
+<h3 id="_меню">1.1. Меню</h3>
 <div class="paragraph">
 <p>Меню располагается в верхней части окна и содержит следующие элементы:</p>
 </div>
@@ -705,7 +704,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_Файл">1.1.1. Файл</h4>
+<h4 id="_файл">1.1.1. Файл</h4>
 <div class="paragraph">
 <p>В этом меню содержатся следующие команды для управления файлами:</p>
 </div>
@@ -752,8 +751,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="title">Диалог создания перечня элементов</div>
 </div>
 <div class="paragraph">
-<p>В данном окне нужно указать имя файла для перечня элементов и задать некоторые
-параметры.</p>
+<p>В данном окне указывается имя файла для перечня элементов, задаются некоторые
+параметры и редактируются поля основной надписи.</p>
 </div>
 <div class="ulist">
 <ul>
@@ -765,7 +764,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Правка">1.1.2. Правка</h4>
+<h4 id="_правка">1.1.2. Правка</h4>
 <div class="paragraph">
 <p>В этом меню содержатся следующие команды редактирования полей элементов:</p>
 </div>
@@ -853,7 +852,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </td>
 <td class="content">
 Для организации <em>копирования</em>, <em>вырезания</em> и <em>вставки</em> полей
-элементов в программе реализован свой собственный буфер обмена.
+элементов в программе реализован собственный буфер обмена.
 </td>
 </tr>
 </table>
@@ -919,7 +918,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Вид">1.1.3. Вид</h4>
+<h4 id="_вид">1.1.3. Вид</h4>
 <div class="paragraph">
 <p>Меню вид содержит лишь один пункт:</p>
 </div>
@@ -933,7 +932,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Справка">1.1.4. Справка</h4>
+<h4 id="_справка">1.1.4. Справка</h4>
 <div class="paragraph">
 <p>С помощью меню справки можно выполнить два действия:</p>
 </div>
@@ -951,7 +950,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_Панель_инструментов">1.2. Панель инструментов</h3>
+<h3 id="_панель_инструментов">1.2. Панель инструментов</h3>
 <div class="paragraph">
 <p>Панель инструментов расположена в верхней части окна и повторяет часто
 используемые команды меню.</p>
@@ -1014,7 +1013,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_Таблица_полей_элементов">1.3. Таблица полей элементов</h3>
+<h3 id="_таблица_полей_элементов">1.3. Таблица полей элементов</h3>
 <div class="paragraph">
 <p>Таблица полей элементов занимает основную часть окна приложения и имеет
 следующую структуру.</p>
@@ -1060,7 +1059,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 только для чтения, изменять значение этого поля в элементах библиотеки нельзя.</p>
 </div>
 <div class="sect3">
-<h4 id="_Контекстное_меню_таблицы">1.3.1. Контекстное меню таблицы</h4>
+<h4 id="_контекстное_меню_таблицы">1.3.1. Контекстное меню таблицы</h4>
 <div class="paragraph">
 <p>Контекстное меню вызывается щелчком правой кнопки мыши или нажатием специальной
 клавиши на клавиатуре (между правыми <em>Alt</em> и <em>Ctrl</em>).</p>
@@ -1077,7 +1076,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Редактор_ячеек_таблицы">1.3.2. Редактор ячеек таблицы</h4>
+<h4 id="_редактор_ячеек_таблицы">1.3.2. Редактор ячеек таблицы</h4>
 <div class="paragraph">
 <p>Изменение содержимого отдельной ячейки таблицы выполняется с помощью
 специального элемента графического интерфейса&#8201;&#8212;&#8201;<em>текстового поля с выпадающим
@@ -1097,7 +1096,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 вверху и выделены жирным), а также значения из других компонентов.</p>
 </div>
 <div class="sect4">
-<h5 id="_Контекстное_меню_редактора_ячеек">1.3.2.1. Контекстное меню редактора ячеек</h5>
+<h5 id="_контекстное_меню_редактора_ячеек">1.3.2.1. Контекстное меню редактора ячеек</h5>
 <div class="paragraph">
 <p>Контекстное меню редактора ячеек содержит следующие команды:</p>
 </div>
@@ -1153,7 +1152,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li>
 <p><strong>Вставить подстановку&#8230;&#8203;</strong>&#8201;&#8212;&#8201;содержит подменю с командами вставки шаблонов
-подстановки других полей.</p>
+подстановки значений из других полей.</p>
 </li>
 </ul>
 </div>
@@ -1163,7 +1162,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="_Работа_с_программой">2. Работа с программой</h2>
+<h2 id="_работа_с_программой">2. Работа с программой</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Работать с приложением <strong>kicadbom2spec</strong> довольно просто, но для полного
@@ -1171,7 +1170,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 нужно объяснить некоторые определения и условности.</p>
 </div>
 <div class="sect2">
-<h3 id="_Основные_принципы">2.1. Основные принципы</h3>
+<h3 id="_основные_принципы">2.1. Основные принципы</h3>
 <div class="paragraph">
 <p>Компоненты из схем, выполненных в <strong>KiCad</strong>, имеют всего четыре стандартных
 поля:</p>
@@ -1223,7 +1222,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><strong>Значение</strong></p>
 </li>
 <li>
-<p><em>Класс точность</em></p>
+<p><em>Класс точности</em></p>
 </li>
 <li>
 <p><em>Тип</em></p>
@@ -1289,23 +1288,23 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">МЛТ-0,25-</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Марка</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Марка<sup>1</sup></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">1,8к</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Значение<sup>1</sup></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Значение<sup>2</sup></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">±5%</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Класс точности</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#160;±5%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Класс точности<sup>1</sup></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">-В</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Тип</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Тип<sup>1</sup></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#160;ОЖ0.467.18</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Стандарт<sup>2</sup></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Стандарт<sup>1</sup></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">1&#8230;&#8203;2,8кОм</p></td>
@@ -1325,13 +1324,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Единицы измерения (в данном случае "Ом") могут добавляться автоматически
-для резисторов, конденсаторов и индуктивностей если при создании перечня
-элементов была установлена отметка возле параметра <em>Добавлять единицы
-измерения</em>.</p>
+<p>Каждому полю, которое используется для формирования наименования, можно
+задать разделители в виде суффикса и/или префикса с помощью настроек программы.
+В приведённом примере полю <em>Марка</em> добавляется суффикс "-", полю <em>Тип</em>&#8201;&#8212;&#8201;префикс "-", а полям <em>Класс точности</em> и <em>Стандарт</em>&#8201;&#8212;&#8201;префикс в виде
+пробела.</p>
 </li>
 <li>
-<p>Стандарт указан с пробелом в начале.</p>
+<p>Единицы измерения (в данном случае "Ом") могут добавляться автоматически
+для резисторов, конденсаторов и индуктивностей если при создании перечня
+элементов была установлена отметка возле параметра <em>Добавить единицы
+измерения</em>.</p>
 </li>
 </ol>
 </div></div></td>
@@ -1339,11 +1341,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tbody>
 </table>
 <div class="paragraph">
-<p>При образовании наименования разделители не используются, поэтому их нужно
-указывать в значениях полей.</p>
-</div>
-<div class="paragraph">
-<p>Если какое-нибудь поле не нужно&#8201;&#8212;&#8201;его оставляют пустым.</p>
+<p>Если какое-нибудь поле не нужно&#8201;&#8212;&#8201;его оставляют пустым. При этом разделители
+к пустому полю не добавляются.</p>
 </div>
 <div class="paragraph">
 <p>Количество элементов подсчитывается автоматически. Если имеется несколько
@@ -1352,11 +1351,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_Работа_с_таблицей_полей_элементов">2.2. Работа с таблицей полей элементов</h3>
+<h3 id="_работа_с_таблицей_полей_элементов">2.2. Работа с таблицей полей элементов</h3>
 <div class="sect3">
-<h4 id="_Сортировка_элементов">2.2.1. Сортировка элементов</h4>
+<h4 id="_сортировка_элементов">2.2.1. Сортировка элементов</h4>
 <div class="paragraph">
-<p>Для представления элементов в более удобном виде предусмотрена возможность
+<p>Для облегчения процесса редактирования полей предусмотрена возможность
 сортировки содержимого таблицы.</p>
 </div>
 <div class="paragraph">
@@ -1377,12 +1376,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="title">Индикатор сортировки</div>
 </div>
 <div class="paragraph">
-<p>В заголовке столбца, по которому выполнена сортировка, появляется индикатор с
+<p>В заголовке столбца, по которому выполнена сортировка, отображается индикатор с
 указанием направления сортировки.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Выделение_элементов">2.2.2. Выделение элементов</h4>
+<h4 id="_выделение_элементов">2.2.2. Выделение элементов</h4>
 <div class="paragraph">
 <p>Чтобы выделить один элемент нужно нажать левой кнопкой мыши (ЛКМ) на одном из
 его полей.</p>
@@ -1400,7 +1399,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Поиск_замена_текста">2.2.3. Поиск/замена текста</h4>
+<h4 id="_поиск_замена_текста">2.2.3. Поиск/замена текста</h4>
 <div class="paragraph">
 <p>Чтобы найти текст в полях элементов нужно воспользоваться командной
 <em>Правка&#8594;Найти&#8230;&#8203;</em> После выбора данной команды будет открыт
@@ -1447,7 +1446,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Редактирование_полей">2.2.4. Редактирование полей</h4>
+<h4 id="_редактирование_полей">2.2.4. Редактирование полей</h4>
 <div class="paragraph">
 <p>Любое изменение в таблице можно отменить с помощью команды меню
 <em>Правка&#8594;Отменить</em>, а отменённое действие повторить с помощью команды
@@ -1462,8 +1461,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 нему двойным щелчком ЛКМ. В случае с флажками&#8201;&#8212;&#8201;однократный щелчок ЛКМ изменит
 его состояние на противоположное. Эти же операции можно выполнять с клавиатуры.
 С помощью стрелок нужно переместиться к ячейке с содержимым поля, которое
-необходимо отредактировать и нажать клавишу <em>Enter</em> или <em>F2</em>. Для изменения
-состояния флажка нужно нажать клавишу <em>пробел</em>.</p>
+необходимо изменить и нажать клавишу <em>Enter</em> или <em>F2</em> для начала
+редактирования. Для изменения состояния флажка нужно нажать клавишу <em>пробел</em>.</p>
 </div>
 <div class="paragraph">
 <p>Изменение содержимого ячеек выполняется с помощью <a href="#редактор_ячеек">редактора
@@ -1479,17 +1478,17 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Редактирование_полей_нескольких_элементов_одновременно">2.2.5. Редактирование полей нескольких элементов одновременно</h4>
+<h4 id="_редактирование_полей_нескольких_элементов_одновременно">2.2.5. Редактирование полей нескольких элементов одновременно</h4>
 <div class="paragraph">
-<p>Для редактирования полей нескольких элементов одновременно можно
-воспользоваться <a href="#редактор_полей">редактором полей</a>. Чтобы изменить
-значения полей одновременно для нескольких элементов необходимо их выделить и
-затем выполнить команду <em>Правка&#8594;Редактировать поля&#8230;&#8203;</em>, откроется редактор
-полей. Он содержит флажок для указания того, нужно ли помещать выделенные
-элементы в перечень элементов или нет (при редактировании библиотеки&#8201;&#8212;&#8201;отсутствует) и текстовые поля с выпадающим списком (аналог редактора ячеек) для
-редактирования полей элементов. В отличии от редактора ячеек, в редакторе полей
-значения для каждого поля собираются не со всех компонентов, а только с
-выделенных.</p>
+<p>Для редактирования полей нескольких элементов одновременно нужно
+воспользоваться <a href="#редактор_полей">редактором полей</a>. Для этого необходимо
+выделить элементы для редактирования и затем выполнить команду
+<em>Правка&#8594;Редактировать поля&#8230;&#8203;</em>, откроется редактор полей. Он содержит
+флажок для указания того, нужно ли помещать выделенные элементы в перечень
+элементов или нет (при редактировании библиотеки&#8201;&#8212;&#8201;отсутствует) и текстовые
+поля с выпадающим списком (аналог редактора ячеек) для редактирования полей
+элементов. В отличии от редактора ячеек, в редакторе полей значения для
+каждого поля собираются не со всех компонентов, а только с выделенных.</p>
 </div>
 <div class="paragraph">
 <p>По умолчанию, во всех текстовых полях редактора полей установлено значение
@@ -1506,7 +1505,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Работа_с_буфером_обмена">2.2.6. Работа с буфером обмена</h4>
+<h4 id="_работа_с_буфером_обмена">2.2.6. Работа с буфером обмена</h4>
 <div class="paragraph">
 <p>При редактировании полей доступны операции для работы с буфером обмена
 <em>Правка&#8594;Копировать/Вырезать&#8230;&#8203;/Вставить&#8230;&#8203;</em></p>
@@ -1528,14 +1527,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="paragraph">
 <p>При <strong>вставке</strong> открывается <a href="#диалог_вставки_полей">диалоговое окно вставки
-полей.</a> В этом окне в каждом поле, по умолчанию, содержится значение из буфера
-обмена.  В выпадающем меню содержится два варианта значений, первое&#8201;&#8212;&#8201;<em>&lt;не
-изменять&gt;</em>, второе&#8201;&#8212;&#8201;значение из буфера. Данный набор позволяет вставить из
-буфера обмена только нужные значения.</p>
+полей.</a>. В каждом поле этого окна содержится значение из буфера
+обмена. По умолчанию, в выпадающем меню содержится два варианта значений,
+первое&#8201;&#8212;&#8201;<em>&lt;не изменять&gt;</em>, второе&#8201;&#8212;&#8201;значение из буфера. Данный набор
+позволяет вставить из буфера обмена только нужные значения.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Редактирование_полей_компонентов_иерархических_схем">2.2.7. Редактирование полей компонентов иерархических схем</h4>
+<h4 id="_редактирование_полей_компонентов_иерархических_схем">2.2.7. Редактирование полей компонентов иерархических схем</h4>
 <div class="paragraph">
 <p>С помощью <strong>KiCad</strong> можно создавать довольно сложные схемы, содержащие
 множество иерархических листов неограниченной вложенности. Компоненты таких
@@ -1544,16 +1543,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="paragraph">
 <p>Ещё одной особенностью САПР <strong>KiCad</strong>, при создании сложных схем, является
-возможность использования одной и той же схемы для нескольких иерархических
-листов. Таким образом можно изобразить некое количество повторяющихся
-однотипных узлов. В данном случае компоненты иерархической схемы сохраняются
-особым образом. Дело в том, что несколько однотипных листов ссылаются к одной и
-той же схеме и, таким образом, эти однотипные листы используют одни и те же
-компоненты. Эти компоненты содержат специальные свойства, в которых указаны
-обозначения для каждого из листов, т.е. каждый из таких компонентов имеет
-несколько обозначений. Изменение значения поля компонента в одном из однотипных
-листов приведёт к изменению этого же поля, такого же компонента, в остальных
-листах.</p>
+возможность использования одного и того же файла схемы для нескольких
+иерархических листов. Таким образом можно изобразить некое количество
+повторяющихся однотипных узлов. В данном случае компоненты иерархической
+схемы сохраняются особым образом. Дело в том, что несколько однотипных
+листов ссылаются к одной и той же схеме и, таким образом, эти однотипные
+листы используют одни и те же компоненты. Эти компоненты содержат специальные
+свойства, в которых указаны обозначения для каждого из листов, т.е. каждый из
+таких компонентов имеет несколько обозначений. Изменение значения поля
+компонента в одном из однотипных листов приведёт к изменению этого же поля,
+такого же компонента, в остальных листах.</p>
 </div>
 <div class="paragraph">
 <p>В <strong>kicadbom2spec</strong> такие компоненты отображаются особым образом. Компоненты
@@ -1567,8 +1566,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 значит где-то в таблице имеются его "копии".</p>
 </div>
 <div class="paragraph">
-<p>"Копии" компонента в поле <em>Обозначение</em> содержат обозначение "оригинального"
-компонента в скобках. Например, <em>R123(R256)</em>.</p>
+<p>"Копии" компонента, в свою очередь, в поле <em>Обозначение</em> содержат обозначение
+"оригинального" компонента заключённое в скобки. Например, <em>R123(R256)</em>.</p>
 </div>
 <div class="paragraph">
 <p>Так как "оригинальные" компоненты и их "копии", по сути, являются одним
@@ -1589,7 +1588,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect3">
-<h4 id="_Подстановки_полей">2.2.8. Подстановки полей</h4>
+<h4 id="_подстановки_полей">2.2.8. Подстановки полей</h4>
 <div class="paragraph">
 <p>В процессе работы <strong>kicadbom2spec</strong> использует фиксированный набор полей. В то
 же время, пользователь может хранить некоторую информацию в других
@@ -1640,7 +1639,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_Создание_перечня_элементов">2.3. Создание перечня элементов</h3>
+<h3 id="_создание_перечня_элементов">2.3. Создание перечня элементов</h3>
 <div class="paragraph">
 <p>Когда в <strong>kicadbom2spec</strong> загружен файл схемы и все необходимые поля
 заполнены&#8201;&#8212;&#8201;можно приступить к созданию перечня элементов. Для этого
@@ -1652,40 +1651,67 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 диалога выбора файлов нажав кнопку справа от текстового поля.</p>
 </div>
 <div class="paragraph">
-<p>Дополнительно доступны следующие параметры:</p>
+<p>В диалоговом окне доступны следующие параметры:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><em>Добавить единицы измерения</em>&#8201;&#8212;&#8201;если этот параметр отмечен и в значениях
+<p><strong><em>Добавить единицы измерения</em></strong>&#8201;&#8212;&#8201;если этот параметр отмечен и в значениях
 резисторов/конденсаторов/индуктивностей (определяется по литерам обозначения
 <em>R</em>, <em>C</em>, <em>L</em>) отсутствуют единицы измерения (например, <em>10к</em>, <em>1мк</em>,
 <em>2.2н</em>), то они будут добавлены автоматически (<em>10кОм</em>, <em>1мкФ</em>,
-<em>2.2нГн</em>).</p>
+<em>2.2нГн</em>).<br>
+Дополнительно, к значению ёмкости конденсаторов добавляется приставка
+множителя, если оно представлено в виде целого числа&#8201;&#8212;&#8201;<em>п</em> (пико), а если в
+виде десятичной дроби&#8201;&#8212;&#8201;<em>мк</em> (микро).</p>
 </li>
 <li>
-<p><em>Все элементы</em>&#8201;&#8212;&#8201;если этот параметр отмечен, то перечень будет составлен
-из всех элементов схемы, т.е. состояние флажка в таблице будет проигнорировано.</p>
+<p><strong><em>Все элементы</em></strong>&#8201;&#8212;&#8201;если этот параметр отмечен, то перечень будет
+составлен из всех элементов схемы, т.е. состояние флажка в таблице будет
+проигнорировано.</p>
 </li>
 <li>
-<p><em>Добавить лист регистрации изменений</em>&#8201;&#8212;&#8201;если данная опция включена, то в
-конец перечня элементов будет добавлен лист регистрации изменений.</p>
+<p><strong><em>Добавить лист регистрации изменений</em></strong>&#8201;&#8212;&#8201;если данная опция включена,
+то в конец перечня элементов будет добавлен лист регистрации изменений.</p>
 </li>
 <li>
-<p><em>Открыть перечень элементов</em>&#8201;&#8212;&#8201;если этот параметр установлен, то по
+<p><strong><em>Открыть перечень элементов</em></strong>&#8201;&#8212;&#8201;если этот параметр установлен, то по
 завершении будет открыт созданный перечень элементов в редакторе по умолчанию
 (например, в <strong>LibreOffice</strong>).</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Когда все параметры заданы, можно завершить создание перечня нажав кнопку
+<p>Помимо параметров, в диалоговом окне создания перечня элементов отображаются
+значения полей основной надписи. Эта информация загружается из файла схемы, за
+исключением поля <em>Нормоконтролер</em>, которое хранится в настройках программы.
+Все эти значения доступны для редактирования. Новые значения сохраняются
+вместе со значениями полей элементов при сохранении файла схемы.
+Значения полей <em>Децимальный номер</em> и <em>Наименование</em> автоматически
+корректируются согласно ЕСКД перед помещением в основную надпись перечня
+элементов. Результат коррекции можно наблюдать рядом с полями ввода.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Примечание</div>
+</td>
+<td class="content">
+Формат файла схемы KiCad не позволяет хранить имя нормоконтролёра,
+поэтому данное значение хранится в настройках программы <strong>kicadbom2spec</strong>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Когда все параметры заданы, можно запустить создание перечня нажав кнопку
 <em>Ок</em>. После успешного завершения генерации перечня элементов будет показано
 сообщение:</p>
 </div>
 <div id="сообщение_о_создании_перечня_элементов" class="imageblock">
 <div class="content">
-<img src="images/сообщение_о_создании_перечня_элементов.png" alt="сообщение о создании перечня элементов">
+<img src="images/message_complist_created.png" alt="message complist created">
 </div>
 <div class="title">Сообщение о создании перечня элементов</div>
 </div>
@@ -1714,7 +1740,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="_Настройка_программы">3. Настройка программы</h2>
+<h2 id="_настройка_программы">3. Настройка программы</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Редактор настроек вызывается из меню с помощью команды
@@ -1731,7 +1757,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 вкладке.</p>
 </div>
 <div class="sect2">
-<h3 id="_Основные_параметры">3.1. Основные параметры</h3>
+<h3 id="_основные_параметры">3.1. Основные параметры</h3>
 <div class="paragraph">
 <p>Эти параметры относятся к программе в целом. Рассмотрим каждый из параметров в
 отдельности.</p>
@@ -1751,10 +1777,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p><strong>Запоминать выбор элементов</strong>&#8201;&#8212;&#8201;если это параметр установлен, то при
 сохранении файла схемы для элементов, которые исключены из перечня элементов
-(отметка в таблице снята) будет добавлено новое поле с именем "Исключён из
-ПЭ". В этом поле можно указать комментарий с описанием причины, по которой
+(отметка в таблице снята) будет добавлено новое поле с именем <em>"Исключён из
+ПЭ</em>. В этом поле можно указать комментарий с описанием причины, по которой
 элемент был исключён из перечня (только в <strong>Eeschema</strong>). При открытии файла
-схемы у элементов которые содержат поле "Исключён из ПЭ" будет автоматически
+схемы у элементов которые содержат поле <em>Исключён из ПЭ</em> будет автоматически
 снята отметка и при создании перечня эти элементы в перечень не попадут.<br>
 В общей сложности этот параметр позволяет сохранять состояние выбора элементов
 в файле схемы.</p>
@@ -1807,7 +1833,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="paragraph">
 <p>Второе&#8201;&#8212;&#8201;<em>Значение поля "Группа" </em> — здесь нужно задать значение поля
-"Группа", которое будет автоматически присваиваться элементам, обозначение
+<em>Группа</em>, которое будет автоматически присваиваться элементам, обозначение
 которых начинается с символов, указанных в предыдущем поле.</p>
 </div>
 <div class="paragraph">
@@ -1831,12 +1857,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_Значения_полей">3.2. Значения полей</h3>
+<h3 id="_значения_полей">3.2. Значения полей</h3>
 <div class="paragraph">
 <p>При оформлении перечня элементов, заполняя поля элементов часто приходится
 использовать стандартные значения, такие, например, как "Резисторы",
-"Конденсаторы", "Диоды" и т.д. для поля "Группа" или "±1%", "±5%", "±10%" для
-поля "Класс точности".</p>
+"Конденсаторы", "Диоды" и т.д. для поля <em>Группа</em> или "±1%", "±5%", "±10%" для
+поля <em>Класс точности</em>.</p>
 </div>
 <div id="редактор_стандартных_значений_для_полей" class="imageblock">
 <div class="content">
@@ -1850,16 +1876,98 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 вкладки <em>Значения полей</em> редактора настроек.</p>
 </div>
 <div class="paragraph">
-<p>Для каждой группы можно задать несколько значений, каждое из которых
-расположено на отдельной строке.</p>
+<p>Для каждой группы можно задать несколько значений, которые записываются в
+виде отдельных строк.</p>
 </div>
 <div class="paragraph">
-<p>Теперь при редактировании элементов все эти варианты значений будут доступны в
-выпадающем списке.</p>
+<p>При редактировании элементов все эти варианты значений будут всегда
+присутствовать в выпадающем списке.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_Импорт_экспорт_параметров">3.3. Импорт/экспорт параметров</h3>
+<h3 id="_разделители">3.3. Разделители</h3>
+<div class="paragraph">
+<p>В процессе формирования перечня наименование элементов образуется путём
+объединения значений таких полей:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><em>Марка</em></p>
+</li>
+<li>
+<p><em>Значение</em></p>
+</li>
+<li>
+<p><em>Класс точности</em></p>
+</li>
+<li>
+<p><em>Тип</em></p>
+</li>
+<li>
+<p><em>Стандарт</em></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Чтобы отделить значения указанных полей друг от друга используются разделители
+в виде префиксов и суффиксов.</p>
+</div>
+<div id="редактор_разделителей" class="imageblock">
+<div class="content">
+<img src="images/editor_separators.png" alt="editor separators">
+</div>
+<div class="title">Редактор разделителей</div>
+</div>
+<div class="paragraph">
+<p>Это позволяет избавится от необходимости вводить дополнительные символы при
+редактировании полей элементов.</p>
+</div>
+<div class="paragraph">
+<p>Например, значение поля <em>Стандарт</em>, практически, всегда отделяется от
+наименования пробелом. Чтобы не вводить каждое значение стандарта с пробелом в
+начале, достаточно в параметрах указать префикс для этого поля в виде пробела
+и он будет добавляться автоматически.</p>
+</div>
+<div class="paragraph">
+<p>К пустому полю разделители не добавляются. Т.е. если при формировании перечня
+элементов встречается поле с пустым значением, то соответствующие ему
+разделители в наименование вставляться не будут.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_псевдонимы">3.4. Псевдонимы</h3>
+<div class="paragraph">
+<p>В процессе работы приложение <strong>kicadbom2spec</strong> использует фиксированный
+<a href="#набор_полей">набор полей</a>. По умолчанию требуется, чтобы элементы схемы
+содержали эти поля. Но это не является обязательным. С помощью вкладки
+<em>Псевдонимы</em> редактора настроек можно каждому полю назначить любое
+пользовательское поле.</p>
+</div>
+<div id="редактор_псевдонимов" class="imageblock">
+<div class="content">
+<img src="images/editor_aliases.png" alt="editor aliases">
+</div>
+<div class="title">Редактор псевдонимов</div>
+</div>
+<div class="paragraph">
+<p>Благодаря этому, при открытии файла схемы/библиотеки загружается значение поля
+указанного в качестве псевдонима и помещается в графу стандартного поля. А при
+сохранении значение из стандартного поля присваивается полю элемента указанного
+в качестве псевдонима.</p>
+</div>
+<div class="paragraph">
+<p>Для примера рассмотрим следующую ситуацию. Предположим, пользователь хранит
+полное наименование элементов в собственном поле <em>BOM_ID</em> и не нуждается в
+автоматическом составлении наименования из стандартных полей средствами
+<strong>kicadbom2spec</strong>. В таком случае достаточно назначить псевдоним <em>BOM_ID</em> для
+поля <em>Значение</em>, а поля <em>Марка</em>, <em>Класс точности</em>, <em>Тип</em> и <em>Стандарт</em>
+оставить пустыми. В результате, при формировании перечня элементов наименование
+будет состоять лишь из значения поля <em>BOM_ID</em>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_импорт_экспорт_параметров">3.5. Импорт/экспорт параметров</h3>
 <div class="paragraph">
 <p>Выполнить перенос параметров из одной копии программы в другую можно следующим
 образом.</p>
@@ -1873,8 +1981,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p>Далее нужно во второй программе выбрать пункт меню <em>Правка&#8594;Импорт
 параметров&#8230;&#8203;</em> и в диалоге открытия файлов выбрать файл, полученный в
-предыдущем шаге. После этого откроется диалоговое окно в котором будет
-предложено выбрать параметры для импорта.</p>
+предыдущем шаге. После этого откроется диалоговое окно выбора параметров.</p>
 </div>
 <div id="диалог_выбора_параметров_для_импорта" class="imageblock">
 <div class="content">
@@ -1883,14 +1990,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="title">Диалог выбора параметров для импорта</div>
 </div>
 <div class="paragraph">
-<p>Для завершения импорта параметров нужно нажать кнопку <em>ОК</em>. Выбранные
-параметры сразу же будут применены к программе.</p>
+<p>Будут загружены только отмеченные параметры, остальные останутся без изменений.</p>
+</div>
+<div class="paragraph">
+<p>Для завершения импорта параметров нужно нажать кнопку <em>ОК</em>.</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_Параметры_командной_строки">4. Параметры командной строки</h2>
+<h2 id="_параметры_командной_строки">4. Параметры командной строки</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>При запуске программы <strong>kicadbom2spec</strong>, ей можно передавать один или два
@@ -1902,7 +2011,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><code>python kicadbom2spec.pyw [-h] [-v] [schematic] [complist]</code></p>
 </div>
 <div class="sect2">
-<h3 id="_Первый_позиционный_аргумент_em_strong_schematic_strong_em">4.1. Первый позиционный аргумент <em><strong>schematic</strong></em></h3>
+<h3 id="_первый_позиционный_аргумент_em_strong_schematic_strong_em">4.1. Первый позиционный аргумент <em><strong>schematic</strong></em></h3>
 <div class="paragraph">
 <p>С помощью этого параметра в программу передаётся имя файла схемы в формате
 <em>KiCad Schematic</em>.</p>
@@ -1942,7 +2051,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_Второй_позиционный_аргумент_em_strong_complist_strong_em">4.2. Второй позиционный аргумент <em><strong>complist</strong></em></h3>
+<h3 id="_второй_позиционный_аргумент_em_strong_complist_strong_em">4.2. Второй позиционный аргумент <em><strong>complist</strong></em></h3>
 <div class="paragraph">
 <p>С помощью этого параметра в программу передаётся имя файла в который будет
 сохранен перечень элементов. Расширение файла автоматически заменяется на
@@ -1950,7 +2059,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_Параметр_em_strong_h_help_strong_em">4.3. Параметр <em><strong>-h, --help</strong></em></h3>
+<h3 id="_параметр_em_strong_h_help_strong_em">4.3. Параметр <em><strong>-h, --help</strong></em></h3>
 <div class="paragraph">
 <p>С этим параметром программа выводит справочное сообщение с краткой информацией
 о программе и доступных параметрах. Затем закрывается без выполнения каких-либо
@@ -1958,7 +2067,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect2">
-<h3 id="_Параметр_em_strong_v_version_strong_em">4.4. Параметр <em><strong>-v, --version</strong></em></h3>
+<h3 id="_параметр_em_strong_v_version_strong_em">4.4. Параметр <em><strong>-v, --version</strong></em></h3>
 <div class="paragraph">
 <p>С этим параметром программа выводит номер текущей версии программы и
 закрывается без выполнения каких-либо вычислений.</p>
@@ -1967,7 +2076,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="_Настройка_em_strong_kicad_strong_em_для_работы_с_em_strong_kicadbom2spec_strong_em">5. Настройка <em><strong>KiCad</strong></em> для работы с <em><strong>kicadbom2spec</strong></em></h2>
+<h2 id="_настройка_em_strong_kicad_strong_em_для_работы_с_em_strong_kicadbom2spec_strong_em">5. Настройка <em><strong>KiCad</strong></em> для работы с <em><strong>kicadbom2spec</strong></em></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Возможности программы <strong>Eeschema</strong> позволяют использовать сторонние инструменты
@@ -1975,45 +2084,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <strong>kicadbom2spec</strong> будет рассказано далее.</p>
 </div>
 <div class="sect2">
-<h3 id="_Настройка_редактора_схем_em_strong_eeschema_strong_em">5.1. Настройка редактора схем <em><strong>Eeschema</strong></em></h3>
+<h3 id="_создание_и_настройка_плагина">5.1. Создание и настройка плагина</h3>
 <div class="paragraph">
-<p>Прежде всего можно определить несколько пользовательских полей для элементов
-схемы. Для этого нужно открыть диалог настроек, выбрав в меню
-<em>Настройки&#8594;Параметры</em> и во вкладке <em>Шаблон имён полей</em> заполнить поля как
-показано на рисунке ниже. Порядок полей не имеет значения.</p>
-</div>
-<div id="настройки_пользовательских_полей" class="imageblock">
-<div class="content">
-<img src="images/settings_field_values.png" alt="settings field values">
-</div>
-<div class="title">Настройка пользовательских полей</div>
-</div>
-<div class="paragraph">
-<p>Благодаря данным шаблонам, при открытии редактора свойств элемента, в нем уже
-будут присутствовать указанные выше поля. Иначе, пришлось бы добавлять их
-каждому элементу отдельно.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Примечание</div>
-</td>
-<td class="content">
-Данная настройка не является обязательной. Она лишь упрощает работу с
-полями в редакторе схем <strong>Eeschema</strong>. <strong>kicadbom2spec</strong> сам создаст все
-необходимые поля, если будет необходимо.
-</td>
-</tr>
-</table>
-</div>
-<div class="sect3">
-<h4 id="_Создание_и_настройка_плагина">5.1.1. Создание и настройка плагина</h4>
-<div class="paragraph">
-<p>Следующим этапом является создание нового инструмента генерации перечня
-элементов (плагина). Для этого в <strong>Eeschema</strong> нужно выполнить команду
-<em>Инструменты&#8594;Сформировать перечень элементов</em> или нажать соответствующую
-кнопку на панели инструментов, после чего откроется диалог:</p>
+<p>В <strong>Eeschema</strong> нужно выполнить команду <em>Инструменты&#8594;Сформировать перечень
+элементов</em> или нажать соответствующую кнопку на панели инструментов, после
+чего откроется диалог:</p>
 </div>
 <div id="диалог_создания_перечня_элементов_в_eeschema" class="imageblock">
 <div class="content">
@@ -2092,10 +2167,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 </div>
-</div>
 <div id="footer">
 <div id="footer-text">
-Редакция от 2016-09-05 18:29:51 EEST
+Редакция от 2017-07-11 13:36:49 EEST
 </div>
 </div>
 </body>
