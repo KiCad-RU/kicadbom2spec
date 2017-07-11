@@ -23,22 +23,21 @@
 !include StrFunc.nsh
 ${StrRep}
 !include VersionCompare.nsh
-!include ConnectInternet.nsh
 
 !define /file VERSION "..\version"
 !define PROG_NAME "kicadbom2spec"
 
 !define DEPENDENCIES "..\..\windows_installer_dependencies\"
-!define PYTHON "python-2.7.12.msi"
-!define PYTHON_NAME "Python 2.7.12"
+!define PYTHON "python-2.7.13.msi"
+!define PYTHON_NAME "Python 2.7.13"
 !define WXPYTHON "wxPython3.0-win32-3.0.2.0-py27.exe"
 !define WXPYTHON_NAME "wxPython 3.0"
-!define ODFPY "odfpy-1.3.3.tar.gz"
-!define ODFPY_NAME "ODFpy 1.3.3"
+!define ODFPY "odfpy-1.3.5.tar.gz"
+!define ODFPY_NAME "ODFpy 1.3.5"
 !define FONT "opengostfont-ttf-0.3.zip"
 !define FONT_NAME "Шрифт OpenGOST 0.3"
-!define OFFICE "http://download.documentfoundation.org/libreoffice/stable/5.2.0/win/x86/LibreOffice_5.2.0_Win_x86.msi"
-!define OFFICE_NAME "LibreOffice 5.2.0"
+!define OFFICE "http://www.libreoffice.org/download/download/"
+!define OFFICE_NAME "LibreOffice"
 
 Var SETTINGS_DIR
 Var KICAD_DIR
@@ -209,19 +208,14 @@ SectionGroup /e "Дополнительные компоненты" secgrp_optio
 		Push $0
 		Push $1
 
-		Call ConnectInternet
-		StrCpy $1 "$TEMP\libreoffice_installer.msi"
-		inetc::get "${OFFICE}" $1 /END
-		Pop $0
-		StrCmp $0 "OK" success
-			Abort "Не удалось загрузить установочный файл \
-			офисного пакета LibreOffice."
-		success:
-			ExecWait 'msiexec /i "$1"' $0
-			IntCmp $0 0 +2
-				Abort "Не удалось установить офисный пакет \
-				LibreOffice."
-			Delete $1
+		MessageBox MB_OKCANCEL \
+			"Для просмотра и редактирования перечней \
+			элементов рекомендуется использовать свободный пакет офисных \
+			приложений - LibreOffice. $\n $\n \
+			Чтобы перейти к загрузке и установке LibreOffice нажмите OK." \
+			IDCANCEL libreoffice_done
+				ExecShell "open" "${OFFICE}"
+		libreoffice_done:
 
 		Pop $0
 		Pop $1
