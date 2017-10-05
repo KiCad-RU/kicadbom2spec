@@ -652,7 +652,7 @@ class Window(gui.MainFrame):
                                 break
                     if hasattr(comp, 'path_and_ref'):
                         prefix = '*'
-                        # Do net mark components that only has parts (not copies)
+                        # Do not mark components that only has parts (not copies)
                         # on different sheets.
                         for ref in comp.path_and_ref:
                             if ref[1] != comp.fields[0].text:
