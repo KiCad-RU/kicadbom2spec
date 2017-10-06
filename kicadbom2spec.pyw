@@ -710,7 +710,7 @@ class Window(gui.MainFrame):
                                     item.fields[1].text = value[4]
                                 for index, field_name in field_names.items():
                                     # Skip "value" if used standard field for it
-                                    if index == 4 and field_names == u'':
+                                    if index == 4 and field_name == u'':
                                         continue
                                     if value[index] != u'':
                                         for field in item.fields:
