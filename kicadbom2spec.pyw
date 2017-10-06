@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*-    Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4    -*-
 ### BEGIN LICENSE
-# Copyright (C) 2016 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
+# Copyright (C) 2017 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
@@ -49,9 +49,10 @@ default_settings_file_name = 'settings.ini'
 settings_separator = ';;;'
 ID_RECENT = 2000
 
+
 class Window(gui.MainFrame):
     """
-    Graphical user interface for kicdbom2spec.
+    Graphical user interface for kicadbom2spec.
 
     """
 
@@ -651,7 +652,7 @@ class Window(gui.MainFrame):
                                 row[1] = self.auto_groups_dict[suffix][1:]
                                 break
                     if hasattr(comp, 'path_and_ref'):
-                        prefix = '*'
+                        prefix = '(*)'
                         # Do not mark components that only has parts (not copies)
                         # on different sheets.
                         for ref in comp.path_and_ref:
@@ -665,17 +666,15 @@ class Window(gui.MainFrame):
                                 continue
                             # Skip parts of the same comp from different sheets
                             for value in values:
-                                tmp_ref = value[2]
-                                tmp_ref = tmp_ref.split('(')[0]
-                                tmp_ref = tmp_ref.rstrip('*')
+                                tmp_ref = get_pure_ref(value[2])
                                 if tmp_ref == ref[1]:
                                     break
                             else:
                                 new_row = list(row)
                                 if ref[1] == comp.fields[0].text:
-                                    new_row[2] = comp.fields[0].text + prefix
+                                    new_row[2] = prefix + comp.fields[0].text
                                 else:
-                                    new_row[2] = '{}({})'.format(ref[1], comp.fields[0].text)
+                                    new_row[2] = '({}){}'.format(comp.fields[0].text, ref[1])
                                 values.append(new_row)
                     else:
                         values.append(row)
@@ -702,9 +701,9 @@ class Window(gui.MainFrame):
                     if not item.ref.startswith('#'):
                         for value in sorted_values:
                             # Skip copies of the one component (see 'path_and_ref' in Comp)
-                            if ('(' in value[2]) and (')' in value[2]):
+                            if comp_is_copy(value[2]):
                                 continue
-                            if value[2].rstrip('*') == item.fields[0].text \
+                            if get_pure_ref(value[2]) == item.fields[0].text \
                                     and value[-1] == sheet.sch_name:
                                 # Default field of "value"
                                 if field_names[4] == u'':
@@ -1630,9 +1629,8 @@ class Window(gui.MainFrame):
             comp_fields = []
             grid_values = self.grid.get_values()
             for row in grid_values:
-                # Remove extra data from ref in comp like 'R123(R321)' or 'R321*'
-                row[2] = row[2].split('(')[0]
-                row[2] = row[2].rstrip('*')
+                # Remove extra data from ref in comp like '(R321)R123' or 'R321*'
+                row[2] = get_pure_ref(row[2])
                 if (row[0] == u'1') | all_components:
                     fields = row[1:-1]
                     # Split reference on index and number
@@ -1711,7 +1709,7 @@ class Window(gui.MainFrame):
             else:
                 wx.MessageBox(
                     u'Перечень элементов успешно создан и сохранен!',
-                    u'kicdbom2spec',
+                    u'kicadbom2spec',
                     wx.ICON_INFORMATION | wx.OK,
                     self
                     )

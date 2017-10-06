@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*-    Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4    -*-
 ### BEGIN LICENSE
-# Copyright (C) 2016 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
+# Copyright (C) 2017 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
@@ -21,6 +21,28 @@ import wx
 import wx.grid
 from operator import itemgetter
 from complist import REF_REGULAR_EXPRESSION
+
+def get_pure_ref(ref):
+    """
+    Remove additional markers (like (R321)R123, (*)R321, C45* etc.)
+    and return pure value of the reference.
+
+    """
+    pure_ref = ref.split(')')[-1]
+    pure_ref = pure_ref.rstrip('*')
+    return pure_ref
+
+def comp_is_copy(ref):
+    """
+    Return true if component is a copy of another (one component with
+    different references).
+
+    """
+    if '(' in ref and ')' in ref and not ref.startswith('(*)'):
+        return True
+    else:
+        return False
+
 
 class EditorCtrlPopup(wx.Dialog):
     """
@@ -711,7 +733,7 @@ class CellEditor(wx.grid.PyGridCellEditor):
 
     def ApplyEdit(self, row, col, grid):
         value = self.control.text_ctrl.GetValue()
-        grid.GetTable().SetValue(row, col, value)
+        grid.set_cell_value(row, col, value)
         self.start_value = ''
         self.control.text_ctrl.SetValue('')
         self.control.clear_items()
@@ -853,17 +875,17 @@ class Grid(wx.grid.Grid):
 
         """
         cur_ref = self.GetCellValue(row, 2)
-        # Copies of the component (like "R123(R321)") is read only
-        if '(' in cur_ref and ')' in cur_ref:
+        # Copies of the component (like "(R321)R123") is read only
+        if comp_is_copy(cur_ref):
             return
         self.SetCellValue(row, col, value)
         # Find copies and changes it too.
-        if cur_ref.endswith('*'):
-            ref_orig = cur_ref.rstrip('*')
+        if cur_ref.startswith('(*)'):
+            ref_orig = get_pure_ref(cur_ref)
             rows = self.GetNumberRows()
             for cur_row in range(rows):
                 cur_row_ref = self.GetCellValue(cur_row, 2)
-                if cur_row_ref.endswith('(' + ref_orig + ')'):
+                if cur_row_ref.startswith('(' + ref_orig + ')'):
                     self.SetCellValue(cur_row, col, value)
 
     def update_attributes(self):
@@ -889,8 +911,8 @@ class Grid(wx.grid.Grid):
                         (col == 4 and self.window.library):
                     self.SetReadOnly(row, col)
                     self.SetCellAlignment(row, col, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
-                # Copies of the component (like "R123(R321)") is read only
-                if '(' in ref_value and ')' in ref_value:
+                # Copies of the component (like "(R321)R123") is read only
+                if comp_is_copy(ref_value):
                     self.SetReadOnly(row, col)
         for col in range(cols):
             # Remove extra characters from title
@@ -993,10 +1015,10 @@ class Grid(wx.grid.Grid):
         by clicking left button of the mouse.
 
         """
-        # Copies of the component (like "R123(R321)") is read only
+        # Copies of the component (like "(R321)R123") is read only
         ref = self.GetCellValue(event.GetRow(), 2)
         if event.GetCol() == 0 and \
-                not ('(' in ref and ')' in ref) and \
+                not comp_is_copy(ref) and \
                 not self.window.library:
 
             cell_value = self.GetCellValue(
@@ -1022,15 +1044,15 @@ class Grid(wx.grid.Grid):
 
     def on_left_dclick(self, event):
         """
-        Show info about editing copies of the component like "R123(R321)".
+        Show info about editing copies of the component like "(R321)R123".
 
         """
-        # Copies of the component (like "R123(R321)") is read only
+        # Copies of the component (like "(R321)R123") is read only
         ref = self.GetCellValue(event.GetRow(), 2)
-        if '(' in ref and ')' in ref:
-            matches = re.search(r'(.+)\((.+)\)', ref)
-            ref_copy = matches.groups()[0]
-            ref_orig = matches.groups()[1]
+        if comp_is_copy(ref):
+            matches = re.search(r'\((.+)\)(.+)\*?', ref)
+            ref_orig = matches.groups()[0]
+            ref_copy = matches.groups()[1]
             if wx.MessageBox(
                     u'Компонент "{copy}" является копией компонента "{orig}"\n' \
                     u'и доступен только для чтения. Поля компонентов копий\n' \
@@ -1046,7 +1068,7 @@ class Grid(wx.grid.Grid):
                 rows = self.GetNumberRows()
                 for row in range(rows):
                     row_ref = self.GetCellValue(row, 2)
-                    if row_ref == ref_orig + '*':
+                    if row_ref == '(*)' + ref_orig:
                         self.SetGridCursor(row, event.GetCol())
                         self.SelectRow(row)
                         self.MakeCellVisible(row, event.GetCol())
@@ -1066,10 +1088,10 @@ class Grid(wx.grid.Grid):
             return
         cur_col = self.GetGridCursorCol()
         cur_row = self.GetGridCursorRow()
-        # Copies of the component (like "R123(R321)") is read only
+        # Copies of the component (like "(R321)R123") is read only
         ref = self.GetCellValue(cur_row, 2)
         if event.GetKeyCode() == wx.WXK_SPACE and cur_col == 0 and \
-                not ('(' in ref and ')' in ref) and \
+                not comp_is_copy(ref) and \
                 not self.window.library:
             cell_value = self.GetCellValue(cur_row, cur_col)
             if cell_value == '1':
@@ -1099,9 +1121,8 @@ class Grid(wx.grid.Grid):
 
             """
             ref = row[2]
-            # Remove extra data from ref in comp like 'R123(R321)' or 'R321*'
-            ref = ref.split('(')[0]
-            ref = ref.rstrip('*')
+            # Remove extra data from ref in comp like '(R321)R123' or 'R321*'
+            ref = get_pure_ref(ref)
 
             matches = re.search(REF_REGULAR_EXPRESSION, ref)
             ref_val = matches.group(1)
@@ -1114,9 +1135,8 @@ class Grid(wx.grid.Grid):
 
             """
             ref = row[2]
-            # Remove extra data from ref in comp like 'R123(R321)' or 'R321*'
-            ref = ref.split('(')[0]
-            ref = ref.rstrip('*')
+            # Remove extra data from ref in comp like '(R321)R123' or 'R321*'
+            ref = get_pure_ref(ref)
 
             matches = re.search(REF_REGULAR_EXPRESSION, ref)
             num_val = int(matches.group(2))
