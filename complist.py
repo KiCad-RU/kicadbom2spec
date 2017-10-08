@@ -317,10 +317,10 @@ class CompList():
                 return None
 
         comp_array = []
-        components = self.get_components(sch_file_name)
         if comp_fields:
             comp_array = comp_fields[:]
         else:
+            components = self.get_components(sch_file_name)
             # Handle all lines
             for comp in components:
                 # Skip unannotated components

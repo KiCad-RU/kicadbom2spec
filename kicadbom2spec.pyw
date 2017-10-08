@@ -70,7 +70,7 @@ class Window(gui.MainFrame):
         self.schematic_file = ''
         self.library_file = ''
         self.complist_file = ''
-        self.sheets = []
+        self.schematics = []
         self.library = None
         self.saved = True
         self.not_found = False
@@ -603,8 +603,8 @@ class Window(gui.MainFrame):
         """
         values = []
         complist = CompList()
-        for sheet in self.sheets:
-            for comp in complist.get_components(sheet.sch_name, True):
+        for schematic in self.schematics:
+            for comp in complist.get_components(schematic.sch_name, True):
                 # Skip unannotated components
                 if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
                     continue
@@ -614,7 +614,7 @@ class Window(gui.MainFrame):
                         break
                 else:
                     row = [
-                        u'1',  # Used
+                        u'1', # Used
                         u'',  # Group
                         comp.fields[0].text,  # Reference
                         u'',  # Mark
@@ -623,7 +623,7 @@ class Window(gui.MainFrame):
                         u'',  # Type
                         u'',  # GOST
                         u'',  # Comment
-                        sheet.sch_name  # Sheet name
+                        schematic.sch_name  # Schematic file name
                         ]
                     if self.aliases_dict[u'значение'] == u'':
                         row[4] = comp.fields[1].text
@@ -695,8 +695,8 @@ class Window(gui.MainFrame):
             7:self.aliases_dict[u'стандарт'],
             8:self.aliases_dict[u'примечание']
             }
-        for sheet in self.sheets:
-            for item in sheet.items:
+        for schematic in self.schematics:
+            for item in schematic.items:
                 if item.__class__.__name__ == 'Comp':
                     if not item.ref.startswith('#'):
                         for value in sorted_values:
@@ -704,7 +704,7 @@ class Window(gui.MainFrame):
                             if comp_is_copy(value[2]):
                                 continue
                             if get_pure_ref(value[2]) == item.fields[0].text \
-                                    and value[-1] == sheet.sch_name:
+                                    and value[-1] == schematic.sch_name:
                                 # Default field of "value"
                                 if field_names[4] == u'':
                                     item.fields[1].text = value[4]
@@ -724,7 +724,7 @@ class Window(gui.MainFrame):
                                             str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
                                             str_field += u' 0001 C CNN'
                                             str_field += u' "' + field_name + '"'
-                                            item.fields.append(sheet.Comp.Field(str_field.encode('utf-8')))
+                                            item.fields.append(schematic.Comp.Field(str_field.encode('utf-8')))
                                     else:
                                         for field_index, field in enumerate(item.fields):
                                             if hasattr(field, 'name'):
@@ -738,7 +738,7 @@ class Window(gui.MainFrame):
                                     str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
                                     str_field += u' 0001 C CNN'
                                     str_field += u' "Исключён из ПЭ"'
-                                    item.fields.append(sheet.Comp.Field(str_field.encode('utf-8')))
+                                    item.fields.append(schematic.Comp.Field(str_field.encode('utf-8')))
                                 else:
                                     for field_index, field in enumerate(item.fields):
                                         if hasattr(field, 'name'):
@@ -1192,12 +1192,11 @@ class Window(gui.MainFrame):
             self.library = None
             self.init_grid()
             complist = CompList()
-            sheet_names = [self.schematic_file]
-            sheet_names.extend(complist.get_sheets(self.schematic_file))
-            sheet_names = sorted(sheet_names)
-            self.sheets = []
-            for sheet_name in sheet_names:
-                self.sheets.append(Schematic(sheet_name))
+            schematic_names = [self.schematic_file]
+            schematic_names.extend(complist.get_sheets(self.schematic_file))
+            self.schematics = []
+            for schematic_name in schematic_names:
+                self.schematics.append(Schematic(schematic_name))
             sch_values = self.get_schematic_values()
             self.grid.AppendRows(len(sch_values))
             self.grid.set_values(sch_values)
@@ -1273,30 +1272,30 @@ class Window(gui.MainFrame):
         """
         comp_values = self.grid.get_values()
         self.set_schematic_values(comp_values)
-        for sheet in self.sheets:
-            if sheet.sch_name == self.schematic_file:
+        for schematic in self.schematics:
+            if schematic.sch_name == self.schematic_file:
                 # Stamp fields
-                sheet.descr.comment1 = self.stamp_dict['decimal_num']
-                sheet.descr.comment2 = self.stamp_dict['developer']
-                sheet.descr.comment3 = self.stamp_dict['verifier']
-                sheet.descr.comment4 = self.stamp_dict['approver']
-                sheet.descr.comp = self.stamp_dict['comp']
-                sheet.descr.title = self.stamp_dict['title']
+                schematic.descr.comment1 = self.stamp_dict['decimal_num']
+                schematic.descr.comment2 = self.stamp_dict['developer']
+                schematic.descr.comment3 = self.stamp_dict['verifier']
+                schematic.descr.comment4 = self.stamp_dict['approver']
+                schematic.descr.comp = self.stamp_dict['comp']
+                schematic.descr.title = self.stamp_dict['title']
 
             try:
-                if os.path.exists(sheet.sch_name + '.tmp'):
-                    os.remove(sheet.sch_name + '.tmp')
-                sheet.save(sheet.sch_name + '.tmp')
-                os.remove(sheet.sch_name)
-                os.rename(sheet.sch_name + '.tmp', sheet.sch_name)
+                if os.path.exists(schematic.sch_name + '.tmp'):
+                    os.remove(schematic.sch_name + '.tmp')
+                schematic.save(schematic.sch_name + '.tmp')
+                os.remove(schematic.sch_name)
+                os.rename(schematic.sch_name + '.tmp', schematic.sch_name)
                 self.saved = True
                 self.menuitem_save_sch.Enable(False)
             except:
-                if os.path.exists(sheet.sch_name + '.tmp'):
-                    os.remove(sheet.sch_name + '.tmp')
+                if os.path.exists(schematic.sch_name + '.tmp'):
+                    os.remove(schematic.sch_name + '.tmp')
                 wx.MessageBox(
                     u'При сохранении файла схемы:\n' +
-                    sheet.sch_name + '\n' \
+                    schematic.sch_name + '\n' \
                     u'возникла ошибка:\n' +
                     str(sys.exc_info()[1]) + '\n' +
                     u'Файл не сохранен.',
@@ -1313,22 +1312,22 @@ class Window(gui.MainFrame):
         comp_values = self.grid.get_values()
         self.set_schematic_values(comp_values)
         new_schematic_file = ''
-        for sheet in self.sheets:
-            if sheet.sch_name == self.schematic_file:
+        for schematic in self.schematics:
+            if schematic.sch_name == self.schematic_file:
                 # Stamp fields
-                sheet.descr.comment1 = self.stamp_dict['decimal_num']
-                sheet.descr.comment2 = self.stamp_dict['developer']
-                sheet.descr.comment3 = self.stamp_dict['verifier']
-                sheet.descr.comment4 = self.stamp_dict['approver']
-                sheet.descr.comp = self.stamp_dict['comp']
-                sheet.descr.title = self.stamp_dict['title']
+                schematic.descr.comment1 = self.stamp_dict['decimal_num']
+                schematic.descr.comment2 = self.stamp_dict['developer']
+                schematic.descr.comment3 = self.stamp_dict['verifier']
+                schematic.descr.comment4 = self.stamp_dict['approver']
+                schematic.descr.comp = self.stamp_dict['comp']
+                schematic.descr.title = self.stamp_dict['title']
 
             try:
                 save_sch_dialog = wx.FileDialog(
                     self,
                     u'Сохранить схему как...',
-                    os.path.dirname(sheet.sch_name),
-                    os.path.basename(sheet.sch_name),
+                    os.path.dirname(schematic.sch_name),
+                    os.path.basename(schematic.sch_name),
                     u'Схема (*.sch)|*.sch|Все файлы (*.*)|*.*',
                     wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
                     )
@@ -1337,11 +1336,11 @@ class Window(gui.MainFrame):
                 new_schematic_file = save_sch_dialog.GetPath()
                 if os.path.exists(new_schematic_file  + '.tmp'):
                     os.remove(new_schematic_file + '.tmp')
-                sheet.save(new_schematic_file + '.tmp')
+                schematic.save(new_schematic_file + '.tmp')
                 if os.path.exists(new_schematic_file):
                     os.remove(new_schematic_file)
                 os.rename(new_schematic_file + '.tmp', new_schematic_file)
-                if new_schematic_file == sheet.sch_name:
+                if new_schematic_file == schematic.sch_name:
                     self.saved = True
                     self.menuitem_save_sch.Enable(False)
             except:
