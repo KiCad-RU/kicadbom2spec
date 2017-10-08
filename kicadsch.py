@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*-    Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4    -*-
 ### BEGIN LICENSE
-# Copyright (C) 2016 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
+# Copyright (C) 2017 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
@@ -25,7 +25,6 @@ class Schematic:
     """
     EESCHEMA_FILE_STAMP = 'EESchema'
     SCHEMATIC_HEAD_STRING = 'Schematic File Version'
-    EESCHEMA_VERSION = 2
 
     def __init__(self, sch_name):
         """
@@ -58,9 +57,7 @@ class Schematic:
         first_line = sch_file.readline().encode('utf-8')
         first_line = first_line.replace('\n', '')
         if first_line.startswith(self.EESCHEMA_FILE_STAMP):
-            first_line = first_line.replace(self.EESCHEMA_FILE_STAMP, '')
-            first_line = first_line.replace(self.SCHEMATIC_HEAD_STRING, '')
-            self.version = int(split_line(first_line)[0])
+            self.version = int(split_line(first_line)[-1])
         else:
             return
         for sch_line in sch_file:
@@ -113,7 +110,7 @@ class Schematic:
         first_line = '{stamp} {head} {version}\n'.format(
                      stamp = self.EESCHEMA_FILE_STAMP,
                      head = self.SCHEMATIC_HEAD_STRING,
-                     version = self.EESCHEMA_VERSION
+                     version = self.version
                      )
         sch_file.write(first_line.decode('utf-8'))
 
