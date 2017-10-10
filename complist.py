@@ -316,12 +316,13 @@ class CompList():
             else:
                 return None
 
+        components = self.get_components(sch_file_name)
         comp_array = []
         if comp_fields:
+            # Copy prepared fields
             comp_array = comp_fields[:]
         else:
-            components = self.get_components(sch_file_name)
-            # Handle all lines
+            # Load all fields
             for comp in components:
                 # Skip unannotated components
                 if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
