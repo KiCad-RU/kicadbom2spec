@@ -677,6 +677,7 @@ class EditorCtrl(wx.Control):
                 )
         submenu_item = menu.AppendItem(submenu_item)
 
+        # Enable/disable items
         if not self.text_ctrl.CanCopy():
             menu.Enable(self.copy_id, False)
 
@@ -689,10 +690,11 @@ class EditorCtrl(wx.Control):
         if not self.text_ctrl.CanCopy():
             menu.Enable(self.delete_id, False)
 
+        # Calculate position
         if event.GetPosition() == wx.DefaultPosition:
             popup_position = wx.Point(
                 self.GetRect().GetWidth(),
-                self.GetRect().GetBottom()
+                self.GetRect().GetHeight()
                 )
         else:
             popup_position = self.ScreenToClient(wx.GetMousePosition())
