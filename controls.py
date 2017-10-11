@@ -332,9 +332,13 @@ class EditorCtrl(wx.Control):
             parent=self,
             style=wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL
             )
+        # Events
         self.text_ctrl.Bind(wx.EVT_SET_FOCUS, self.on_text_ctrl_set_focus)
         self.text_ctrl.Bind(wx.EVT_IDLE, self.on_text_ctrl_idle)
         self.text_ctrl.Bind(wx.EVT_CONTEXT_MENU, self.on_text_ctrl_popup)
+        self.text_ctrl.Bind(wx.EVT_TEXT, self.on_text_changed)
+        self.text_ctrl.Bind(wx.EVT_TEXT_COPY, self.on_copy)
+        self.text_ctrl.Bind(wx.EVT_TEXT_CUT, self.on_cut)
         if sys.platform == 'win32':
             self.Bind(wx.EVT_SET_FOCUS, lambda event: self.text_ctrl.SetFocus())
 
@@ -422,6 +426,16 @@ class EditorCtrl(wx.Control):
         self.std_values = []
         self.button.Enable(False)
 
+    def get_value(self):
+        """
+        Get prepared value.
+
+        """
+        value = self.text_ctrl.GetValue()
+        if self.GetGrandParent().space_as_dot:
+            value = value.replace('᛫', ' ')
+        return value
+
     def on_key(self, event):
         """
         Controls from keyboard.
@@ -476,51 +490,105 @@ class EditorCtrl(wx.Control):
             self.text_ctrl.SelectAll()
         event.Skip()
 
+    def on_text_changed(self, event):
+        """
+        Update text after changes.
+
+        """
+        if self.GetGrandParent().space_as_dot:
+            pos = self.text_ctrl.GetInsertionPoint()
+            text = self.text_ctrl.GetValue()
+            text = text.replace(' ', '᛫')
+            self.text_ctrl.ChangeValue(text)
+            self.text_ctrl.SetInsertionPoint(pos)
+        event.Skip()
+
+    def on_copy(self, event):
+        """
+        Copy selected text.
+
+        """
+        if self.GetGrandParent().space_as_dot:
+            if wx.TheClipboard.Open():
+                text = self.text_ctrl.GetStringSelection()
+                if text:
+                    text = text.replace('᛫', ' ')
+                    wx.TheClipboard.SetData(wx.TextDataObject(text))
+                wx.TheClipboard.Close()
+        else:
+            self.text_ctrl.Copy()
+        self.skip_selecting = True
+
+    def on_cut(self, event):
+        """
+        Cut selected text.
+
+        """
+        if self.GetGrandParent().space_as_dot:
+            if wx.TheClipboard.Open():
+                text = self.text_ctrl.GetStringSelection()
+                if text:
+                    start = self.text_ctrl.GetSelection()[0]
+                    end = self.text_ctrl.GetSelection()[1]
+                    self.text_ctrl.Remove(start, end)
+                    self.text_ctrl.SetInsertionPoint(start)
+                    text = text.replace('᛫', ' ')
+                    wx.TheClipboard.SetData(wx.TextDataObject(text))
+                wx.TheClipboard.Close()
+        else:
+            self.text_ctrl.Cut()
+        self.skip_selecting = True
+
+    def on_paste(self, event):
+        """
+        Paste text (to selection).
+
+        """
+        self.text_ctrl.Paste()
+        self.skip_selecting = True
+
+    def on_delete(self, event):
+        """
+        Delete (selected) text.
+
+        """
+        self.text_ctrl.WriteText(u'')
+        self.skip_selecting = True
+
+    def on_select_all(self, event):
+        """
+        Select all text.
+
+        """
+        self.text_ctrl.SelectAll()
+        self.skip_selecting = True
+
     def on_text_ctrl_popup(self, event):
         """
         Create popup menu for text control.
 
         """
-        def on_copy(event):
-            self.text_ctrl.Copy()
-            self.skip_selecting = True
-
-        def on_cut(event):
-            self.text_ctrl.Cut()
-            self.skip_selecting = True
-
-        def on_paste(event):
-            self.text_ctrl.Paste()
-            self.skip_selecting = True
-
-        def on_delete(event):
-            self.text_ctrl.WriteText(u'')
-            self.skip_selecting = True
-
-        def on_select_all(event):
-            self.text_ctrl.SelectAll()
-            self.skip_selecting = True
 
         menu = wx.Menu()
         item = wx.MenuItem(menu, self.copy_id, u'Копировать')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy_small.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
-        self.Bind(wx.EVT_MENU, on_copy, item)
+        self.Bind(wx.EVT_MENU, self.on_copy, item)
 
         item = wx.MenuItem(menu, self.cut_id, u'Вырезать')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-cut_small.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
-        self.Bind(wx.EVT_MENU, on_cut, item)
+        self.Bind(wx.EVT_MENU, self.on_cut, item)
 
         item = wx.MenuItem(menu, self.paste_id, u'Вставить')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-paste_small.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
-        self.Bind(wx.EVT_MENU, on_paste, item)
+        self.Bind(wx.EVT_MENU, self.on_paste, item)
 
         item = wx.MenuItem(menu, self.delete_id, u'Удалить')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-delete_small.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
-        self.Bind(wx.EVT_MENU, on_delete, item)
+        self.Bind(wx.EVT_MENU, self.on_delete, item)
 
         menu.Append(wx.ID_SEPARATOR)
 
@@ -532,9 +600,9 @@ class EditorCtrl(wx.Control):
                 )
             )
         menu.AppendItem(item)
-        self.Bind(wx.EVT_MENU, on_select_all, item)
+        self.Bind(wx.EVT_MENU, self.on_select_all, item)
 
-        cur_value = self.text_ctrl.GetValue()
+        cur_value = self.get_value()
         if not cur_value in [u'', u'<не изменять>']:
             menu.Append(wx.ID_SEPARATOR)
             if cur_value in self.std_values:
@@ -636,7 +704,7 @@ class EditorCtrl(wx.Control):
         Add current value to standard values.
 
         """
-        cur_value = self.text_ctrl.GetValue()
+        cur_value = self.get_value()
         self.std_values.append(cur_value)
         self.skip_selecting = True
 
@@ -645,7 +713,7 @@ class EditorCtrl(wx.Control):
         Remove current value from standard values.
 
         """
-        cur_value = self.text_ctrl.GetValue()
+        cur_value = self.get_value()
         self.std_values.remove(cur_value)
         self.skip_selecting = True
 
@@ -719,7 +787,7 @@ class CellEditor(wx.grid.PyGridCellEditor):
         self.control.SetFocus()
 
     def EndEdit(self, row, col, grid, old_value):
-        cur_value = self.control.text_ctrl.GetValue()
+        cur_value = self.control.get_value()
         if cur_value != old_value:
             return cur_value
         else:
@@ -732,7 +800,7 @@ class CellEditor(wx.grid.PyGridCellEditor):
         return False
 
     def ApplyEdit(self, row, col, grid):
-        value = self.control.text_ctrl.GetValue()
+        value = self.control.get_value()
         grid.set_cell_value(row, col, value)
         self.start_value = ''
         self.control.text_ctrl.SetValue('')
@@ -752,6 +820,56 @@ class CellEditor(wx.grid.PyGridCellEditor):
             std_values,
             default_value
             )
+
+class CellRenderer(wx.grid.PyGridCellRenderer):
+    """
+    Custom cell renderer that allows to show white spaces as dots.
+
+    """
+
+    def __init__(self):
+        wx.grid.PyGridCellRenderer.__init__(self)
+
+    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
+        # Draw background
+        dc.SetBackgroundMode(wx.SOLID)
+        if isSelected:
+            dc.SetBrush(wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT), wx.BRUSHSTYLE_SOLID))
+        else:
+            dc.SetBrush(wx.Brush(attr.GetBackgroundColour(), wx.BRUSHSTYLE_SOLID))
+        dc.SetPen(wx.TRANSPARENT_PEN)
+        dc.DrawRectangleRect(rect)
+        # Draw text
+        dc.SetBackgroundMode(wx.TRANSPARENT)
+        dc.SetFont(attr.GetFont())
+        text = grid.GetCellValue(row, col)
+        if grid.space_as_dot:
+            text = text.replace(' ', '᛫')
+        if isSelected:
+            dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT))
+        else:
+            dc.SetTextForeground(attr.GetTextColour())
+        h_align = grid.GetCellAlignment(row, col)[0]
+        v_align = grid.GetCellAlignment(row, col)[1]
+        text_rect = wx.Rect(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight())
+        # Margins 2px
+        if text_rect.GetWidth() > 4 and text_rect.GetHeight() > 4:
+            text_rect.SetX(rect.GetX() + 2)
+            text_rect.SetY(rect.GetY() + 2)
+            text_rect.SetWidth(rect.GetWidth() - 4)
+            text_rect.SetHeight(rect.GetHeight() - 4)
+            dc.DrawLabel(text, text_rect, h_align|v_align)
+
+    def GetBestSize(self, grid, attr, dc, row, col):
+        text = grid.GetCellValue(row, col)
+        if grid.space_as_dot:
+            text = text.replace(' ', '᛫')
+        dc.SetFont(attr.GetFont())
+        w, h = dc.GetTextExtent(text)
+        return wx.Size(w, h)
+
+    def Clone(self):
+        return CellRenderer()
 
 
 class Grid(wx.grid.Grid):
@@ -773,10 +891,12 @@ class Grid(wx.grid.Grid):
         self.redo_buffer = []
         self.last_sorted_col = -1
         self.reversed_sorting = False
+        self.space_as_dot = False # ' ' or '᛫'
 
         # Grid
         self.CreateGrid(0, 9)
         self.EnableEditing(True)
+        self.SetDefaultRenderer(CellRenderer())
         self.SetSelectionMode(wx.grid.Grid.SelectRows)
 
         # Events
@@ -826,22 +946,22 @@ class Grid(wx.grid.Grid):
         self.SetColLabelValue(7, u'Стандарт')
         self.SetColLabelValue(8, u'Примечание')
         self.SetColLabelAlignment(
-            wx.ALIGN_CENTRE,
-            wx.ALIGN_CENTRE
+            wx.ALIGN_CENTRE_HORIZONTAL,
+            wx.ALIGN_CENTRE_VERTICAL
             )
 
         # Rows
         self.EnableDragRowSize(False)
         self.SetRowLabelSize(1)
         self.SetRowLabelAlignment(
-            wx.ALIGN_CENTRE,
-            wx.ALIGN_CENTRE
+            wx.ALIGN_CENTRE_HORIZONTAL,
+            wx.ALIGN_CENTRE_VERTICAL
             )
 
         # Cell Defaults
         self.SetDefaultCellAlignment(
             wx.ALIGN_LEFT,
-            wx.ALIGN_CENTRE
+            wx.ALIGN_CENTRE_VERTICAL
             )
 
         # Cell editor
@@ -899,18 +1019,19 @@ class Grid(wx.grid.Grid):
             ref_value = self.GetCellValue(row, 2)
             for col in range(cols):
                 # Set default values
+                self.SetCellRenderer(row, col, CellRenderer())
                 self.SetCellBackgroundColour(row, col, self.GetDefaultCellBackgroundColour())
                 self.SetReadOnly(row, col, False)
                 # Checkboxes
                 if col == 0:
-                    self.SetReadOnly(row, col)
                     self.SetCellRenderer(row, col, wx.grid.GridCellBoolRenderer())
+                    self.SetReadOnly(row, col)
                 # Ref is read only
                 # Value of the component from library is read only
                 elif col == 2 or \
                         (col == 4 and self.window.library):
                     self.SetReadOnly(row, col)
-                    self.SetCellAlignment(row, col, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+                    self.SetCellAlignment(row, col, wx.ALIGN_CENTRE_HORIZONTAL, wx.ALIGN_CENTRE_VERTICAL)
                 # Copies of the component (like "(R321)R123") is read only
                 if comp_is_copy(ref_value):
                     self.SetReadOnly(row, col)

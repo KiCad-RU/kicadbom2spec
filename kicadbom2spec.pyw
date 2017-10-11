@@ -201,6 +201,8 @@ class Window(gui.MainFrame):
                 if self.settings.has_section('general'):
                     if self.settings.has_option('general', 'remember selection'):
                         self.save_selected_mark = self.settings.getboolean('general', 'remember selection')
+                    if self.settings.has_option('general', 'space as dot'):
+                        self.grid.space_as_dot = self.settings.getboolean('general', 'space as dot')
 
                 if self.settings.has_section('auto filling groups'):
                     for param in self.settings.options('auto filling groups'):
@@ -448,6 +450,11 @@ class Window(gui.MainFrame):
             'remember selection',
             {True:'1', False:'0'}[self.save_selected_mark]
             )
+        self.settings.set(
+            'general',
+            'space as dot',
+            {True:'1', False:'0'}[self.grid.space_as_dot]
+            )
 
         self.settings.remove_section('recent sch')
         if self.submenu_recent_sch.GetMenuItemCount() > 0:
@@ -485,6 +492,14 @@ class Window(gui.MainFrame):
                     col_size = self.grid.GetColSize(col)
                     self.settings.set('column sizes', str(col), str(col_size))
 
+            if not self.settings.has_section('general'):
+                self.settings.add_section('general')
+            self.settings.set(
+                'general',
+                'space as dot',
+                {True:'1', False:'0'}[self.grid.space_as_dot]
+                )
+
             self.GetSizer().Remove(self.panel_components.GetSizer())
             self.grid.Destroy()
 
@@ -516,12 +531,16 @@ class Window(gui.MainFrame):
         self.Layout()
         self.grid.SetFocus()
 
-        # Restore column width
         if hasattr(self, 'settings'):
+            # Restore column width
             if self.settings.has_section('column sizes'):
                 for col in self.settings.options('column sizes'):
                     col_size = self.settings.getint('column sizes', col)
                     self.grid.SetColSize(int(col), col_size)
+            # Restore other options
+            if self.settings.has_section('general'):
+                if self.settings.has_option('general', 'space as dot'):
+                    self.grid.space_as_dot = self.settings.getboolean('general', 'space as dot')
 
     def add_to_recent(self, file_name, file_type):
         """
@@ -1082,7 +1101,7 @@ class Window(gui.MainFrame):
                         continue
                     if self.library and col == 4:
                         continue
-                    new_value = getattr(editor, 'editor_ctrl_%i' % col).text_ctrl.GetValue()
+                    new_value = getattr(editor, 'editor_ctrl_%i' % col).get_value()
                     if new_value == u'<не изменять>':
                         continue
                     else:
@@ -1097,6 +1116,7 @@ class Window(gui.MainFrame):
             editor.SetMaxSize((self.GetSize().GetWidth(), -1))
             editor.SetTitle(u'Вставка полей')
             editor.checkbox.Hide()
+            editor.space_as_dot = self.grid.space_as_dot
             col_num = self.grid.GetNumberCols()
             selected_rows = self.grid.get_selected_rows()
             for i in range(1, col_num):
@@ -1736,7 +1756,7 @@ class Window(gui.MainFrame):
                 for col in range(1, col_num):
                     if col == 2:
                         continue
-                    new_value = getattr(editor, 'editor_ctrl_%i' % col).text_ctrl.GetValue()
+                    new_value = getattr(editor, 'editor_ctrl_%i' % col).get_value()
                     if new_value == u'<не изменять>':
                         continue
                     else:
@@ -1748,6 +1768,7 @@ class Window(gui.MainFrame):
 
         editor = gui.EditorDialog(self)
         editor.SetMaxSize((self.GetSize().GetWidth(), -1))
+        editor.space_as_dot = self.grid.space_as_dot
         selected_rows = self.grid.get_selected_rows()
         col_num = self.grid.GetNumberCols()
         all_choices = self.grid.get_choices(selected_rows, range(0, col_num))
@@ -1852,6 +1873,37 @@ class Window(gui.MainFrame):
             index = settings_editor.auto_groups_checklistbox.GetSelections()[0]
             settings_editor.auto_groups_checklistbox.Delete(index)
 
+        def mark_spaces_as_dots(event):
+            """
+            Replace spaces to dots.
+
+            """
+            text_ctrl = event.GetEventObject()
+            pos = text_ctrl.GetInsertionPoint()
+            text = text_ctrl.GetValue()
+            text = text.replace(' ', '᛫')
+            text_ctrl.ChangeValue(text)
+            text_ctrl.SetInsertionPoint(pos)
+            event.Skip()
+
+        def on_put_to_clipboard(event):
+            """
+            Replace dots to spaces when text moves outside.
+
+            """
+            text_ctrl = event.GetEventObject()
+            if wx.TheClipboard.Open():
+                text = text_ctrl.GetStringSelection()
+                if text:
+                    if event.GetEventType() == wx.EVT_TEXT_CUT.typeId:
+                        start = text_ctrl.GetSelection()[0]
+                        end = text_ctrl.GetSelection()[1]
+                        text_ctrl.Remove(start, end)
+                        text_ctrl.SetInsertionPoint(start)
+                    text = text.replace('᛫', ' ')
+                    wx.TheClipboard.SetData(wx.TextDataObject(text))
+                wx.TheClipboard.Close()
+
         settings_editor = gui.SettingsDialog(self)
         settings_editor.auto_groups_checklistbox.Bind(wx.EVT_LISTBOX, on_auto_groups_checklistbox_selected)
         settings_editor.auto_groups_checklistbox.Bind(wx.EVT_LISTBOX_DCLICK, on_auto_groups_edit_button_clicked)
@@ -1892,6 +1944,12 @@ class Window(gui.MainFrame):
         for i in range(len(separators_field_names)):
             prefix_text = getattr(settings_editor, 'separator{}_prefix_text'.format(i + 1))
             suffix_text = getattr(settings_editor, 'separator{}_suffix_text'.format(i + 1))
+            prefix_text.Bind(wx.EVT_TEXT, mark_spaces_as_dots)
+            suffix_text.Bind(wx.EVT_TEXT, mark_spaces_as_dots)
+            prefix_text.Bind(wx.EVT_TEXT_COPY, on_put_to_clipboard)
+            suffix_text.Bind(wx.EVT_TEXT_COPY, on_put_to_clipboard)
+            prefix_text.Bind(wx.EVT_TEXT_CUT, on_put_to_clipboard)
+            suffix_text.Bind(wx.EVT_TEXT_CUT, on_put_to_clipboard)
             prefix = self.separators_dict[separators_field_names[i]][0]
             suffix = self.separators_dict[separators_field_names[i]][1]
             prefix_text.SetValue(prefix)
@@ -1902,6 +1960,8 @@ class Window(gui.MainFrame):
         settings_editor.col_size_checkbox.SetValue(self.save_col_size)
 
         settings_editor.remember_selection_checkbox.SetValue(self.save_selected_mark)
+
+        settings_editor.space_as_dot_checkbox.SetValue(self.grid.space_as_dot)
 
         for suffix, value in self.auto_groups_dict.items():
             checked = {'1':True, '0':False}[value[:1]]
@@ -1933,6 +1993,8 @@ class Window(gui.MainFrame):
                 self.separators_dict[separators_field_names[i]] = ['','']
                 prefix = prefix_text.GetValue()
                 suffix = suffix_text.GetValue()
+                prefix = prefix.replace('᛫', ' ')
+                suffix = suffix.replace('᛫', ' ')
                 self.separators_dict[separators_field_names[i]][0] = prefix
                 self.separators_dict[separators_field_names[i]][1] = suffix
 
@@ -1949,12 +2011,18 @@ class Window(gui.MainFrame):
             if not self.save_col_size:
                 self.settings.remove_section('column sizes')
             self.save_selected_mark = settings_editor.remember_selection_checkbox.GetValue()
+            self.grid.space_as_dot = settings_editor.space_as_dot_checkbox.GetValue()
             if not self.settings.has_section('general'):
                 self.settings.add_section('general')
             self.settings.set(
                 'general',
                 'remember selection',
                 {True:'1', False:'0'}[self.save_selected_mark]
+                )
+            self.settings.set(
+                'general',
+                'space as dot',
+                {True:'1', False:'0'}[self.grid.space_as_dot]
                 )
 
             auto_groups_items_count = settings_editor.auto_groups_checklistbox.GetCount()
@@ -1965,6 +2033,7 @@ class Window(gui.MainFrame):
                 parts = split_auto_groups_item(text)
                 if parts:
                     self.auto_groups_dict[parts[0]] = value + parts[1]
+            self.Refresh()
 
 
     def on_settings_import(self, event):

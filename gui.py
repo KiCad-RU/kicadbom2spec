@@ -917,6 +917,11 @@ class SettingsDialog ( wx.Dialog ):
 		
 		general_tab_sizer.Add( self.remember_selection_checkbox, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
+		self.space_as_dot_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Отображать пробелы в виде точек \"᛫\"", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.space_as_dot_checkbox.SetToolTipString( u"Если этот параметр установлен, то в таблице и в полях ввода пробелы будут отображаться в виде специальных символов." )
+		
+		general_tab_sizer.Add( self.space_as_dot_checkbox, 0, wx.RIGHT|wx.LEFT, 5 )
+		
 		self.staticline2 = wx.StaticLine( self.general_tab_scrolledwindow, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		general_tab_sizer.Add( self.staticline2, 0, wx.EXPAND |wx.ALL, 5 )
 		
@@ -960,7 +965,7 @@ class SettingsDialog ( wx.Dialog ):
 		self.general_tab_scrolledwindow.SetSizer( general_tab_sizer )
 		self.general_tab_scrolledwindow.Layout()
 		general_tab_sizer.Fit( self.general_tab_scrolledwindow )
-		self.settings_tabs.AddPage( self.general_tab_scrolledwindow, u"Основные", False )
+		self.settings_tabs.AddPage( self.general_tab_scrolledwindow, u"Основные", True )
 		self.values_tab_panel = wx.Panel( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		values_tab_sizer = wx.BoxSizer( wx.VERTICAL )
 		
@@ -1133,6 +1138,24 @@ class SettingsDialog ( wx.Dialog ):
 		
 		
 		separators_common_sizer.Add( separators_sizer, 0, wx.EXPAND, 5 )
+		
+		self.m_staticline9 = wx.StaticLine( self.separators_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		separators_common_sizer.Add( self.m_staticline9, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		separators_note_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.separators_note_statictext = wx.StaticText( self.separators_panel, wx.ID_ANY, u"Примечание:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.separators_note_statictext.Wrap( -1 )
+		self.separators_note_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		
+		separators_note_sizer.Add( self.separators_note_statictext, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.separators_notetext_statictext = wx.StaticText( self.separators_panel, wx.ID_ANY, u"символом \"᛫\" обозначены пробелы.", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.separators_notetext_statictext.Wrap( -1 )
+		separators_note_sizer.Add( self.separators_notetext_statictext, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		
+		separators_common_sizer.Add( separators_note_sizer, 0, wx.LEFT, 5 )
 		
 		
 		separators_common_sizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
