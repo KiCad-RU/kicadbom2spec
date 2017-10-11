@@ -1634,7 +1634,11 @@ class Window(gui.MainFrame):
                 value = field_text.GetValue()
                 value = value.replace('\n', '\\\\n')
                 value = value.replace('"', '\\"')
-                self.stamp_dict[field] = value
+                if self.stamp_dict[field] != value:
+                    self.stamp_dict[field] = value
+                    if field != 'inspector':
+                        self.saved = False
+                        self.menuitem_save_sch.Enable(True)
 
             if not self.settings.has_section('complist'):
                 self.settings.add_section('complist')
@@ -1701,9 +1705,18 @@ class Window(gui.MainFrame):
                     fields.append('1')
                     comp_fields.append(fields)
             try:
+                # Settings
                 complist.need_changes_sheet = need_changes_sheet
+                # Stamp
+                complist.decimal_num = self.stamp_dict['decimal_num']
+                complist.developer = self.stamp_dict['developer']
+                complist.verifier = self.stamp_dict['verifier']
                 complist.inspector = self.stamp_dict['inspector']
-                complist.load(self.schematic_file, comp_fields)
+                complist.approver = self.stamp_dict['approver']
+                complist.comp = self.stamp_dict['comp']
+                complist.title = self.stamp_dict['title']
+                # Comp list
+                complist.load(self.schematic_file, comp_fields, False)
                 complist.save(self.complist_file)
             except:
                 wx.MessageBox(

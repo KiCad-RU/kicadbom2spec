@@ -252,7 +252,7 @@ class CompList():
             os.chdir(exec_path)
         return components
 
-    def load(self, sch_file_name, comp_fields=None):
+    def load(self, sch_file_name, comp_fields=None, load_descr=True):
         """
         Load all components from KiCad Schematic file
         or get fields of the components directly
@@ -316,6 +316,8 @@ class CompList():
             else:
                 return None
 
+        if load_descr:
+            self.get_descr(sch_file_name)
         components = self.get_components(sch_file_name)
         comp_array = []
         if comp_fields:
@@ -378,7 +380,6 @@ class CompList():
                 comp_array[i][ii] = new_field_value
 
         comp_array = sorted(comp_array, key=itemgetter(0))
-        self.get_descr(sch_file_name)
 
         # Split elements into groups
         # output - [['group',[[ref_type, ref_number, mark, value, accuracy, type, GOST, comment, count], ... ]], ... ]
