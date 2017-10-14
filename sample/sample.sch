@@ -1,6 +1,6 @@
-EESchema Schematic File Version 2
+EESchema Schematic File Version 3
 LIBS:sample
-EELAYER 25 0
+EELAYER 26 0
 EELAYER END
 $Descr A4 8268 11693 portrait
 encoding utf-8
@@ -87,6 +87,7 @@ F 6 "±5%" H 3950 4000 60  0001 C CNN "Класс точности"
 F 7 "В" H 3950 4000 60  0001 C CNN "Тип"
 F 8 "ОЖ0.467.18" H 3950 4000 60  0001 C CNN "Стандарт"
 F 9 "270...360 кОм" H 3950 4000 60  0001 C CNN "Примечание"
+F 10 "*" H 4157 4200 138 0000 C CNN "Подбирают при регулировании"
 	1    3950 4000
 	1    0    0    -1  
 $EndComp
@@ -165,4 +166,6 @@ Wire Wire Line
 Wire Wire Line
 	5800 5750 4800 5750
 Connection ~ 4800 5750
+Text Notes 2525 8350 0    138  ~ 0
+* Подбирают при регилировании
 $EndSCHEMATC

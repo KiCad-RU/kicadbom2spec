@@ -185,7 +185,7 @@ class CompList():
         """
         # Reference
         ref = u''
-        if int(element[8]) > 1:
+        if int(element[9]) > 1:
             # Reference number: '5, 6'; '25-28' etc.
             ref = re.search(r'(\d+)(-|,\s?)(\d+)', element[1]).groups()
             # Reference: 'VD1, VD2'; 'C8-C11' etc.
@@ -193,13 +193,16 @@ class CompList():
         else:
             # Reference: 'R5'; 'VT13' etc.
             ref = element[0] + element[1]
+            # Add "*" mark if component "needs adjusting"
+            if element[2]:
+                ref = ref + '*'
         self.replace_text(self.cur_table, u'#1:%d' % self.cur_line, ref)
         # Value - concatenate elements 2..6
-        self.replace_text(self.cur_table, u'#2:%d' % self.cur_line, ''.join(element[2:7]))
+        self.replace_text(self.cur_table, u'#2:%d' % self.cur_line, ''.join(element[3:8]))
         # Count
-        self.replace_text(self.cur_table, u'#3:%d' % self.cur_line, element[8])
+        self.replace_text(self.cur_table, u'#3:%d' % self.cur_line, element[9])
         # Coment
-        self.replace_text(self.cur_table, u'#4:%d' % self.cur_line, element[7])
+        self.replace_text(self.cur_table, u'#4:%d' % self.cur_line, element[8])
 
     def get_descr(self, sch_file_name):
         """
@@ -244,7 +247,7 @@ class CompList():
         for item in sch.items:
             if item.__class__.__name__ == u'Comp':
                 # Skip power symbols
-                if not item.ref.startswith(u'#'):
+                if not item.fields[0].text.startswith(u'#'):
                     components.append(item)
             elif item.__class__.__name__ == u'Sheet' and not root_only:
                 components.extend(self.get_components(item.file_name))
@@ -332,6 +335,11 @@ class CompList():
                 # Skip components with not supported ref type
                 if not re.match(REF_REGULAR_EXPRESSION, comp.fields[0].text):
                     continue
+                # Skip components excluded manually
+                for field in comp.fields:
+                    if hasattr(field, u'name'):
+                        if field.name == u'Исключён из ПЭ':
+                            continue
                 # Skip parts of the same component
                 for row in comp_array:
                     if comp.fields[0].text == (row[1] + row[2]):
@@ -340,8 +348,16 @@ class CompList():
                     temp = []
                     temp.append(get_text_from_field(comp, u'Группа'))
                     ref_type = re.search(REF_REGULAR_EXPRESSION, comp.fields[0].text).group(1)
+                    temp.append(ref_type)
                     ref_num = re.search(REF_REGULAR_EXPRESSION, comp.fields[0].text).group(2)
-                    temp.extend([ref_type, ref_num])
+                    temp.append(ref_num)
+                    for field in comp.fields:
+                        if hasattr(field, u'name'):
+                            if field.name == u'Подбирают при регулировании':
+                                temp.append(True)
+                                break
+                    else:
+                        temp.append(False)
                     temp.append(get_text_from_field(comp, u'Марка'))
                     temp.append(comp.fields[1].text)
                     temp.append(get_text_from_field(comp, u'Класс точности'))
@@ -371,6 +387,9 @@ class CompList():
         for i in range(len(comp_array)):
             comp = get_comp_by_ref(comp_array[i][1] + comp_array[i][2])
             for ii in range(len(comp_array[i])):
+                # Skip for ref_type, ref_num, need_adjust_flag and count
+                if ii in (1, 2, 3, 9):
+                    continue
                 field_value = comp_array[i][ii]
                 new_field_value = apply_substitution(
                     comp,
@@ -382,7 +401,7 @@ class CompList():
         comp_array = sorted(comp_array, key=itemgetter(0))
 
         # Split elements into groups
-        # output - [['group',[[ref_type, ref_number, mark, value, accuracy, type, GOST, comment, count], ... ]], ... ]
+        # output - [['group',[[ref_type, ref_number, need_adjust_flag, mark, value, accuracy, type, GOST, comment, count], ... ]], ... ]
         temp_name = comp_array[0][0]
         temp_array = None
         comp_lines = None
@@ -436,6 +455,7 @@ class CompList():
         comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][1])
         comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][0])
         # Combining the identical elements in one line
+        # If component has "need adjust" flag, combination not allowed
         temp_array = []
         for group in comp_lines:
             first = u''
@@ -454,21 +474,24 @@ class CompList():
                         temp_array.append(temp_group)
                     continue
 
-                if element[0] == prev[0] and int(element[1]) - 1 == int(prev[1]) and element[2:] == prev[2:]:
-                    # equal elements
+                if element[0] == prev[0] and \
+                        int(element[1]) - 1 == int(prev[1]) and \
+                        not element[2] and not prev[2] and\
+                        element[3:] == prev[3:]:
+                    # equal elements without "need adjust" mark
                     last = element[1]
                     last_index = group[1].index(element)
                 else:
-                    # different elements
+                    # different elements or element with mark "need adjust"
                     if int(last) - int(first) > 0:
-                        # several identical elements
+                        # finish processing of several identical elements
                         count = int(last) - int(first) + 1
                         separator = u', '
                         if count > 2:
                             separator = u'-'
                         temp_element = group[1][last_index]
                         temp_element[1] = first + separator + last
-                        temp_element[8] = str(count)
+                        temp_element[9] = str(count)
                         temp_group[1].append(temp_element)
                     else:
                         # next different element
@@ -479,14 +502,14 @@ class CompList():
                 if group[1].index(element) == len(group[1]) - 1:
                     # last element in the group
                     if int(last) - int(first) > 0:
-                        # several identical elements
+                        # finish processing of several identical elements
                         count = int(last) - int(first) + 1
                         separator = u', '
                         if count > 2:
                             separator = u'-'
                         temp_element = group[1][last_index]
                         temp_element[1] = first + separator + last
-                        temp_element[8] = str(count)
+                        temp_element[9] = str(count)
                         temp_group[1].append(temp_element)
                     else:
                         temp_group[1].append(element)

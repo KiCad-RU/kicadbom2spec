@@ -687,6 +687,7 @@ class Window(gui.MainFrame):
                         # on different sheets.
                         for ref in comp.path_and_ref:
                             if ref[1] != comp.fields[0].text:
+                                # Has copy
                                 break
                         else:
                             prefix = ''
@@ -705,6 +706,9 @@ class Window(gui.MainFrame):
                                     new_row[2] = prefix + comp.fields[0].text
                                 else:
                                     new_row[2] = '({}){}'.format(comp.fields[0].text, ref[1])
+                                # Copy "need adjust" mark
+                                if row[2].endswith('*'):
+                                    new_row[2] += '*'
                                 values.append(new_row)
                     else:
                         values.append(row)
@@ -728,13 +732,12 @@ class Window(gui.MainFrame):
         for schematic in self.schematics:
             for item in schematic.items:
                 if item.__class__.__name__ == 'Comp':
-                    if not item.ref.startswith('#') and not item.ref.endswith('?'):
+                    if not item.fields[0].text.startswith('#') and not item.fields[0].text.endswith('?'):
                         for value in sorted_values:
                             # Skip copies of the one component (see 'path_and_ref' in Comp)
                             if self.grid.comp_is_copy(value[2]):
                                 continue
-                            if self.grid.get_pure_ref(value[2]) == item.fields[0].text \
-                                    and value[-1] == schematic.sch_name:
+                            if self.grid.get_pure_ref(value[2]) == item.fields[0].text:
                                 # Default field of "value"
                                 if field_names[4] == u'':
                                     item.fields[1].text = value[4]
@@ -785,66 +788,81 @@ class Window(gui.MainFrame):
                                                 del item.fields[field_index]
                                                 break
 
-                                # Every time create new field with correct position
-                                for field_index, field in enumerate(item.fields):
-                                    if hasattr(field, 'name'):
-                                        if field.name == u'Подбирают при регулировании':
-                                            del item.fields[field_index]
-                                            break
+                                # By default, every time create new field with correct position.
+                                # But if field is already present and its value was changed,
+                                # then leave field as is ("manual mode")
                                 if value[2].endswith('*'):
-                                    # Place field value behind reference
-                                    h_offset = 0
-                                    v_offset = 0
-                                    # Orientations that inverts justify of text
-                                    if item.fields[0].orientation == 'H':
-                                        invert_orient = (
-                                                (-1, 0, 0, 1),
-                                                (0, 1, 1, 0),
-                                                (-1, 0, 0, -1),
-                                                (0, -1, 1, 0)
-                                                )
+                                    for field_index, field in enumerate(item.fields):
+                                        if hasattr(field, 'name'):
+                                            if field.name == u'Подбирают при регулировании':
+                                                if field.text == '*':
+                                                    # Recreate field
+                                                    del item.fields[field_index]
+                                                else:
+                                                    # Leave field as is
+                                                    break
                                     else:
-                                        invert_orient = (
-                                                (0, -1, -1, 0),
-                                                (-1, 0, 0, 1),
-                                                (1, 0, 0, 1),
-                                                (0, -1, 1, 0)
-                                                )
-                                    # Calculate correct position of "*" mark
-                                    # according to field justify and component orientation
-                                    if item.fields[0].hjustify == 'L':
-                                        if item.orient_matrix in invert_orient:
-                                            h_offset = -1 * item.fields[0].size / 2
-                                        else:
-                                            h_offset = item.fields[0].size * (len(item.fields[0].text) + 0.5)
-                                    elif item.fields[0].hjustify == 'R':
-                                        if item.orient_matrix in invert_orient:
-                                            h_offset = item.fields[0].size * (len(item.fields[0].text) + 0.5)
-                                            h_offset *= -1
-                                        else:
-                                            h_offset = item.fields[0].size / 2
-                                    elif item.fields[0].hjustify == 'C':
-                                        h_offset = item.fields[0].size * (len(item.fields[0].text) + 1) / 2
-                                        if item.orient_matrix in invert_orient:
-                                            h_offset *= -1
-                                    # Swap H and V offsets for vertical orientation
-                                    if item.fields[0].orientation == 'V':
-                                        v_offset = h_offset
+                                        # Create field
+                                        # Place field value behind reference
                                         h_offset = 0
+                                        v_offset = 0
+                                        # Orientations that inverts justify of text
+                                        if item.fields[0].orientation == 'H':
+                                            invert_orient = (
+                                                    (-1, 0, 0, 1),
+                                                    (0, 1, 1, 0),
+                                                    (-1, 0, 0, -1),
+                                                    (0, -1, 1, 0)
+                                                    )
+                                        else:
+                                            invert_orient = (
+                                                    (0, -1, -1, 0),
+                                                    (-1, 0, 0, 1),
+                                                    (1, 0, 0, 1),
+                                                    (0, -1, 1, 0)
+                                                    )
+                                        # Calculate correct position of "*" mark
+                                        # according to field justify and component orientation
+                                        if item.fields[0].hjustify == 'L':
+                                            if item.orient_matrix in invert_orient:
+                                                h_offset = -1 * item.fields[0].size / 2
+                                            else:
+                                                h_offset = item.fields[0].size * (len(item.fields[0].text) + 0.5)
+                                        elif item.fields[0].hjustify == 'R':
+                                            if item.orient_matrix in invert_orient:
+                                                h_offset = item.fields[0].size * (len(item.fields[0].text) + 0.5)
+                                                h_offset *= -1
+                                            else:
+                                                h_offset = item.fields[0].size / 2
+                                        elif item.fields[0].hjustify == 'C':
+                                            h_offset = item.fields[0].size * (len(item.fields[0].text) + 1) / 2
+                                            if item.orient_matrix in invert_orient:
+                                                h_offset *= -1
+                                        # Swap H and V offsets for vertical orientation
+                                        if item.fields[0].orientation == 'V':
+                                            v_offset = h_offset
+                                            h_offset = 0
 
-                                    str_field = u'F {} "*" {} {} {} {} {} {} {}{}{} "Подбирают при регулировании"'.format(
-                                        len(item.fields),
-                                        item.fields[0].orientation,
-                                        item.fields[0].pos_x + int(h_offset),
-                                        item.fields[0].pos_y + int(v_offset),
-                                        item.fields[0].size,
-                                        {True:'0000', False:'0001'}[self.show_need_adjust_mark],
-                                        'C',
-                                        item.fields[0].vjustify,
-                                        {True:'I', False:'N'}[item.fields[0].italic],
-                                        {True:'B', False:'N'}[item.fields[0].italic]
-                                        )
-                                    item.fields.append(schematic.Comp.Field(str_field.encode('utf-8')))
+                                        str_field = u'F {} "*" {} {} {} {} {} {} {}{}{} "Подбирают при регулировании"'.format(
+                                            len(item.fields),
+                                            item.fields[0].orientation,
+                                            item.fields[0].pos_x + int(h_offset),
+                                            item.fields[0].pos_y + int(v_offset),
+                                            item.fields[0].size,
+                                            {True:'0000', False:'0001'}[self.show_need_adjust_mark],
+                                            'C',
+                                            item.fields[0].vjustify,
+                                            {True:'I', False:'N'}[item.fields[0].italic],
+                                            {True:'B', False:'N'}[item.fields[0].italic]
+                                            )
+                                        item.fields.append(schematic.Comp.Field(str_field.encode('utf-8')))
+                                else:
+                                    # Delete field if it present
+                                    for field_index, field in enumerate(item.fields):
+                                        if hasattr(field, 'name'):
+                                            if field.name == u'Подбирают при регулировании':
+                                                del item.fields[field_index]
+                                                break
                                 # Update fields numbers
                                 for field_index, field in enumerate(item.fields):
                                     field.number = field_index
@@ -1781,10 +1799,10 @@ class Window(gui.MainFrame):
             comp_fields = []
             grid_values = self.grid.get_values()
             for row in grid_values:
-                # Remove extra data from ref in comp like '(R321)R123' or 'R321*'
-                row[2] = self.grid.get_pure_ref(row[2])
                 if (row[0] == u'1') | all_components:
                     fields = row[1:-1]
+                    # Remove extra data from ref in comp like '(R321)R123' or 'R321*'
+                    fields[1] = self.grid.get_pure_ref(fields[1])
                     # Split reference on index and number
                     fields.insert(1, re.search(REF_REGULAR_EXPRESSION, fields[1]).group(1))
                     fields[2] = re.search(REF_REGULAR_EXPRESSION, fields[2]).group(2)
@@ -1832,18 +1850,24 @@ class Window(gui.MainFrame):
                                 suffix = self.separators_dict[u'стандарт'][1]
                                 )
                     fields.append('1')
+                    # Insert "need adjust" flag
+                    if row[2].endswith('*'):
+                        fields.insert(3, True)
+                    else:
+                        fields.insert(3, False)
+                    # Add prepared fields of an component
                     comp_fields.append(fields)
             try:
                 # Settings
                 complist.need_changes_sheet = need_changes_sheet
                 # Stamp
-                complist.decimal_num = self.stamp_dict['decimal_num']
+                complist.decimal_num = complist.convert_decimal_num(self.stamp_dict['decimal_num'])
                 complist.developer = self.stamp_dict['developer']
                 complist.verifier = self.stamp_dict['verifier']
                 complist.inspector = self.stamp_dict['inspector']
                 complist.approver = self.stamp_dict['approver']
                 complist.comp = self.stamp_dict['comp']
-                complist.title = self.stamp_dict['title']
+                complist.title = complist.convert_title(self.stamp_dict['title'])
                 # Comp list
                 complist.load(self.schematic_file, comp_fields, False)
                 complist.save(self.complist_file)
