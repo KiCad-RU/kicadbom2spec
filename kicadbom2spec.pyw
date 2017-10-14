@@ -74,6 +74,7 @@ class Window(gui.MainFrame):
         self.library = None
         self.saved = True
         self.not_found = False
+        self.buffer = []
         self.settings_file = ''
 
         self.init_grid()
@@ -82,6 +83,7 @@ class Window(gui.MainFrame):
         self.save_window_size_pos = False
         self.save_selected_mark = False
         self.save_col_size = False
+        self.show_need_adjust_mark = False
         self.auto_groups_dict = {}
         self.values_dict = {
             u'группа':[],
@@ -203,6 +205,8 @@ class Window(gui.MainFrame):
                         self.save_selected_mark = self.settings.getboolean('general', 'remember selection')
                     if self.settings.has_option('general', 'space as dot'):
                         self.grid.space_as_dot = self.settings.getboolean('general', 'space as dot')
+                    if self.settings.has_option('general', 'show need adjust mark'):
+                        self.show_need_adjust_mark = self.settings.getboolean('general', 'show need adjust mark')
 
                 if self.settings.has_section('auto filling groups'):
                     for param in self.settings.options('auto filling groups'):
@@ -455,6 +459,11 @@ class Window(gui.MainFrame):
             'space as dot',
             {True:'1', False:'0'}[self.grid.space_as_dot]
             )
+        self.settings.set(
+            'general',
+            'show need adjust mark',
+            {True:'1', False:'0'}[self.show_need_adjust_mark]
+            )
 
         self.settings.remove_section('recent sch')
         if self.submenu_recent_sch.GetMenuItemCount() > 0:
@@ -652,6 +661,8 @@ class Window(gui.MainFrame):
                                 row[0] = u'0'
                             if field.name == self.aliases_dict[u'группа']:
                                 row[1] = field.text
+                            if field.name == u'Подбирают при регулировании':
+                                row[2] += '*'
                             if field.name == self.aliases_dict[u'марка']:
                                 row[3] = field.text
                             if self.aliases_dict[u'значение'] != u'' and \
@@ -685,7 +696,7 @@ class Window(gui.MainFrame):
                                 continue
                             # Skip parts of the same comp from different sheets
                             for value in values:
-                                tmp_ref = get_pure_ref(value[2])
+                                tmp_ref = self.grid.get_pure_ref(value[2])
                                 if tmp_ref == ref[1]:
                                     break
                             else:
@@ -717,12 +728,12 @@ class Window(gui.MainFrame):
         for schematic in self.schematics:
             for item in schematic.items:
                 if item.__class__.__name__ == 'Comp':
-                    if not item.ref.startswith('#'):
+                    if not item.ref.startswith('#') and not item.ref.endswith('?'):
                         for value in sorted_values:
                             # Skip copies of the one component (see 'path_and_ref' in Comp)
-                            if comp_is_copy(value[2]):
+                            if self.grid.comp_is_copy(value[2]):
                                 continue
-                            if get_pure_ref(value[2]) == item.fields[0].text \
+                            if self.grid.get_pure_ref(value[2]) == item.fields[0].text \
                                     and value[-1] == schematic.sch_name:
                                 # Default field of "value"
                                 if field_names[4] == u'':
@@ -752,19 +763,89 @@ class Window(gui.MainFrame):
                                                     break
 
                                 if self.save_selected_mark and value[0] == '0':
-                                    str_field = u'F ' + str(len(item.fields))
-                                    str_field += u' "" '
-                                    str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
-                                    str_field += u' 0001 C CNN'
-                                    str_field += u' "Исключён из ПЭ"'
-                                    item.fields.append(schematic.Comp.Field(str_field.encode('utf-8')))
+                                    # Check if field present
+                                    for field in item.fields:
+                                        if hasattr(field, 'name'):
+                                            if field.name == u'Исключён из ПЭ':
+                                                # Already present
+                                                break
+                                    else:
+                                        # Create field
+                                        str_field = u'F ' + str(len(item.fields))
+                                        str_field += u' "~" '
+                                        str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
+                                        str_field += u' 0001 C CNN'
+                                        str_field += u' "Исключён из ПЭ"'
+                                        item.fields.append(schematic.Comp.Field(str_field.encode('utf-8')))
                                 else:
+                                    # Delete field
                                     for field_index, field in enumerate(item.fields):
                                         if hasattr(field, 'name'):
                                             if field.name == u'Исключён из ПЭ':
                                                 del item.fields[field_index]
                                                 break
 
+                                # Every time create new field with correct position
+                                for field_index, field in enumerate(item.fields):
+                                    if hasattr(field, 'name'):
+                                        if field.name == u'Подбирают при регулировании':
+                                            del item.fields[field_index]
+                                            break
+                                if value[2].endswith('*'):
+                                    # Place field value behind reference
+                                    h_offset = 0
+                                    v_offset = 0
+                                    # Orientations that inverts justify of text
+                                    if item.fields[0].orientation == 'H':
+                                        invert_orient = (
+                                                (-1, 0, 0, 1),
+                                                (0, 1, 1, 0),
+                                                (-1, 0, 0, -1),
+                                                (0, -1, 1, 0)
+                                                )
+                                    else:
+                                        invert_orient = (
+                                                (0, -1, -1, 0),
+                                                (-1, 0, 0, 1),
+                                                (1, 0, 0, 1),
+                                                (0, -1, 1, 0)
+                                                )
+                                    # Calculate correct position of "*" mark
+                                    # according to field justify and component orientation
+                                    if item.fields[0].hjustify == 'L':
+                                        if item.orient_matrix in invert_orient:
+                                            h_offset = -1 * item.fields[0].size / 2
+                                        else:
+                                            h_offset = item.fields[0].size * (len(item.fields[0].text) + 0.5)
+                                    elif item.fields[0].hjustify == 'R':
+                                        if item.orient_matrix in invert_orient:
+                                            h_offset = item.fields[0].size * (len(item.fields[0].text) + 0.5)
+                                            h_offset *= -1
+                                        else:
+                                            h_offset = item.fields[0].size / 2
+                                    elif item.fields[0].hjustify == 'C':
+                                        h_offset = item.fields[0].size * (len(item.fields[0].text) + 1) / 2
+                                        if item.orient_matrix in invert_orient:
+                                            h_offset *= -1
+                                    # Swap H and V offsets for vertical orientation
+                                    if item.fields[0].orientation == 'V':
+                                        v_offset = h_offset
+                                        h_offset = 0
+
+                                    str_field = u'F {} "*" {} {} {} {} {} {} {}{}{} "Подбирают при регулировании"'.format(
+                                        len(item.fields),
+                                        item.fields[0].orientation,
+                                        item.fields[0].pos_x + int(h_offset),
+                                        item.fields[0].pos_y + int(v_offset),
+                                        item.fields[0].size,
+                                        {True:'0000', False:'0001'}[self.show_need_adjust_mark],
+                                        'C',
+                                        item.fields[0].vjustify,
+                                        {True:'I', False:'N'}[item.fields[0].italic],
+                                        {True:'B', False:'N'}[item.fields[0].italic]
+                                        )
+                                    item.fields.append(schematic.Comp.Field(str_field.encode('utf-8')))
+                                # Update fields numbers
                                 for field_index, field in enumerate(item.fields):
                                     field.number = field_index
 
@@ -778,7 +859,7 @@ class Window(gui.MainFrame):
             if comp.reference.startswith('#'):
                 continue
             row = [
-                u'1',  # Used
+                u'1', # Used
                 u'',  # Group
                 comp.fields[0].text,  # Reference
                 u'',  # Mark
@@ -915,6 +996,23 @@ class Window(gui.MainFrame):
             self.toolbar.EnableTool(menuitem, self.menubar.IsEnabled(menuitem))
         event.Skip()
 
+    def on_adjust_flag_switch(self, event):
+        """
+        Switch "need adjusting" flag state.
+
+        """
+        menu = event.GetEventObject()
+        rows = self.grid.get_selected_rows()
+        for row in rows:
+            # By default flag is unset
+            value = self.grid.GetCellValue(row, 2).rstrip('*')
+            # Set flag if needed
+            if menu.IsChecked(menu.adjust_id):
+                value += '*'
+            self.grid.set_cell_value(row, 2, value)
+        if self.grid.is_changed():
+            self.on_grid_change()
+
     def on_grid_change(self, event=None):
         """
         Update GUI after changes.
@@ -942,45 +1040,63 @@ class Window(gui.MainFrame):
             event.Skip()
             return
 
-        copy_id = wx.NewId()
-        cut_id = wx.NewId()
-        paste_id = wx.NewId()
-        edit_id = wx.NewId()
-        clear_id = wx.NewId()
-
         menu = wx.Menu()
 
-        item = wx.MenuItem(menu, copy_id, u'Копировать поля')
+        menu.copy_id = wx.NewId()
+        menu.cut_id = wx.NewId()
+        menu.paste_id = wx.NewId()
+        menu.edit_id = wx.NewId()
+        menu.clear_id = wx.NewId()
+        menu.adjust_id = wx.NewId()
+
+        item = wx.MenuItem(menu, menu.copy_id, u'Копировать поля')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
         menu.Bind(wx.EVT_MENU, self.on_copy, item)
-        menu.Enable(copy_id, self.menuitem_copy.IsEnabled())
+        menu.Enable(menu.copy_id, self.menuitem_copy.IsEnabled())
 
-        item = wx.MenuItem(menu, cut_id, u'Вырезать поля…')
+        item = wx.MenuItem(menu, menu.cut_id, u'Вырезать поля…')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-cut.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
         menu.Bind(wx.EVT_MENU, self.on_cut, item)
-        menu.Enable(cut_id, self.menuitem_cut.IsEnabled())
+        menu.Enable(menu.cut_id, self.menuitem_cut.IsEnabled())
 
-        item = wx.MenuItem(menu, paste_id, u'Вставить поля…')
+        item = wx.MenuItem(menu, menu.paste_id, u'Вставить поля…')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-paste.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
         menu.Bind(wx.EVT_MENU, self.on_paste, item)
-        menu.Enable(paste_id, self.menuitem_paste.IsEnabled())
+        menu.Enable(menu.paste_id, self.menuitem_paste.IsEnabled())
 
         menu.Append(wx.ID_SEPARATOR)
 
-        item = wx.MenuItem(menu, edit_id, u'Редактировать поля…')
+        item = wx.MenuItem(menu, menu.edit_id, u'Редактировать поля…')
         item.SetBitmap(wx.Bitmap(u'bitmaps/gtk-edit.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
         menu.Bind(wx.EVT_MENU, self.on_edit_fields, item)
-        menu.Enable(edit_id, self.menuitem_edit.IsEnabled())
+        menu.Enable(menu.edit_id, self.menuitem_edit.IsEnabled())
 
-        item = wx.MenuItem(menu, clear_id, u'Очистить поля…')
+        item = wx.MenuItem(menu, menu.clear_id, u'Очистить поля…')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-clear.png', wx.BITMAP_TYPE_PNG))
         menu.AppendItem(item)
         menu.Bind(wx.EVT_MENU, self.on_clear_fields, item)
-        menu.Enable(clear_id, self.menuitem_clear.IsEnabled())
+        menu.Enable(menu.clear_id, self.menuitem_clear.IsEnabled())
+
+        menu.Append(wx.ID_SEPARATOR)
+
+        item = wx.MenuItem(menu, menu.adjust_id, u'Подбирают при регулировании', kind=wx.ITEM_CHECK)
+        menu.AppendItem(item)
+        menu.Bind(wx.EVT_MENU, self.on_adjust_flag_switch, item)
+        menu.Enable(menu.adjust_id, self.menuitem_edit.IsEnabled())
+        rows = self.grid.get_selected_rows()
+        if rows:
+            for row in rows:
+                if not self.grid.GetCellValue(row, 2).endswith('*'):
+                    item.Check(False)
+                    break
+            else:
+                item.Check(True)
+        else:
+            menu.Enable(menu.adjust_id, False)
 
         self.grid.PopupMenu(menu, event.GetPosition())
         menu.Destroy()
@@ -1053,7 +1169,8 @@ class Window(gui.MainFrame):
                 self.buffer.append(u'')
                 continue
             self.buffer.append(self.grid.GetCellValue(row, col))
-        self.menuitem_paste.Enable(True)
+        # Update state of menu entries and toolbar buttons
+        self.on_select()
 
     def on_cut(self, event):
         """
@@ -1080,7 +1197,8 @@ class Window(gui.MainFrame):
             self.buffer.append(self.grid.GetCellValue(row, col))
             if col in selected_cols:
                 self.grid.set_cell_value(row, col, u'')
-        self.menuitem_paste.Enable(True)
+        # Update state of menu entries and toolbar buttons
+        self.on_select()
         if self.grid.is_changed():
             self.on_grid_change()
 
@@ -1142,22 +1260,33 @@ class Window(gui.MainFrame):
             # was freezed.
             editor.Show()
 
-    def on_select(self, event):
+    def on_select(self, event=None):
         """
         Process selection event.
 
         """
+        writing_enabled = False
+        selected_rows = self.grid.get_selected_rows()
+        for row in selected_rows:
+            if not self.grid.comp_is_copy(
+                    self.grid.GetCellValue(row, 2)
+                    ):
+                writing_enabled = True
+
         if self.grid.get_selected_rows():
             self.menuitem_copy.Enable(True)
-            self.menuitem_cut.Enable(True)
-            self.menuitem_edit.Enable(True)
-            self.menuitem_clear.Enable(True)
+            self.menuitem_cut.Enable(writing_enabled)
+            self.menuitem_edit.Enable(writing_enabled)
+            self.menuitem_clear.Enable(writing_enabled)
+            self.menuitem_paste.Enable(writing_enabled and bool(self.buffer))
         else:
             self.menuitem_copy.Enable(False)
             self.menuitem_cut.Enable(False)
             self.menuitem_edit.Enable(False)
             self.menuitem_clear.Enable(False)
-        event.Skip()
+            self.menuitem_paste.Enable(False)
+        if event:
+            event.Skip()
 
     def on_open_sch(self, event=None, sch_file_name=''):
         """
@@ -1653,7 +1782,7 @@ class Window(gui.MainFrame):
             grid_values = self.grid.get_values()
             for row in grid_values:
                 # Remove extra data from ref in comp like '(R321)R123' or 'R321*'
-                row[2] = get_pure_ref(row[2])
+                row[2] = self.grid.get_pure_ref(row[2])
                 if (row[0] == u'1') | all_components:
                     fields = row[1:-1]
                     # Split reference on index and number
@@ -1976,6 +2105,8 @@ class Window(gui.MainFrame):
 
         settings_editor.space_as_dot_checkbox.SetValue(self.grid.space_as_dot)
 
+        settings_editor.show_need_adjust_mark_checkbox.SetValue(self.show_need_adjust_mark)
+
         for suffix, value in self.auto_groups_dict.items():
             checked = {'1':True, '0':False}[value[:1]]
             value = u'{} - "{}"'.format(suffix, value[1:])
@@ -2025,6 +2156,7 @@ class Window(gui.MainFrame):
                 self.settings.remove_section('column sizes')
             self.save_selected_mark = settings_editor.remember_selection_checkbox.GetValue()
             self.grid.space_as_dot = settings_editor.space_as_dot_checkbox.GetValue()
+            self.show_need_adjust_mark = settings_editor.show_need_adjust_mark_checkbox.GetValue()
             if not self.settings.has_section('general'):
                 self.settings.add_section('general')
             self.settings.set(
@@ -2036,6 +2168,11 @@ class Window(gui.MainFrame):
                 'general',
                 'space as dot',
                 {True:'1', False:'0'}[self.grid.space_as_dot]
+                )
+            self.settings.set(
+                'general',
+                'show need adjust mark',
+                {True:'1', False:'0'}[self.show_need_adjust_mark]
                 )
 
             auto_groups_items_count = settings_editor.auto_groups_checklistbox.GetCount()

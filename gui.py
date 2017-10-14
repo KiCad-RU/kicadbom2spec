@@ -920,7 +920,12 @@ class SettingsDialog ( wx.Dialog ):
 		self.space_as_dot_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Отображать пробелы в виде точек \"᛫\"", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.space_as_dot_checkbox.SetToolTipString( u"Если этот параметр установлен, то в таблице и в полях ввода пробелы будут отображаться в виде специальных символов." )
 		
-		general_tab_sizer.Add( self.space_as_dot_checkbox, 0, wx.RIGHT|wx.LEFT, 5 )
+		general_tab_sizer.Add( self.space_as_dot_checkbox, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		self.show_need_adjust_mark_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Показывать метку \"*\" возле обозначения на схеме", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.show_need_adjust_mark_checkbox.SetToolTipString( u"Если этот параметр установлен, то на схеме, возле обозначения компонента, номинал которого \"Подбирают при регулировании\", будет отображаться метка \"*\"." )
+		
+		general_tab_sizer.Add( self.show_need_adjust_mark_checkbox, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		self.staticline2 = wx.StaticLine( self.general_tab_scrolledwindow, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		general_tab_sizer.Add( self.staticline2, 0, wx.EXPAND |wx.ALL, 5 )
