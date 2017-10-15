@@ -80,9 +80,7 @@ class Window(gui.MainFrame):
         self.init_grid()
 
         # Default settings
-        self.save_window_size_pos = False
         self.save_selected_mark = False
-        self.save_col_size = False
         self.show_need_adjust_mark = False
         self.auto_groups_dict = {}
         self.values_dict = {
@@ -167,7 +165,6 @@ class Window(gui.MainFrame):
                     ))
 
                 if self.settings.has_section('window'):
-                    self.save_window_size_pos = True
                     x, y = self.GetPosition()
                     width, height = self.GetClientSize()
                     if self.settings.has_option('window', 'x'):
@@ -186,7 +183,6 @@ class Window(gui.MainFrame):
                             self.Maximize()
 
                 if self.settings.has_section('column sizes'):
-                    self.save_col_size = True
                     if hasattr(self, 'grid'):
                         for col in self.settings.options('column sizes'):
                             col_size = self.settings.getint('column sizes', col)
@@ -201,10 +197,10 @@ class Window(gui.MainFrame):
                                 self.values_dict[item] = values_list
 
                 if self.settings.has_section('general'):
-                    if self.settings.has_option('general', 'remember selection'):
-                        self.save_selected_mark = self.settings.getboolean('general', 'remember selection')
                     if self.settings.has_option('general', 'space as dot'):
                         self.grid.space_as_dot = self.settings.getboolean('general', 'space as dot')
+                    if self.settings.has_option('general', 'remember selection'):
+                        self.save_selected_mark = self.settings.getboolean('general', 'remember selection')
                     if self.settings.has_option('general', 'show need adjust mark'):
                         self.show_need_adjust_mark = self.settings.getboolean('general', 'show need adjust mark')
 
@@ -245,11 +241,10 @@ class Window(gui.MainFrame):
             else:
             # Select settings for importing
                 import_settings= {
-                    'position':False,
-                    'size':False,
+                    'size_position':False,
                     'column_sizes':False,
+                    'general':False,
                     'values':False,
-                    'remember_selection':False,
                     'auto_filling_groups':False,
                     'separators':False,
                     'aliases':False,
@@ -267,43 +262,46 @@ class Window(gui.MainFrame):
 
                 selector = gui.SettingsSelector(self)
                 if temp_settings.has_section('window'):
-                    if temp_settings.has_option('window', 'x') and \
-                            temp_settings.has_option('window', 'y'):
-                        selector.checkbox_position.SetValue(True)
-                        selector.checkbox_position.Show()
-                    if temp_settings.has_option('window', 'width') and \
-                            temp_settings.has_option('window', 'height'):
-                        selector.checkbox_size.SetValue(True)
-                        selector.checkbox_size.Show()
+                    selector.checkbox_size_position.SetValue(True)
+                else:
+                    selector.checkbox_size_position.Hide()
                 if temp_settings.has_section('column sizes'):
                     selector.checkbox_column_sizes.SetValue(True)
-                    selector.checkbox_column_sizes.Show()
+                else:
+                    selector.checkbox_column_sizes.Hide()
+                if temp_settings.has_section('general'):
+                    selector.checkbox_general.SetValue(True)
+                else:
+                    selector.checkbox_general.Hide()
                 if temp_settings.has_section('values'):
                     selector.checkbox_values.SetValue(True)
-                    selector.checkbox_values.Show()
-                if temp_settings.has_section('general') and \
-                        temp_settings.has_option('general', 'remember selection'):
-                    selector.checkbox_remember_selection.SetValue(True)
-                    selector.checkbox_remember_selection.Show()
+                else:
+                    selector.checkbox_values.Hide()
                 if temp_settings.has_section('auto filling groups'):
                     selector.checkbox_auto_filling_groups.SetValue(True)
-                    selector.checkbox_auto_filling_groups.Show()
+                else:
+                    selector.checkbox_auto_filling_groups.Hide()
                 if temp_settings.has_section('prefixes') or \
                        temp_settings.has_section('suffixes'):
                     selector.checkbox_separators.SetValue(True)
-                    selector.checkbox_separators.Show()
+                else:
+                    selector.checkbox_separators.Hide()
                 if temp_settings.has_section('aliases'):
                     selector.checkbox_aliases.SetValue(True)
-                    selector.checkbox_aliases.Show()
+                else:
+                    selector.checkbox_aliases.Hide()
                 if temp_settings.has_section('complist'):
                     selector.checkbox_complist.SetValue(True)
-                    selector.checkbox_complist.Show()
+                else:
+                    selector.checkbox_complist.Hide()
                 if temp_settings.has_section('recent sch'):
                     selector.checkbox_recent_sch.SetValue(True)
-                    selector.checkbox_recent_sch.Show()
+                else:
+                    selector.checkbox_recent_sch.Hide()
                 if temp_settings.has_section('recent lib'):
                     selector.checkbox_recent_lib.SetValue(True)
-                    selector.checkbox_recent_lib.Show()
+                else:
+                    selector.checkbox_recent_lib.Hide()
                 selector.Layout()
                 selector.Fit()
                 selector.Centre()
@@ -311,25 +309,32 @@ class Window(gui.MainFrame):
                 if result == wx.ID_OK:
                     for key in import_settings.keys():
                         import_settings[key] = getattr(selector, 'checkbox_' + key).IsChecked()
-                    if import_settings['position']:
-                        self.save_window_size_pos = True
-                        x = temp_settings.getint('window', 'x')
-                        y = temp_settings.getint('window', 'y')
-                        self.SetPosition(wx.Point(x, y))
-                    if import_settings['size']:
-                        self.save_window_size_pos = True
-                        width = temp_settings.getint('window', 'width')
-                        height = temp_settings.getint('window', 'height')
+                    if import_settings['size_position']:
+                        if temp_settings.has_option('window', 'x') and \
+                            temp_settings.has_option('window', 'y'):
+                            x = temp_settings.getint('window', 'x')
+                            y = temp_settings.getint('window', 'y')
+                            self.SetPosition(wx.Point(x, y))
+                        if temp_settings.has_option('window', 'width') and \
+                            temp_settings.has_option('window', 'height'):
+                            width = temp_settings.getint('window', 'width')
+                            height = temp_settings.getint('window', 'height')
+                            self.SetClientSize(wx.Size(width, height))
                         if temp_settings.has_option('window', 'maximized'):
                             if temp_settings.getint('window', 'maximized'):
                                 self.Maximize()
-                        self.SetClientSize(wx.Size(width, height))
                     if import_settings['column_sizes']:
-                        self.save_col_size = True
                         if hasattr(self, 'grid'):
                             for col in temp_settings.options('column sizes'):
                                 col_size = temp_settings.getint('column sizes', col)
                                 self.grid.SetColSize(int(col), col_size)
+                    if import_settings['general']:
+                        if temp_settings.has_option('general', 'space as dot'):
+                            self.grid.space_as_dot = temp_settings.getboolean('general', 'space as dot')
+                        if temp_settings.has_option('general', 'remember selection'):
+                            self.save_selected_mark = temp_settings.getboolean('general', 'remember selection')
+                        if temp_settings.has_option('general', 'show need adjust mark'):
+                            self.show_need_adjust_mark = temp_settings.getboolean('general', 'show need adjust mark')
                     if import_settings['values']:
                         for item in self.values_dict.keys():
                             if temp_settings.has_option('values', item):
@@ -337,8 +342,6 @@ class Window(gui.MainFrame):
                                 values_list = values_list.split(settings_separator)
                                 if values_list != ['']:
                                     self.values_dict[item] = values_list
-                    if import_settings['remember_selection']:
-                        self.save_selected_mark = temp_settings.getboolean('general', 'remember selection')
                     if import_settings['auto_filling_groups']:
                         if not self.settings.has_section('auto filling groups'):
                             self.settings.add_section('auto filling groups')
@@ -389,30 +392,24 @@ class Window(gui.MainFrame):
         Save settings to configuration file.
 
         """
-        if self.save_window_size_pos:
-            if not self.settings.has_section('window'):
-                self.settings.add_section('window')
-            if self.IsMaximized():
-                self.settings.set('window', 'maximized', '1')
-            else:
-                self.settings.set('window', 'maximized', '0')
-                x, y = self.GetPosition()
-                width, height = self.GetClientSize()
-                self.settings.set('window', 'x', str(x))
-                self.settings.set('window', 'y', str(y))
-                self.settings.set('window', 'width', str(width))
-                self.settings.set('window', 'height', str(height))
+        if not self.settings.has_section('window'):
+            self.settings.add_section('window')
+        if self.IsMaximized():
+            self.settings.set('window', 'maximized', '1')
         else:
-            self.settings.remove_section('window')
+            self.settings.set('window', 'maximized', '0')
+            x, y = self.GetPosition()
+            width, height = self.GetClientSize()
+            self.settings.set('window', 'x', str(x))
+            self.settings.set('window', 'y', str(y))
+            self.settings.set('window', 'width', str(width))
+            self.settings.set('window', 'height', str(height))
 
-        if self.save_col_size:
-            if not self.settings.has_section('column sizes'):
-                self.settings.add_section('column sizes')
-            for col in range(self.grid.GetNumberCols()):
-                col_size = self.grid.GetColSize(col)
-                self.settings.set('column sizes', str(col), str(col_size))
-        else:
-            self.settings.remove_section('column sizes')
+        if not self.settings.has_section('column sizes'):
+            self.settings.add_section('column sizes')
+        for col in range(self.grid.GetNumberCols()):
+            col_size = self.grid.GetColSize(col)
+            self.settings.set('column sizes', str(col), str(col_size))
 
         if not self.settings.has_section('values'):
             self.settings.add_section('values')
@@ -449,21 +446,9 @@ class Window(gui.MainFrame):
 
         if not self.settings.has_section('general'):
             self.settings.add_section('general')
-        self.settings.set(
-            'general',
-            'remember selection',
-            {True:'1', False:'0'}[self.save_selected_mark]
-            )
-        self.settings.set(
-            'general',
-            'space as dot',
-            {True:'1', False:'0'}[self.grid.space_as_dot]
-            )
-        self.settings.set(
-            'general',
-            'show need adjust mark',
-            {True:'1', False:'0'}[self.show_need_adjust_mark]
-            )
+        self.settings.set( 'general', 'space as dot', str(self.grid.space_as_dot))
+        self.settings.set( 'general', 'remember selection', str(self.save_selected_mark))
+        self.settings.set( 'general', 'show need adjust mark', str(self.show_need_adjust_mark))
 
         self.settings.remove_section('recent sch')
         if self.submenu_recent_sch.GetMenuItemCount() > 0:
@@ -494,20 +479,15 @@ class Window(gui.MainFrame):
         """
         # Save column width
         if hasattr(self, 'grid'):
-            if self.save_col_size:
-                if not self.settings.has_section('column sizes'):
-                    self.settings.add_section('column sizes')
-                for col in range(self.grid.GetNumberCols()):
-                    col_size = self.grid.GetColSize(col)
-                    self.settings.set('column sizes', str(col), str(col_size))
+            if not self.settings.has_section('column sizes'):
+                self.settings.add_section('column sizes')
+            for col in range(self.grid.GetNumberCols()):
+                col_size = self.grid.GetColSize(col)
+                self.settings.set('column sizes', str(col), str(col_size))
 
             if not self.settings.has_section('general'):
                 self.settings.add_section('general')
-            self.settings.set(
-                'general',
-                'space as dot',
-                {True:'1', False:'0'}[self.grid.space_as_dot]
-                )
+            self.settings.set( 'general', 'space as dot', str(self.grid.space_as_dot))
 
             self.GetSizer().Remove(self.panel_components.GetSizer())
             self.grid.Destroy()
@@ -2161,14 +2141,8 @@ class Window(gui.MainFrame):
             prefix_text.SetValue(prefix)
             suffix_text.SetValue(suffix)
 
-        settings_editor.window_checkbox.SetValue(self.save_window_size_pos)
-
-        settings_editor.col_size_checkbox.SetValue(self.save_col_size)
-
         settings_editor.remember_selection_checkbox.SetValue(self.save_selected_mark)
-
         settings_editor.space_as_dot_checkbox.SetValue(self.grid.space_as_dot)
-
         settings_editor.show_need_adjust_mark_checkbox.SetValue(self.show_need_adjust_mark)
 
         for suffix, value in self.auto_groups_dict.items():
@@ -2214,10 +2188,6 @@ class Window(gui.MainFrame):
                 if field_values:
                     self.settings.set('values', field, field_values)
 
-            self.save_window_size_pos = settings_editor.window_checkbox.GetValue()
-            self.save_col_size = settings_editor.col_size_checkbox.GetValue()
-            if not self.save_col_size:
-                self.settings.remove_section('column sizes')
             self.save_selected_mark = settings_editor.remember_selection_checkbox.GetValue()
             self.grid.space_as_dot = settings_editor.space_as_dot_checkbox.GetValue()
             self.show_need_adjust_mark = settings_editor.show_need_adjust_mark_checkbox.GetValue()

@@ -673,25 +673,25 @@ class AboutDialog ( wx.Dialog ):
 		
 		self.statictext_email = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"Эл. почта:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.statictext_email.Wrap( -1 )
-		sizer_email.Add( self.statictext_email, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		sizer_email.Add( self.statictext_email, 0, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.hyperlink_email = wx.HyperlinkCtrl( self.panel_about_dialog, wx.ID_ANY, u"baranovskiykonstantin@gmail.com", u"mailto:baranovskiykonstantin@gmail.com?subject=kicadbom2spec", wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
-		sizer_email.Add( self.hyperlink_email, 0, wx.ALL, 5 )
+		sizer_email.Add( self.hyperlink_email, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		
-		sizer_about.Add( sizer_email, 1, wx.EXPAND, 5 )
+		sizer_about.Add( sizer_email, 0, wx.EXPAND, 5 )
 		
 		sizer_homepage = wx.BoxSizer( wx.HORIZONTAL )
 		
 		self.statictext_homepage = wx.StaticText( self.panel_about_dialog, wx.ID_ANY, u"Домашняя страница:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.statictext_homepage.Wrap( -1 )
-		sizer_homepage.Add( self.statictext_homepage, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		sizer_homepage.Add( self.statictext_homepage, 0, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.hyperlink_homepage = wx.HyperlinkCtrl( self.panel_about_dialog, wx.ID_ANY, u"https://launchpad.net/kicadbom2spec", u"https://launchpad.net/kicadbom2spec", wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE )
-		sizer_homepage.Add( self.hyperlink_homepage, 0, wx.ALL, 5 )
+		sizer_homepage.Add( self.hyperlink_homepage, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		
-		sizer_about.Add( sizer_homepage, 1, wx.EXPAND, 5 )
+		sizer_about.Add( sizer_homepage, 0, wx.EXPAND, 5 )
 		
 		self.m_staticline2 = wx.StaticLine( self.panel_about_dialog, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		sizer_about.Add( self.m_staticline2, 0, wx.EXPAND |wx.ALL, 5 )
@@ -925,25 +925,15 @@ class SettingsDialog ( wx.Dialog ):
 		
 		general_tab_sizer = wx.BoxSizer( wx.VERTICAL )
 		
-		self.window_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Сохранять положение и размер окна", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.window_checkbox.SetToolTipString( u"Если этот параметр установлен, то при закрытии программы будут сохарнены положение и размер окна и при следующем запуске они будут восстановлены." )
+		self.space_as_dot_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Отображать пробелы в виде точек \"᛫\"", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.space_as_dot_checkbox.SetToolTipString( u"Если этот параметр установлен, то в таблице и в полях ввода пробелы будут отображаться в виде специальных символов." )
 		
-		general_tab_sizer.Add( self.window_checkbox, 0, wx.EXPAND|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
-		
-		self.col_size_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Сохранять ширину колонок таблицы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.col_size_checkbox.SetToolTipString( u"Если этот параметр установлен, то в процессе работы и при завершении работы программы будут сохранены размеры ширины столбцов таблицы элементов и при следующем запуске они будут восстановлены." )
-		
-		general_tab_sizer.Add( self.col_size_checkbox, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		general_tab_sizer.Add( self.space_as_dot_checkbox, 0, wx.EXPAND|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.remember_selection_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Запоминать выбор элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.remember_selection_checkbox.SetToolTipString( u"Если этот параметр установлен, то при сохранении схемы элементам, которые не отмечены для вывода в перечень элементов, будет добавлено поле \"Исключен из ПЭ\". \nПри открытии схемы для элементов с полем \"Исключен из ПЭ\" будет автоматически снята отметка о выводе в перечень элементов." )
 		
 		general_tab_sizer.Add( self.remember_selection_checkbox, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
-		
-		self.space_as_dot_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Отображать пробелы в виде точек \"᛫\"", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.space_as_dot_checkbox.SetToolTipString( u"Если этот параметр установлен, то в таблице и в полях ввода пробелы будут отображаться в виде специальных символов." )
-		
-		general_tab_sizer.Add( self.space_as_dot_checkbox, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		self.show_need_adjust_mark_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Показывать метку \"*\" возле обозначения на схеме", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.show_need_adjust_mark_checkbox.SetToolTipString( u"Если этот параметр установлен, то на схеме, возле обозначения компонента, номинал которого \"Подбирают при регулировании\", будет отображаться метка \"*\"." )
@@ -1366,77 +1356,55 @@ class SettingsSelector ( wx.Dialog ):
 		self.statictext1.Wrap( -1 )
 		sizer_settings.Add( self.statictext1, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 5 )
 		
-		self.checkbox_position = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Позиция окна", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_position.Hide()
-		self.checkbox_position.SetToolTipString( u"Положение окна программы на экране." )
+		self.checkbox_size_position = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Размер и позиция окна", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_size_position.SetToolTipString( u"Размер и положение окна программы на экране." )
 		
-		sizer_settings.Add( self.checkbox_position, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		self.checkbox_size = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Размер окна", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_size.Hide()
-		self.checkbox_size.SetToolTipString( u"Размеры окна программы." )
-		
-		sizer_settings.Add( self.checkbox_size, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_settings.Add( self.checkbox_size_position, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.checkbox_column_sizes = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Размеры колонок таблицы элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_column_sizes.Hide()
 		self.checkbox_column_sizes.SetToolTipString( u"Размеры колонок таблицы элементов." )
 		
-		sizer_settings.Add( self.checkbox_column_sizes, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_settings.Add( self.checkbox_column_sizes, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.checkbox_general = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Обшие параметры", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_general.SetToolTipString( u"Значения общих параметров:\n* Отображать пробелы в виде точек \"᛫\"\n* Запоминать выбор элементов\n* Показывать метку \"*\" возле обозначения на схеме" )
+		
+		sizer_settings.Add( self.checkbox_general, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.checkbox_values = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Стандартные значения полей элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_values.Hide()
 		self.checkbox_values.SetToolTipString( u"Наборы часто используемых значений для разных полей элементов." )
 		
-		sizer_settings.Add( self.checkbox_values, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_settings.Add( self.checkbox_values, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.checkbox_remember_selection = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Выбор элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_remember_selection.Hide()
-		self.checkbox_remember_selection.SetToolTipString( u"Сохранять инфорамацию о\nвыборе элементов в файл\nсхемы или нет." )
-		
-		sizer_settings.Add( self.checkbox_remember_selection, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		self.checkbox_auto_filling_groups = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры автоматического\nзаполнения поля \"Группа\"", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_auto_filling_groups.Hide()
+		self.checkbox_auto_filling_groups = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры авт. заполнения поля \"Группа\"", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_auto_filling_groups.SetToolTipString( u"Наборы значений и их состояние для\nавтоматического заполенения поля\n\"Группа\" при отрытии файлов схем и\nбиблиотек." )
 		
-		sizer_settings.Add( self.checkbox_auto_filling_groups, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_settings.Add( self.checkbox_auto_filling_groups, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.checkbox_separators = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Разделители наименования", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_separators.Hide()
 		self.checkbox_separators.SetToolTipString( u"Разделители - это символы, которые\nдобавляются в виде префиксов или\nсуффиксов к полям при формировании\nнаименования элемента в перечне." )
 		
-		sizer_settings.Add( self.checkbox_separators, 0, wx.ALL, 5 )
+		sizer_settings.Add( self.checkbox_separators, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		self.checkbox_aliases = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Псевдонимы полей", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_aliases.Hide()
 		self.checkbox_aliases.SetToolTipString( u"Псевдонимы позволяют использовать\nлюбые пользователские поля для \nработы с приложением." )
 		
-		sizer_settings.Add( self.checkbox_aliases, 0, wx.ALL, 5 )
+		sizer_settings.Add( self.checkbox_aliases, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
-		self.checkbox_complist = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры создания перечня\nэлементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_complist.Hide()
-		self.checkbox_complist.SetToolTipString( u"Параметры диалогового окна\nсоздания перечня элементов." )
+		self.checkbox_complist = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры перечня элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_complist.SetToolTipString( u"Параметры из диалогового окна\nсоздания перечня элементов." )
 		
-		sizer_settings.Add( self.checkbox_complist, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_settings.Add( self.checkbox_complist, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.checkbox_recent_sch = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Недавние схемы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_recent_sch.Hide()
 		self.checkbox_recent_sch.SetToolTipString( u"Список недавно используемых файлов схем." )
 		
-		sizer_settings.Add( self.checkbox_recent_sch, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_settings.Add( self.checkbox_recent_sch, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.checkbox_recent_lib = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Недавние библиотеки", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_recent_lib.Hide()
 		self.checkbox_recent_lib.SetToolTipString( u"Список недавно используемых файлов схем." )
 		
-		sizer_settings.Add( self.checkbox_recent_lib, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		self.checkbox_help_viewer = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Программа для просмотра справки.", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_help_viewer.Hide()
-		self.checkbox_help_viewer.SetToolTipString( u"Список недавно используемых файлов схем." )
-		
-		sizer_settings.Add( self.checkbox_help_viewer, 0, wx.ALL, 5 )
+		sizer_settings.Add( self.checkbox_recent_lib, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		
 		self.panel_settings_selector.SetSizer( sizer_settings )
