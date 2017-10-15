@@ -30,7 +30,7 @@ from odf import dc, meta
 from kicadsch import *
 
 REF_REGULAR_EXPRESSION = r'(.*[^0-9])([0-9]+)'
-NUM_REGULAR_EXPRESSION = u'([А-ЯA-Z]+[0-9\.]+\s?)(Э[1-7])?'
+NUM_REGULAR_EXPRESSION = u'([А-ЯA-Z0-9]+\.[0-9\.\-]+\s?)(Э[1-7])?'
 
 class CompList():
     """
