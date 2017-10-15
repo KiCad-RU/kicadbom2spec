@@ -743,22 +743,45 @@ class CompListDialog ( wx.Dialog ):
 		self.checkbox_add_units = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Добавить единицы измерения", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_add_units.SetToolTipString( u"Если для резисторов, конденсаторов или индуктивностей указаны только значения и данная опция включена, то к значениям будут добавлены соответствующие единицы измерения (Ом, Ф, Гн)." )
 		
-		sizer_options.Add( self.checkbox_add_units, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_options.Add( self.checkbox_add_units, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.checkbox_all_components = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Все элементы", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_all_components.SetToolTipString( u"Если данная функция включена, в перечень элементов будут включены все элементы, не зависимо от того установлен флажок для элемента или нет." )
 		
-		sizer_options.Add( self.checkbox_all_components, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_options.Add( self.checkbox_all_components, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.checkbox_first_usage = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Добавить графы первичной применяемости", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_first_usage.SetToolTipString( u"Если данная опция включена, то форматная рамка будет содержать графы первичной применяемости (24, 25 по ГОСТ2.104-2006)" )
+		
+		sizer_options.Add( self.checkbox_first_usage, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		
+		sizer_first_usage = wx.BoxSizer( wx.HORIZONTAL )
+		
+		
+		sizer_first_usage.AddSpacer( ( 20, 0), 0, wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.checkbox_first_usage_fill = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Указать первичную применяемость", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_first_usage_fill.SetToolTipString( u"Если данная опция включена, то графа Перв. примен. будет заполнена значением децимального номера без кода документа" )
+		
+		sizer_first_usage.Add( self.checkbox_first_usage_fill, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, 5 )
+		
+		
+		sizer_options.Add( sizer_first_usage, 0, wx.EXPAND, 5 )
+		
+		self.checkbox_customer_fields = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Добавить графы заказчика", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_customer_fields.SetToolTipString( u"Если данная опция включена, то над основной надписью будут показаны графы заказчика (27-30 по ГОСТ2.104-2006)" )
+		
+		sizer_options.Add( self.checkbox_customer_fields, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.checkbox_changes_sheet = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Добавить лист регистрации изменений", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_changes_sheet.SetToolTipString( u"Если данная опция включена, то в конец перечня элементов будет добавлен лист регистрации изменений." )
 		
-		sizer_options.Add( self.checkbox_changes_sheet, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_options.Add( self.checkbox_changes_sheet, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.checkbox_open = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Открыть перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_open.SetToolTipString( u"Если этот параметр установлен, то после создания перечня элементов он будет открыт в редакторе по умолчанию." )
 		
-		sizer_options.Add( self.checkbox_open, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_options.Add( self.checkbox_open, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		
 		sizer_spec.Add( sizer_options, 0, wx.EXPAND|wx.ALL, 5 )

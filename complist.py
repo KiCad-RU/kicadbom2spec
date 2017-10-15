@@ -30,6 +30,7 @@ from odf import dc, meta
 from kicadsch import *
 
 REF_REGULAR_EXPRESSION = r'(.*[^0-9])([0-9]+)'
+NUM_REGULAR_EXPRESSION = u'([А-ЯA-Z]+[0-9\.]+\s?)(Э[1-7])?'
 
 class CompList():
     """
@@ -41,13 +42,16 @@ class CompList():
     def __init__(self):
         # Load the pattern
         self.pattern = odf.opendocument.load(os.path.join(os.path.dirname(os.path.realpath(__file__)), u'pattern.ods'))
-        self.firstPagePattern = None
-        self.otherPagesPattern = None
-        self.lastPagePattern = None
         for sheet in self.pattern.spreadsheet.getElementsByType(Table):
             # Pattern for first page
-            if sheet.getAttribute(u'name') == u'First':
-                self.firstPagePattern = sheet
+            if sheet.getAttribute(u'name') == u'First1':
+                self.firstPagePatternV1 = sheet
+            elif sheet.getAttribute(u'name') == u'First2':
+                self.firstPagePatternV2 = sheet
+            elif sheet.getAttribute(u'name') == u'First3':
+                self.firstPagePatternV3 = sheet
+            elif sheet.getAttribute(u'name') == u'First4':
+                self.firstPagePatternV4 = sheet
             # Pattern for other pages
             elif sheet.getAttribute(u'name') == u'Other':
                 self.otherPagesPattern = sheet
@@ -77,7 +81,7 @@ class CompList():
         # Current state of filling list of the components
         self.cur_line = 1
         self.cur_page = 1
-        self.cur_table = self.firstPagePattern
+        self.cur_table = self.firstPagePatternV2
 
         # Some variables for filling the list
         self.developer = u''
@@ -88,6 +92,22 @@ class CompList():
         self.title = u''
         self.comp = u''
         self.need_changes_sheet = True
+        self.fill_first_usage = False
+
+    def get_lines_count(self):
+        """
+        Get lines count of current table
+
+        """
+        table_name = self.cur_table.getAttribute(u'name')
+        if table_name in (u'First1', u'First2'):
+            return 29
+        elif table_name in (u'First3', u'First4'):
+            return 26
+        elif table_name == u'Other':
+            return 32
+        else:
+            return 0
 
     def replace_text(self, table, label, text, group=False):
         """
@@ -167,9 +187,8 @@ class CompList():
         # Increase line counter
         self.cur_line += 1
 
-        # First page of the list has 29 lines, other pages has 32 lines
-        if (self.cur_page == 1 and self.cur_line > 29) or \
-           (self.cur_page > 1 and self.cur_line > 32):
+        # First page of the list has 29 or 26 lines, other pages has 32 lines
+        if self.cur_line > self.get_lines_count():
             # Table is full
             self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
             self.complist.spreadsheet.addElement(self.cur_table)
@@ -525,8 +544,8 @@ class CompList():
 
             if group[0] != u'':
                 # New group title
-                if (self.cur_page == 1 and self.cur_line == 29) or (self.cur_page > 1 and self.cur_line == 32):
-                    # If name of group at bottom of table without elements, go to beginning of a new
+                if self.cur_line == self.get_lines_count():
+                    # If name of group at bottom of table without elements, go to beginning of a new table
                     while self.cur_line != 1:
                         self.next_line()
                 self.replace_text(self.cur_table, u'#2:%d' % self.cur_line, group[0], group=True)
@@ -536,12 +555,10 @@ class CompList():
                 self.set_line(comp)
                 self.next_line()
 
+        # Current table not empty - save it
         if self.cur_line != 1:
-            # Current table not empty - save it
-            if self.cur_page == 1:
-                self.cur_line = 29
-            else:
-                self.cur_line = 32
+            # Set last line as current
+            self.cur_line = self.get_lines_count()
             # Go to next empty page and save current
             self.next_line()
 
@@ -569,6 +586,10 @@ class CompList():
                     self.replace_text(table, u'#5:7', str(index + 1))
                 self.replace_text(table, u'#5:8', str(pg_cnt))
                 self.replace_text(table, u'#5:9', self.comp)
+                if self.fill_first_usage:
+                    first_usage = re.search(NUM_REGULAR_EXPRESSION, self.decimal_num).group(1)
+                    if first_usage != None:
+                        self.replace_text(table, u'#6:1', first_usage.rstrip(' '))
 
             # Other pages - smal stamp
             else:
@@ -605,9 +626,9 @@ class CompList():
         of the schematic type).
 
         """
-        num_parts = num.rsplit(u'Э', 1)
-        if len(num_parts) > 1 and num_parts[1] in u'1234567':
-            return u'ПЭ'.join(num_parts)
+        num_parts = re.search(NUM_REGULAR_EXPRESSION, num)
+        if num_parts.group(1) != None and num_parts.group(2) != None:
+            return u'П'.join(num_parts.groups())
         else:
             return num
 

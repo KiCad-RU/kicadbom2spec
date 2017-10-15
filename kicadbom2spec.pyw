@@ -1728,20 +1728,40 @@ class Window(gui.MainFrame):
             value = value.replace('\\n', '\n')
             complist_dialog.stamp_title_converted.SetLabel(value)
 
+        def on_first_usage_checked(event):
+            """
+            Enable or disable child checkbox.
+
+            """
+            if event.IsChecked():
+                complist_dialog.checkbox_first_usage_fill.Enable(True)
+            else:
+                complist_dialog.checkbox_first_usage_fill.Enable(False)
+
         complist = CompList()
         complist_dialog = gui.CompListDialog(self)
         complist_dialog.stamp_decimal_num_text.Bind(wx.EVT_TEXT, on_decimal_num_changed)
         complist_dialog.stamp_title_text.Bind(wx.EVT_TEXT, on_title_changed)
+        complist_dialog.checkbox_first_usage.Bind(wx.EVT_CHECKBOX, on_first_usage_checked)
         # Load settings
-        all_components = False
         add_units = False
-        open_complist = False
+        all_components = False
+        need_first_usage = True
+        fill_first_usage = False
+        need_customer_fields = False
         need_changes_sheet = True
+        open_complist = False
         if self.settings.has_section('complist'):
-            if self.settings.has_option('complist', 'all'):
-                all_components = self.settings.getboolean('complist', 'all')
             if self.settings.has_option('complist', 'units'):
                 add_units = self.settings.getboolean('complist', 'units')
+            if self.settings.has_option('complist', 'all'):
+                all_components = self.settings.getboolean('complist', 'all')
+            if self.settings.has_option('complist', 'first_usage'):
+                need_first_usage = self.settings.getboolean('complist', 'first_usage')
+            if self.settings.has_option('complist', 'fill_first_usage'):
+                fill_first_usage = self.settings.getboolean('complist', 'fill_first_usage')
+            if self.settings.has_option('complist', 'customer_fields'):
+                need_customer_fields = self.settings.getboolean('complist', 'customer_fields')
             if self.settings.has_option('complist', 'changes_sheet'):
                 need_changes_sheet = self.settings.getboolean('complist', 'changes_sheet')
             if self.settings.has_option('complist', 'open'):
@@ -1753,6 +1773,10 @@ class Window(gui.MainFrame):
         complist_dialog.filepicker_complist.SetPath(self.complist_file)
         complist_dialog.checkbox_add_units.SetValue(add_units)
         complist_dialog.checkbox_all_components.SetValue(all_components)
+        complist_dialog.checkbox_first_usage.SetValue(need_first_usage)
+        complist_dialog.checkbox_first_usage_fill.SetValue(fill_first_usage)
+        complist_dialog.checkbox_first_usage_fill.Enable(need_first_usage)
+        complist_dialog.checkbox_customer_fields.SetValue(need_customer_fields)
         complist_dialog.checkbox_changes_sheet.SetValue(need_changes_sheet)
         complist_dialog.checkbox_open.SetValue(open_complist)
         # Stamp
@@ -1771,8 +1795,11 @@ class Window(gui.MainFrame):
             wx.SafeYield()
 
             # Save settings from complist dialog
-            all_components = complist_dialog.checkbox_all_components.IsChecked()
             add_units = complist_dialog.checkbox_add_units.IsChecked()
+            all_components = complist_dialog.checkbox_all_components.IsChecked()
+            need_first_usage = complist_dialog.checkbox_first_usage.IsChecked()
+            fill_first_usage = complist_dialog.checkbox_first_usage_fill.IsChecked()
+            need_customer_fields = complist_dialog.checkbox_customer_fields.IsChecked()
             need_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
             open_complist = complist_dialog.checkbox_open.GetValue()
             # Stamp
@@ -1789,8 +1816,11 @@ class Window(gui.MainFrame):
 
             if not self.settings.has_section('complist'):
                 self.settings.add_section('complist')
-            self.settings.set('complist', 'all', str(all_components))
             self.settings.set('complist', 'units', str(add_units))
+            self.settings.set('complist', 'all', str(all_components))
+            self.settings.set('complist', 'first_usage', str(need_first_usage))
+            self.settings.set('complist', 'fill_first_usage', str(fill_first_usage))
+            self.settings.set('complist', 'customer_fields', str(need_customer_fields))
             self.settings.set('complist', 'changes_sheet', str(need_changes_sheet))
             self.settings.set('complist', 'open', str(open_complist))
             self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
@@ -1858,8 +1888,18 @@ class Window(gui.MainFrame):
                     # Add prepared fields of an component
                     comp_fields.append(fields)
             try:
+                # Select pattern for first page
+                if not need_first_usage and not need_customer_fields:
+                    complist.cur_table = complist.firstPagePatternV1
+                elif need_first_usage and not need_customer_fields:
+                    complist.cur_table = complist.firstPagePatternV2
+                elif not need_first_usage and need_customer_fields:
+                    complist.cur_table = complist.firstPagePatternV3
+                elif need_first_usage and need_customer_fields:
+                    complist.cur_table = complist.firstPagePatternV4
                 # Settings
                 complist.need_changes_sheet = need_changes_sheet
+                complist.fill_first_usage = fill_first_usage
                 # Stamp
                 complist.decimal_num = complist.convert_decimal_num(self.stamp_dict['decimal_num'])
                 complist.developer = self.stamp_dict['developer']
