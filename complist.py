@@ -207,8 +207,12 @@ class CompList():
         if int(element[9]) > 1:
             # Reference number: '5, 6'; '25-28' etc.
             ref = re.search(r'(\d+)(-|,\s?)(\d+)', element[1]).groups()
-            # Reference: 'VD1, VD2'; 'C8-C11' etc.
-            ref = (element[0] + u'%s%s' + element[0] + u'%s') % ref
+            if element[2]:
+                # Reference: 'VD1*, VD2*'; 'C8*-C11*' etc.
+                ref = (element[0] + u'%s*%s' + element[0] + u'%s*') % ref
+            else:
+                # Reference: 'VD1, VD2'; 'C8-C11' etc.
+                ref = (element[0] + u'%s%s' + element[0] + u'%s') % ref
         else:
             # Reference: 'R5'; 'VT13' etc.
             ref = element[0] + element[1]
@@ -474,7 +478,6 @@ class CompList():
         comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][1])
         comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][0])
         # Combining the identical elements in one line
-        # If component has "need adjust" flag, combination not allowed
         temp_array = []
         for group in comp_lines:
             first = u''
@@ -495,13 +498,12 @@ class CompList():
 
                 if element[0] == prev[0] and \
                         int(element[1]) - 1 == int(prev[1]) and \
-                        not element[2] and not prev[2] and\
-                        element[3:] == prev[3:]:
-                    # equal elements without "need adjust" mark
+                        element[2:] == prev[2:]:
+                    # equal elements
                     last = element[1]
                     last_index = group[1].index(element)
                 else:
-                    # different elements or element with mark "need adjust"
+                    # different elements
                     if int(last) - int(first) > 0:
                         # finish processing of several identical elements
                         count = int(last) - int(first) + 1
