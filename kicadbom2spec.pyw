@@ -2066,7 +2066,7 @@ class Window(gui.MainFrame):
             text_ctrl = event.GetEventObject()
             pos = text_ctrl.GetInsertionPoint()
             text = text_ctrl.GetValue()
-            text = text.replace(' ', '᛫')
+            text = text.replace(' ', '·')
             text_ctrl.ChangeValue(text)
             text_ctrl.SetInsertionPoint(pos)
             event.Skip()
@@ -2085,7 +2085,7 @@ class Window(gui.MainFrame):
                         end = text_ctrl.GetSelection()[1]
                         text_ctrl.Remove(start, end)
                         text_ctrl.SetInsertionPoint(start)
-                    text = text.replace('᛫', ' ')
+                    text = text.replace('·', ' ')
                     wx.TheClipboard.SetData(wx.TextDataObject(text))
                 wx.TheClipboard.Close()
 
@@ -2174,8 +2174,8 @@ class Window(gui.MainFrame):
                 self.separators_dict[separators_field_names[i]] = ['','']
                 prefix = prefix_text.GetValue()
                 suffix = suffix_text.GetValue()
-                prefix = prefix.replace('᛫', ' ')
-                suffix = suffix.replace('᛫', ' ')
+                prefix = prefix.replace('·', ' ')
+                suffix = suffix.replace('·', ' ')
                 self.separators_dict[separators_field_names[i]][0] = prefix
                 self.separators_dict[separators_field_names[i]][1] = suffix
 

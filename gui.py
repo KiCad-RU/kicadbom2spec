@@ -925,7 +925,7 @@ class SettingsDialog ( wx.Dialog ):
 		
 		general_tab_sizer = wx.BoxSizer( wx.VERTICAL )
 		
-		self.space_as_dot_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Отображать пробелы в виде точек \"᛫\"", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.space_as_dot_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Отображать пробелы в виде точек \"·\"", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.space_as_dot_checkbox.SetToolTipString( u"Если этот параметр установлен, то в таблице и в полях ввода пробелы будут отображаться в виде специальных символов." )
 		
 		general_tab_sizer.Add( self.space_as_dot_checkbox, 0, wx.EXPAND|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
@@ -1168,7 +1168,7 @@ class SettingsDialog ( wx.Dialog ):
 		
 		separators_note_sizer.Add( self.separators_note_statictext, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		self.separators_notetext_statictext = wx.StaticText( self.separators_panel, wx.ID_ANY, u"символом \"᛫\" обозначены пробелы.", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.separators_notetext_statictext = wx.StaticText( self.separators_panel, wx.ID_ANY, u"символом \"·\" обозначены пробелы.", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.separators_notetext_statictext.Wrap( -1 )
 		separators_note_sizer.Add( self.separators_notetext_statictext, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		

@@ -17,10 +17,19 @@
 
 import re
 import sys
+import platform
 import wx
 import wx.grid
 from operator import itemgetter
 from complist import REF_REGULAR_EXPRESSION
+
+# Windows XP does not support Unicode characters in grid labels
+if platform.win32_ver()[0] == 'XP':
+    SORT_IND_UP = ' >'
+    SORT_IND_DOWN = ' <'
+else:
+    SORT_IND_UP = u' ▲'
+    SORT_IND_DOWN = u' ▼'
 
 
 class EditorCtrlPopup(wx.Dialog):
@@ -412,7 +421,7 @@ class EditorCtrl(wx.Control):
         """
         value = self.text_ctrl.GetValue()
         if self.GetGrandParent().space_as_dot:
-            value = value.replace('᛫', ' ')
+            value = value.replace('·', ' ')
         return value
 
     def on_key(self, event):
@@ -477,7 +486,7 @@ class EditorCtrl(wx.Control):
         if self.GetGrandParent().space_as_dot:
             pos = self.text_ctrl.GetInsertionPoint()
             text = self.text_ctrl.GetValue()
-            text = text.replace(' ', '᛫')
+            text = text.replace(' ', '·')
             self.text_ctrl.ChangeValue(text)
             self.text_ctrl.SetInsertionPoint(pos)
         event.Skip()
@@ -491,7 +500,7 @@ class EditorCtrl(wx.Control):
             if wx.TheClipboard.Open():
                 text = self.text_ctrl.GetStringSelection()
                 if text:
-                    text = text.replace('᛫', ' ')
+                    text = text.replace('·', ' ')
                     wx.TheClipboard.SetData(wx.TextDataObject(text))
                 wx.TheClipboard.Close()
         else:
@@ -511,7 +520,7 @@ class EditorCtrl(wx.Control):
                     end = self.text_ctrl.GetSelection()[1]
                     self.text_ctrl.Remove(start, end)
                     self.text_ctrl.SetInsertionPoint(start)
-                    text = text.replace('᛫', ' ')
+                    text = text.replace('·', ' ')
                     wx.TheClipboard.SetData(wx.TextDataObject(text))
                 wx.TheClipboard.Close()
         else:
@@ -825,7 +834,7 @@ class CellRenderer(wx.grid.PyGridCellRenderer):
         dc.SetFont(attr.GetFont())
         text = grid.GetCellValue(row, col)
         if grid.space_as_dot:
-            text = text.replace(' ', '᛫')
+            text = text.replace(' ', '·')
         if isSelected:
             dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT))
         else:
@@ -844,7 +853,7 @@ class CellRenderer(wx.grid.PyGridCellRenderer):
     def GetBestSize(self, grid, attr, dc, row, col):
         text = grid.GetCellValue(row, col)
         if grid.space_as_dot:
-            text = text.replace(' ', '᛫')
+            text = text.replace(' ', '·')
         dc.SetFont(attr.GetFont())
         w, h = dc.GetTextExtent(text)
         return wx.Size(w, h)
@@ -872,7 +881,7 @@ class Grid(wx.grid.Grid):
         self.redo_buffer = []
         self.last_sorted_col = -1
         self.reversed_sorting = False
-        self.space_as_dot = False # ' ' or '᛫'
+        self.space_as_dot = False # ' ' or '·'
 
         # Grid
         self.CreateGrid(0, 9)
@@ -1046,14 +1055,14 @@ class Grid(wx.grid.Grid):
         for col in range(cols):
             # Remove extra characters from title
             col_title = self.GetColLabelValue(col)
-            col_title = col_title.replace(u' ▲', u'')
-            col_title = col_title.replace(u' ▼', u'')
+            col_title = col_title.replace(SORT_IND_UP, u'')
+            col_title = col_title.replace(SORT_IND_DOWN, u'')
             # Add sorting indicator
             if self.last_sorted_col == col:
                 if self.reversed_sorting:
-                    col_title += u' ▲'
+                    col_title += SORT_IND_UP
                 else:
-                    col_title += u' ▼'
+                    col_title += SORT_IND_DOWN
             self.SetColLabelValue(col, col_title)
 
     def get_values(self):
@@ -1288,8 +1297,8 @@ class Grid(wx.grid.Grid):
         cols = [col]
         choices = self.get_choices(rows, cols)
         col_title = self.GetColLabelValue(event.GetCol())
-        col_title = col_title.replace(u' ▲', u'')
-        col_title = col_title.replace(u' ▼', u'')
+        col_title = col_title.replace(SORT_IND_UP, u'')
+        col_title = col_title.replace(SORT_IND_DOWN, u'')
         std_values = self.window.values_dict[col_title.lower()]
         cell_editor.set_items(choices[col], std_values)
 
@@ -1308,6 +1317,6 @@ class Grid(wx.grid.Grid):
         """
         cell_editor = self.GetCellEditor(event.GetRow(), event.GetCol())
         col_title = self.GetColLabelValue(event.GetCol())
-        col_title = col_title.replace(u' ▲', u'')
-        col_title = col_title.replace(u' ▼', u'')
+        col_title = col_title.replace(SORT_IND_UP, u'')
+        col_title = col_title.replace(SORT_IND_DOWN, u'')
         self.window.values_dict[col_title.lower()] = cell_editor.control.std_values
