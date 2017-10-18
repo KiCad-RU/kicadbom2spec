@@ -28,8 +28,8 @@ ${StrRep}
 !define PROG_NAME "kicadbom2spec"
 
 !define DEPENDENCIES "..\..\windows_installer_dependencies\"
-!define PYTHON "python-2.7.13.msi"
-!define PYTHON_NAME "Python 2.7.13"
+!define PYTHON "python-2.7.14.msi"
+!define PYTHON_NAME "Python 2.7.14"
 !define WXPYTHON "wxPython3.0-win32-3.0.2.0-py27.exe"
 !define WXPYTHON_NAME "wxPython 3.0"
 !define ODFPY "odfpy-1.3.5.tar.gz"
