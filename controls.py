@@ -1099,24 +1099,6 @@ class Grid(wx.grid.Grid):
                     break
         self.update_attributes()
 
-    def get_selected_rows(self):
-        """
-        Returns list of indexes of selected rows.
-
-        """
-        selected_rows = []
-        if int(wx.version().split(' ')[0].split('.')[0]) == 3:
-            selected_rows = self.GetSelectedRows()
-        else:
-            top_left = self.GetSelectionBlockTopLeft()
-            bottom_right =  self.GetSelectionBlockBottomRight()
-            for i in range(len(top_left)):
-                row_start, col_start = top_left[i]
-                row_end, col_end = bottom_right[i]
-                for row in range(row_start, row_end + 1):
-                    selected_rows.append(row)
-        return selected_rows
-
     def get_choices(self, rows, columns):
         """
         Get all unique values for every column in selected rows.

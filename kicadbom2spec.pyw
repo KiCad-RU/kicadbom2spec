@@ -477,7 +477,7 @@ class Window(gui.MainFrame):
         Initialize the grid for the components.
 
         """
-        # Save column width
+        # Save grid options
         if hasattr(self, 'grid'):
             if not self.settings.has_section('column sizes'):
                 self.settings.add_section('column sizes')
@@ -520,13 +520,12 @@ class Window(gui.MainFrame):
         self.Layout()
         self.grid.SetFocus()
 
+        # Restore grid options
         if hasattr(self, 'settings'):
-            # Restore column width
             if self.settings.has_section('column sizes'):
                 for col in self.settings.options('column sizes'):
                     col_size = self.settings.getint('column sizes', col)
                     self.grid.SetColSize(int(col), col_size)
-            # Restore other options
             if self.settings.has_section('general'):
                 if self.settings.has_option('general', 'space as dot'):
                     self.grid.space_as_dot = self.settings.getboolean('general', 'space as dot')
@@ -1000,7 +999,7 @@ class Window(gui.MainFrame):
 
         """
         menu = event.GetEventObject()
-        rows = self.grid.get_selected_rows()
+        rows = self.grid.GetSelectedRows()
         for row in rows:
             # By default flag is unset
             value = self.grid.GetCellValue(row, 2).rstrip('*')
@@ -1085,7 +1084,7 @@ class Window(gui.MainFrame):
         menu.AppendItem(item)
         menu.Bind(wx.EVT_MENU, self.on_adjust_flag_switch, item)
         menu.Enable(menu.adjust_id, self.menuitem_edit.IsEnabled())
-        rows = self.grid.get_selected_rows()
+        rows = self.grid.GetSelectedRows()
         if rows:
             for row in rows:
                 if not self.grid.GetCellValue(row, 2).endswith('*'):
@@ -1150,7 +1149,7 @@ class Window(gui.MainFrame):
         Copy values of the fields.
 
         """
-        if len(self.grid.get_selected_rows()) > 1:
+        if len(self.grid.GetSelectedRows()) > 1:
             if wx.MessageBox(
                 u'В таблице выделено несколько элементов!\n' \
                 u'Будут скопированы поля только из первого выделенного элемента.\n' \
@@ -1161,7 +1160,7 @@ class Window(gui.MainFrame):
 
                 return
         self.buffer = []
-        row = self.grid.get_selected_rows()[0]
+        row = self.grid.GetSelectedRows()[0]
         for col in range(1, 9):
             if col == 2:
                 self.buffer.append(u'')
@@ -1175,7 +1174,7 @@ class Window(gui.MainFrame):
         Cut values of the fields.
 
         """
-        if len(self.grid.get_selected_rows()) > 1:
+        if len(self.grid.GetSelectedRows()) > 1:
             if wx.MessageBox(
                     u'В таблице выделено несколько элементов!\n' \
                     u'Будут вырезаны поля только из первого выделенного элемента.\n' \
@@ -1187,7 +1186,7 @@ class Window(gui.MainFrame):
 
         self.buffer = []
         selected_cols = self.get_checked_cols()
-        row = self.grid.get_selected_rows()[0]
+        row = self.grid.GetSelectedRows()[0]
         for col in range(1, 9):
             if col == 2:
                 self.buffer.append(u'')
@@ -1226,7 +1225,7 @@ class Window(gui.MainFrame):
                 self.on_grid_change()
             event.Skip()
 
-        if len(self.grid.get_selected_rows()) >= 1:
+        if len(self.grid.GetSelectedRows()) >= 1:
 
             editor = gui.EditorDialog(self)
             editor.SetMaxSize((self.GetSize().GetWidth(), -1))
@@ -1234,7 +1233,7 @@ class Window(gui.MainFrame):
             editor.checkbox.Hide()
             editor.space_as_dot = self.grid.space_as_dot
             col_num = self.grid.GetNumberCols()
-            selected_rows = self.grid.get_selected_rows()
+            selected_rows = self.grid.GetSelectedRows()
             for i in range(1, col_num):
                 if i == 2:
                     continue
@@ -1264,14 +1263,14 @@ class Window(gui.MainFrame):
 
         """
         writing_enabled = False
-        selected_rows = self.grid.get_selected_rows()
+        selected_rows = self.grid.GetSelectedRows()
         for row in selected_rows:
             if not self.grid.comp_is_copy(
                     self.grid.GetCellValue(row, 2)
                     ):
                 writing_enabled = True
 
-        if self.grid.get_selected_rows():
+        if self.grid.GetSelectedRows():
             self.menuitem_copy.Enable(True)
             self.menuitem_cut.Enable(writing_enabled)
             self.menuitem_edit.Enable(writing_enabled)
@@ -1955,7 +1954,7 @@ class Window(gui.MainFrame):
         editor = gui.EditorDialog(self)
         editor.SetMaxSize((self.GetSize().GetWidth(), -1))
         editor.space_as_dot = self.grid.space_as_dot
-        selected_rows = self.grid.get_selected_rows()
+        selected_rows = self.grid.GetSelectedRows()
         col_num = self.grid.GetNumberCols()
         all_choices = self.grid.get_choices(selected_rows, range(0, col_num))
         values_dict_keys = [
@@ -2298,7 +2297,7 @@ class Window(gui.MainFrame):
         Clears user specified fields of selected components.
 
         """
-        selected_rows = self.grid.get_selected_rows()
+        selected_rows = self.grid.GetSelectedRows()
         selected_cols = self.get_checked_cols()
         for row in selected_rows:
             for col in selected_cols:
