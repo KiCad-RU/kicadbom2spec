@@ -589,9 +589,9 @@ class CompList():
                 self.replace_text(table, u'#5:8', str(pg_cnt))
                 self.replace_text(table, u'#5:9', self.comp)
                 if self.fill_first_usage:
-                    first_usage = re.search(NUM_REGULAR_EXPRESSION, self.decimal_num).group(1)
+                    first_usage = re.search(NUM_REGULAR_EXPRESSION, self.decimal_num)
                     if first_usage != None:
-                        self.replace_text(table, u'#6:1', first_usage.rstrip(' '))
+                        self.replace_text(table, u'#6:1', first_usage.group(1).rstrip(' '))
 
             # Other pages - smal stamp
             else:
@@ -629,8 +629,11 @@ class CompList():
 
         """
         num_parts = re.search(NUM_REGULAR_EXPRESSION, num)
-        if num_parts.group(1) != None and num_parts.group(2) != None:
-            return u'П'.join(num_parts.groups())
+        if num_parts != None:
+            if num_parts.group(1) != None and num_parts.group(2) != None:
+                return u'П'.join(num_parts.groups())
+            else:
+                return num
         else:
             return num
 
