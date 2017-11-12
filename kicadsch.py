@@ -557,7 +557,7 @@ class Schematic:
                         self.name = parts[1]
                         self.name_size = parts[2]
                     elif int(parts[0][1:]) == 1:
-                        self.file_name = parts[1]
+                        self.file_name = parts[1].decode('utf-8')
                         self.file_name_size = parts[2]
                     elif int(parts[0][1:]) > 1:
                         self.fields.append(self.Field(line))
