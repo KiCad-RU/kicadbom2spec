@@ -9,6 +9,7 @@
 
 import wx
 import wx.xrc
+import wx.grid
 import controls
 
 ID_OPEN_SCH = 1000
@@ -32,8 +33,9 @@ ID_SETTINGS = 1017
 ID_SETTINGS_IMPORT = 1018
 ID_SETTINGS_EXPORT = 1019
 ID_TOOL = 1020
-ID_HELP = 1021
-ID_ABOUT = 1022
+ID_COMP_FIELDS_PANEL = 1021
+ID_HELP = 1022
+ID_ABOUT = 1023
 
 ###########################################################################
 ## Class MainFrame
@@ -172,6 +174,10 @@ class MainFrame ( wx.Frame ):
 		self.menu_view.AppendItem( self.menuitem_tool )
 		self.menuitem_tool.Check( True )
 		
+		self.menuitem_comp_fields_panel = wx.MenuItem( self.menu_view, ID_COMP_FIELDS_PANEL, u"П&анель полей компонента", wx.EmptyString, wx.ITEM_CHECK )
+		self.menu_view.AppendItem( self.menuitem_comp_fields_panel )
+		self.menuitem_comp_fields_panel.Check( True )
+		
 		self.menubar.Append( self.menu_view, u"&Вид" ) 
 		
 		self.menu_help = wx.Menu()
@@ -228,12 +234,69 @@ class MainFrame ( wx.Frame ):
 		
 		self.tool_help = self.toolbar.AddLabelTool( ID_HELP, u"Справка", wx.Bitmap( u"bitmaps/help-contents.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"Открыть справку", wx.EmptyString, None ) 
 		
+		self.tool_comp_fields_panel = self.toolbar.AddLabelTool( ID_COMP_FIELDS_PANEL, u"Панель полей компонента", wx.Bitmap( u"bitmaps/properties-panel.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_CHECK, u"Показать или скрыть панель полей выбранного компонента", wx.EmptyString, None ) 
+		
 		self.toolbar.Realize() 
 		
 		sizer_main = wx.BoxSizer( wx.VERTICAL )
 		
-		self.panel_components = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.RAISED_BORDER|wx.TAB_TRAVERSAL )
-		sizer_main.Add( self.panel_components, 1, wx.EXPAND, 5 )
+		self.splitter_main = wx.SplitterWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D|wx.SP_LIVE_UPDATE )
+		self.splitter_main.Bind( wx.EVT_IDLE, self.splitter_mainOnIdle )
+		
+		self.panel_components = wx.Panel( self.splitter_main, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.RAISED_BORDER|wx.TAB_TRAVERSAL )
+		self.panel_comp_fields = wx.Panel( self.splitter_main, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.RAISED_BORDER|wx.TAB_TRAVERSAL )
+		comp_fields_panel_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.comp_fields_panel_ref_label = wx.StaticText( self.panel_comp_fields, wx.ID_ANY, u"...", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.comp_fields_panel_ref_label.Wrap( -1 )
+		self.comp_fields_panel_ref_label.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		
+		comp_fields_panel_sizer.Add( self.comp_fields_panel_ref_label, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		
+		self.comp_fields_panel_grid = wx.grid.Grid( self.panel_comp_fields, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+		
+		# Grid
+		self.comp_fields_panel_grid.CreateGrid( 0, 2 )
+		self.comp_fields_panel_grid.EnableEditing( False )
+		self.comp_fields_panel_grid.EnableGridLines( True )
+		self.comp_fields_panel_grid.SetGridLineColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_GRAYTEXT ) )
+		self.comp_fields_panel_grid.EnableDragGridSize( True )
+		self.comp_fields_panel_grid.SetMargins( 0, 0 )
+		
+		# Columns
+		self.comp_fields_panel_grid.SetColSize( 0, 150 )
+		self.comp_fields_panel_grid.SetColSize( 1, 150 )
+		self.comp_fields_panel_grid.EnableDragColMove( False )
+		self.comp_fields_panel_grid.EnableDragColSize( True )
+		self.comp_fields_panel_grid.SetColLabelSize( 1 )
+		self.comp_fields_panel_grid.SetColLabelValue( 0, u" " )
+		self.comp_fields_panel_grid.SetColLabelValue( 1, u" " )
+		self.comp_fields_panel_grid.SetColLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
+		
+		# Rows
+		self.comp_fields_panel_grid.EnableDragRowSize( False )
+		self.comp_fields_panel_grid.SetRowLabelSize( 50 )
+		self.comp_fields_panel_grid.SetRowLabelAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
+		
+		# Label Appearance
+		
+		# Cell Defaults
+		self.comp_fields_panel_grid.SetDefaultCellBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_3DLIGHT ) )
+		self.comp_fields_panel_grid.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
+		self.comp_fields_panel_grid.Hide()
+		
+		comp_fields_panel_sizer.Add( self.comp_fields_panel_grid, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.comp_fields_panel_file_label = wx.StaticText( self.panel_comp_fields, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.comp_fields_panel_file_label.Wrap( -1 )
+		comp_fields_panel_sizer.Add( self.comp_fields_panel_file_label, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.panel_comp_fields.SetSizer( comp_fields_panel_sizer )
+		self.panel_comp_fields.Layout()
+		comp_fields_panel_sizer.Fit( self.panel_comp_fields )
+		self.splitter_main.SplitVertically( self.panel_components, self.panel_comp_fields, 0 )
+		sizer_main.Add( self.splitter_main, 1, wx.EXPAND, 5 )
 		
 		
 		self.SetSizer( sizer_main )
@@ -264,6 +327,7 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.on_settings_import, id = self.menuItem_settings_import.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_settings_export, id = self.menuItem_settings_export.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_tool, id = self.menuitem_tool.GetId() )
+		self.Bind( wx.EVT_MENU, self.on_comp_fields_panel, id = self.menuitem_comp_fields_panel.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_help, id = self.menuitem_help.GetId() )
 		self.Bind( wx.EVT_MENU, self.on_about, id = self.menuitem_about.GetId() )
 	
@@ -334,11 +398,18 @@ class MainFrame ( wx.Frame ):
 	def on_tool( self, event ):
 		event.Skip()
 	
+	def on_comp_fields_panel( self, event ):
+		event.Skip()
+	
 	def on_help( self, event ):
 		event.Skip()
 	
 	def on_about( self, event ):
 		event.Skip()
+	
+	def splitter_mainOnIdle( self, event ):
+		self.splitter_main.SetSashPosition( 0 )
+		self.splitter_main.Unbind( wx.EVT_IDLE )
 	
 
 ###########################################################################
@@ -350,7 +421,7 @@ class EditorDialog ( wx.Dialog ):
 	def __init__( self, parent ):
 		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Редактор полей", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
 		
-		self.SetSizeHintsSz( wx.Size( 300,-1 ), wx.DefaultSize )
+		self.SetSizeHintsSz( wx.Size( -1,-1 ), wx.DefaultSize )
 		
 		sizer_editor = wx.BoxSizer( wx.VERTICAL )
 		
@@ -726,9 +797,9 @@ class AboutDialog ( wx.Dialog ):
 class CompListDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.CAPTION|wx.CLOSE_BOX )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
 		
-		self.SetSizeHintsSz( wx.Size( 500,-1 ), wx.DefaultSize )
+		self.SetSizeHintsSz( wx.Size( -1,-1 ), wx.DefaultSize )
 		
 		sizer_spec_dialog = wx.BoxSizer( wx.VERTICAL )
 		
@@ -771,7 +842,7 @@ class CompListDialog ( wx.Dialog ):
 		self.checkbox_customer_fields = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Добавить графы заказчика", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_customer_fields.SetToolTipString( u"Если данная опция включена, то над основной надписью будут показаны графы заказчика (27-30 по ГОСТ2.104-2006)" )
 		
-		sizer_options.Add( self.checkbox_customer_fields, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options.Add( self.checkbox_customer_fields, 0, wx.EXPAND|wx.LEFT|wx.RIGHT, 5 )
 		
 		self.checkbox_changes_sheet = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Добавить лист регистрации изменений", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_changes_sheet.SetToolTipString( u"Если данная опция включена, то в конец перечня элементов будет добавлен лист регистрации изменений." )
@@ -784,7 +855,7 @@ class CompListDialog ( wx.Dialog ):
 		sizer_options.Add( self.checkbox_open, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		sizer_spec.Add( sizer_options, 0, wx.EXPAND|wx.ALL, 5 )
+		sizer_spec.Add( sizer_options, 1, wx.EXPAND, 5 )
 		
 		sizer_stamp = wx.StaticBoxSizer( wx.StaticBox( self.panel_spec_dialog, wx.ID_ANY, u"Основная надпись" ), wx.VERTICAL )
 		
@@ -1365,6 +1436,11 @@ class SettingsSelector ( wx.Dialog ):
 		self.checkbox_column_sizes.SetToolTipString( u"Размеры колонок таблицы элементов." )
 		
 		sizer_settings.Add( self.checkbox_column_sizes, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.checkbox_comp_fields_panel = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры панели полей компонента", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_comp_fields_panel.SetToolTipString( u"Размеры панели полей выбранного компонента и его дочерних элементов." )
+		
+		sizer_settings.Add( self.checkbox_comp_fields_panel, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		self.checkbox_general = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Обшие параметры", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_general.SetToolTipString( u"Значения общих параметров:\n* Отображать пробелы в виде точек \"᛫\"\n* Запоминать выбор элементов\n* Показывать метку \"*\" возле обозначения на схеме" )

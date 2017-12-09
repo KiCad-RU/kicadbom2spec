@@ -339,8 +339,7 @@ class CompList():
                         for path_and_ref in comp.path_and_ref:
                             if path_and_ref[1] == ref:
                                 return comp
-            else:
-                return None
+            return None
 
         if load_descr:
             self.get_descr(sch_file_name)

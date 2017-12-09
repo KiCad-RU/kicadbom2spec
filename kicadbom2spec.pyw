@@ -65,6 +65,24 @@ class Window(gui.MainFrame):
 
         # Events
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_toolbar)
+        self.splitter_main.Bind(wx.EVT_SIZE, self.on_splitter_size_changed)
+        self.splitter_main.Bind(wx.EVT_MAXIMIZE, self.on_splitter_size_changed)
+        self.splitter_main.Bind(
+            wx.EVT_SPLITTER_SASH_POS_CHANGED,
+            self.on_splitter_sash_changed
+            )
+        self.comp_fields_panel_grid.Bind(
+            wx.EVT_CONTEXT_MENU,
+            self.on_comp_fields_panel_grid_popup
+            )
+        self.comp_fields_panel_grid.Bind(
+            wx.grid.EVT_GRID_CELL_RIGHT_CLICK,
+            self.on_comp_fields_panel_grid_popup
+            )
+        self.comp_fields_panel_grid.Bind(
+            wx.grid.EVT_GRID_RANGE_SELECT,
+            self.on_comp_fields_panel_grid_select
+            )
 
         # Variables
         self.schematic_file = ''
@@ -77,6 +95,12 @@ class Window(gui.MainFrame):
         self.buffer = []
         self.settings_file = ''
 
+        # GUI
+        self.toolbar.InsertStretchableSpace(
+                self.toolbar.GetToolPos(gui.ID_COMP_FIELDS_PANEL)
+                )
+        self.toolbar.Realize()
+        self.splitter_main.Initialize(self.panel_components)
         self.init_grid()
 
         # Default settings
@@ -188,6 +212,9 @@ class Window(gui.MainFrame):
                             col_size = self.settings.getint('column sizes', col)
                             self.grid.SetColSize(int(col), col_size)
 
+                # Settings from section 'comp fields panel' loads
+                # in 'splitter_mainOnIdle' event handler
+
                 if self.settings.has_section('values'):
                     for item in self.values_dict.keys():
                         if self.settings.has_option('values', item):
@@ -243,6 +270,7 @@ class Window(gui.MainFrame):
                 import_settings= {
                     'size_position':False,
                     'column_sizes':False,
+                    'comp_fields_panel':False,
                     'general':False,
                     'values':False,
                     'auto_filling_groups':False,
@@ -269,6 +297,10 @@ class Window(gui.MainFrame):
                     selector.checkbox_column_sizes.SetValue(True)
                 else:
                     selector.checkbox_column_sizes.Hide()
+                if temp_settings.has_section('comp fields panel'):
+                    selector.checkbox_comp_fields_panel.SetValue(True)
+                else:
+                    selector.checkbox_comp_fields_panel.Hide()
                 if temp_settings.has_section('general'):
                     selector.checkbox_general.SetValue(True)
                 else:
@@ -304,7 +336,7 @@ class Window(gui.MainFrame):
                     selector.checkbox_recent_lib.Hide()
                 selector.Layout()
                 selector.Fit()
-                selector.Centre()
+                selector.CentreOnParent()
                 result = selector.ShowModal()
                 if result == wx.ID_OK:
                     for key in import_settings.keys():
@@ -323,11 +355,39 @@ class Window(gui.MainFrame):
                         if temp_settings.has_option('window', 'maximized'):
                             if temp_settings.getint('window', 'maximized'):
                                 self.Maximize()
+                        if temp_settings.has_option('window', 'editor width'):
+                            if not self.settings.has_section('window'):
+                                self.settings.add_section('window')
+                            self.settings.set(
+                                'window',
+                                'editor width',
+                                str(temp_settings.getint('window', 'editor width')),
+                                )
                     if import_settings['column_sizes']:
                         if hasattr(self, 'grid'):
                             for col in temp_settings.options('column sizes'):
                                 col_size = temp_settings.getint('column sizes', col)
                                 self.grid.SetColSize(int(col), col_size)
+                    if import_settings['comp_fields_panel']:
+                        if temp_settings.has_option('comp fields panel', 'width'):
+                            width = temp_settings.getint('comp fields panel', 'width')
+                            if not self.settings.has_section('comp fields panel'):
+                                self.settings.add_section('comp fields panel')
+                            self.settings.set('comp fields panel', 'width', str(width))
+                            self.splitter_main.SetSashPosition(width)
+                        if temp_settings.has_option('comp fields panel', 'show'):
+                            if temp_settings.getboolean('comp fields panel', 'show'):
+                                self.show_comp_fields_panel()
+                            else:
+                                self.hide_comp_fields_panel()
+                        else:
+                            self.hide_comp_fields_panel()
+                        if temp_settings.has_option('comp fields panel', 'name width'):
+                            width = temp_settings.getint('comp fields panel', 'name width')
+                            self.comp_fields_panel_grid.SetColSize(0, width)
+                        if temp_settings.has_option('comp fields panel', 'value width'):
+                            width = temp_settings.getint('comp fields panel', 'value width')
+                            self.comp_fields_panel_grid.SetColSize(1, width)
                     if import_settings['general']:
                         if temp_settings.has_option('general', 'space as dot'):
                             self.grid.space_as_dot = temp_settings.getboolean('general', 'space as dot')
@@ -376,6 +436,12 @@ class Window(gui.MainFrame):
                         for param in temp_settings.options('complist'):
                             value = temp_settings.get('complist', param)
                             self.settings.set('complist', param, value)
+                        if temp_settings.has_option('complist', 'dialog width'):
+                            self.settings.set(
+                                'complist',
+                                'dialog width',
+                                str(temp_settings.getint('complist', 'dialog width')),
+                                )
                     if import_settings['recent_sch']:
                         recent_files = []
                         for recent in temp_settings.options('recent sch'):
@@ -410,6 +476,19 @@ class Window(gui.MainFrame):
         for col in range(self.grid.GetNumberCols()):
             col_size = self.grid.GetColSize(col)
             self.settings.set('column sizes', str(col), str(col_size))
+
+        if not self.settings.has_section('comp fields panel'):
+            self.settings.add_section('comp fields panel')
+        width = self.comp_fields_panel_grid.GetColSize(0)
+        self.settings.set('comp fields panel', 'name width', str(width))
+        width = self.comp_fields_panel_grid.GetColSize(1)
+        self.settings.set('comp fields panel', 'value width', str(width))
+        if self.splitter_main.IsSplit():
+            self.settings.set('comp fields panel', 'show', '1')
+            width = self.splitter_main.GetSashPosition() - self.splitter_main.GetSize().GetWidth()
+            self.settings.set('comp fields panel', 'width', str(width))
+        else:
+            self.settings.set('comp fields panel', 'show', '0')
 
         if not self.settings.has_section('values'):
             self.settings.add_section('values')
@@ -496,6 +575,10 @@ class Window(gui.MainFrame):
         self.grid = Grid(self.panel_components, self)
         # Events
         self.grid.Bind(
+            wx.grid.EVT_GRID_SELECT_CELL,
+            self.on_select_cell
+            )
+        self.grid.Bind(
             wx.grid.EVT_GRID_RANGE_SELECT,
             self.on_select
             )
@@ -529,6 +612,216 @@ class Window(gui.MainFrame):
             if self.settings.has_section('general'):
                 if self.settings.has_option('general', 'space as dot'):
                     self.grid.space_as_dot = self.settings.getboolean('general', 'space as dot')
+
+    def splitter_mainOnIdle(self, event):
+        """
+        Overwrite event handler generated by wxFormBuilder
+        for initializing sash position after main window showing.
+
+        """
+        self.splitter_main.Unbind(wx.EVT_IDLE)
+
+        if self.settings.has_section('comp fields panel'):
+            if self.settings.has_option('comp fields panel', 'name width'):
+                width = self.settings.getint('comp fields panel', 'name width')
+                self.comp_fields_panel_grid.SetColSize(0, width)
+            if self.settings.has_option('comp fields panel', 'value width'):
+                width = self.settings.getint('comp fields panel', 'value width')
+                self.comp_fields_panel_grid.SetColSize(1, width)
+            if self.settings.has_option('comp fields panel', 'show'):
+                if self.settings.getboolean('comp fields panel', 'show'):
+                    self.show_comp_fields_panel()
+                    return
+        self.hide_comp_fields_panel()
+
+    def on_splitter_size_changed(self, event):
+        """
+        Update position of splitter sash.
+
+        """
+        if self.splitter_main.IsSplit():
+            width = -350
+            if self.settings.has_section('comp fields panel'):
+                if self.settings.has_option('comp fields panel', 'width'):
+                    width = self.settings.getint('comp fields panel', 'width')
+            self.splitter_main.SetSashPosition(width)
+        else:
+            event.Skip()
+
+    def on_splitter_sash_changed(self, event):
+        """
+        Save new position of splitter sash.
+
+        """
+        if not self.settings.has_section('comp fields panel'):
+            self.settings.add_section('comp fields panel')
+        width = self.splitter_main.GetSashPosition() - self.splitter_main.GetSize().GetWidth()
+        self.settings.set('comp fields panel', 'width', str(width))
+        event.Skip()
+
+    def on_comp_fields_panel_grid_select(self, event):
+        """
+        Clear selection.
+
+        """
+        self.comp_fields_panel_grid.Unbind(
+            wx.grid.EVT_GRID_RANGE_SELECT
+            )
+        self.comp_fields_panel_grid.ClearSelection()
+        self.comp_fields_panel_grid.Bind(
+            wx.grid.EVT_GRID_RANGE_SELECT,
+            self.on_comp_fields_panel_grid_select
+            )
+
+    def on_comp_fields_panel_grid_popup(self, event):
+        """
+        Popup menu for grid from component fields panel.
+
+        """
+        def on_copy(event):
+            """
+            Copy text from cell.
+
+            """
+            if wx.TheClipboard.Open():
+                row = self.comp_fields_panel_grid.GetGridCursorRow()
+                col = self.comp_fields_panel_grid.GetGridCursorCol()
+                text = self.comp_fields_panel_grid.GetCellValue(row, col)
+                wx.TheClipboard.SetData(wx.TextDataObject(text))
+                wx.TheClipboard.Close()
+
+        menu = wx.Menu()
+        menu.copy_id = wx.NewId()
+        item = wx.MenuItem(menu, menu.copy_id, u'Копировать')
+        item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy_small.png', wx.BITMAP_TYPE_PNG))
+        menu.AppendItem(item)
+        menu.Bind(wx.EVT_MENU, on_copy, item)
+        self.comp_fields_panel_grid.PopupMenu(menu, event.GetPosition())
+
+    def show_comp_fields_panel(self):
+        """
+        Show component fields panel.
+
+        """
+        width = -350
+        if self.settings.has_section('comp fields panel'):
+            if self.settings.has_option('comp fields panel', 'width'):
+                width = self.settings.getint('comp fields panel', 'width')
+        self.panel_comp_fields.Show()
+        self.splitter_main.SplitVertically(
+                self.panel_components,
+                self.panel_comp_fields,
+                width
+                )
+        self.update_comp_fields_panel()
+
+    def hide_comp_fields_panel(self):
+        """
+        Hide components fields panel.
+
+        """
+        if self.splitter_main.IsSplit():
+            self.splitter_main.Unsplit()
+        self.panel_comp_fields.Hide()
+
+    def update_comp_fields_panel(self, row=None):
+        """
+        Show all fields for selected component.
+
+        """
+        def component_has_ref(comp, ref):
+            """
+            Returns true if component has specified reference.
+
+            """
+            if comp.fields[0].text == ref:
+                return True
+            else:
+                if hasattr(comp, 'path_and_ref'):
+                    for path_and_ref in comp.path_and_ref:
+                        if path_and_ref[1] == ref:
+                            return True
+            return False
+
+        if not self.splitter_main.IsSplit():
+            return
+        if self.comp_fields_panel_grid.GetNumberRows():
+            self.comp_fields_panel_grid.DeleteRows(
+                    0,
+                    self.comp_fields_panel_grid.GetNumberRows()
+                    )
+        if self.grid.GetNumberRows() > 0:
+            self.comp_fields_panel_grid.Show()
+            if row == None:
+                row = self.grid.GetGridCursorRow()
+            if self.library:
+                name = self.grid.GetCellValue(row, 4)
+                self.comp_fields_panel_ref_label.SetLabelText(name)
+                for component in self.library.components:
+                    if component.fields[1].text == name:
+                        self.comp_fields_panel_file_label.SetLabelText(self.library.lib_name)
+                        for i, field in enumerate(component.fields):
+                            self.comp_fields_panel_grid.AppendRows()
+                            self.comp_fields_panel_grid.SetRowLabelValue(i, str(field.number))
+                            if i == 0:
+                                self.comp_fields_panel_grid.SetCellValue(i, 0, u'Обозначение')
+                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                            elif i == 1:
+                                self.comp_fields_panel_grid.SetCellValue(i, 0, u'Значение')
+                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                            elif i == 2:
+                                self.comp_fields_panel_grid.SetCellValue(i, 0, u'Посад.место')
+                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                            elif i == 3:
+                                self.comp_fields_panel_grid.SetCellValue(i, 0, u'Документация')
+                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                            else:
+                                if hasattr(field, 'name'):
+                                    self.comp_fields_panel_grid.SetCellValue(i, 0, field.name.decode('utf-8'))
+                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                        break
+            else:
+                ref = self.grid.GetCellValue(row, 2)
+                self.comp_fields_panel_ref_label.SetLabelText(ref)
+                ref = self.grid.get_pure_ref(ref)
+                refs = [ref]
+                for schematic in self.schematics:
+                    for item in schematic.items:
+                        if item.__class__.__name__ == u'Comp':
+                            if component_has_ref(item, ref):
+                                if hasattr(item, 'path_and_ref'):
+                                    for path_and_ref in item.path_and_ref:
+                                        refs.append(path_and_ref[1])
+                                refs = list(set(refs))
+                                refs.remove(ref)
+                                refs.insert(0, ref)
+                                self.comp_fields_panel_ref_label.SetLabelText(', '.join(refs))
+                                self.comp_fields_panel_file_label.SetLabelText(schematic.sch_name)
+                                for i, field in enumerate(item.fields):
+                                    self.comp_fields_panel_grid.AppendRows()
+                                    self.comp_fields_panel_grid.SetRowLabelValue(i, str(field.number))
+                                    if i == 0:
+                                        self.comp_fields_panel_grid.SetCellValue(i, 0, u'Обозначение')
+                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                    elif i == 1:
+                                        self.comp_fields_panel_grid.SetCellValue(i, 0, u'Значение')
+                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                    elif i == 2:
+                                        self.comp_fields_panel_grid.SetCellValue(i, 0, u'Посад.место')
+                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                    elif i == 3:
+                                        self.comp_fields_panel_grid.SetCellValue(i, 0, u'Документация')
+                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                    else:
+                                        if hasattr(field, 'name'):
+                                            self.comp_fields_panel_grid.SetCellValue(i, 0, field.name.decode('utf-8'))
+                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                break
+        else:
+            self.comp_fields_panel_ref_label.SetLabelText('...')
+            self.comp_fields_panel_file_label.SetLabelText('')
+            self.comp_fields_panel_grid.Hide()
+        self.panel_comp_fields.Layout()
 
     def add_to_recent(self, file_name, file_type):
         """
@@ -991,6 +1284,13 @@ class Window(gui.MainFrame):
         menuitem = event.GetId()
         if menuitem > gui.ID_OPEN_SCH:
             self.toolbar.EnableTool(menuitem, self.menubar.IsEnabled(menuitem))
+            if menuitem == gui.ID_COMP_FIELDS_PANEL:
+                if self.splitter_main.IsSplit():
+                    self.toolbar.ToggleTool(menuitem, True)
+                    self.menubar.Check(menuitem, True)
+                else:
+                    self.toolbar.ToggleTool(menuitem, False)
+                    self.menubar.Check(menuitem, False)
         event.Skip()
 
     def on_adjust_flag_switch(self, event):
@@ -1143,6 +1443,16 @@ class Window(gui.MainFrame):
             self.toolbar.Hide()
         self.SendSizeEvent()
 
+    def on_comp_fields_panel(self, event):
+        """
+        Switch visible of the component fields panel.
+
+        """
+        if event.IsChecked():
+            self.show_comp_fields_panel()
+        else:
+            self.hide_comp_fields_panel()
+        event.Skip()
 
     def on_copy(self, event=None):
         """
@@ -1204,11 +1514,6 @@ class Window(gui.MainFrame):
         Paste values to the fields of the selected components from buffer.
 
         """
-        def on_idle(event):
-            if editor.GetMinSize().GetHeight() == -1:
-                editor.SetMinSize(editor.GetSize())
-                editor.SetMaxSize(wx.Size(-1, editor.GetSize().GetHeight()))
-
         def on_button(event):
             for row in selected_rows:
                 for col in range(1, col_num):
@@ -1225,10 +1530,23 @@ class Window(gui.MainFrame):
                 self.on_grid_change()
             event.Skip()
 
+        def on_size(event):
+            """
+            Save dialog width
+
+            """
+            if not self.settings.has_section('window'):
+                self.settings.add_section('window')
+            self.settings.set(
+                'window',
+                'editor width',
+                str(editor.GetSize().GetWidth())
+                )
+            event.Skip()
+
         if len(self.grid.GetSelectedRows()) >= 1:
 
             editor = gui.EditorDialog(self)
-            editor.SetMaxSize((self.GetSize().GetWidth(), -1))
             editor.SetTitle(u'Вставка полей')
             editor.checkbox.Hide()
             editor.space_as_dot = self.grid.space_as_dot
@@ -1244,14 +1562,30 @@ class Window(gui.MainFrame):
                     u'<не изменять>'
                     )
                 cur_editor_ctrl.text_ctrl.SetValue(self.buffer[i - 1])
+            # Layout
             if self.library:
                 editor.statictext_4.Hide()
                 editor.editor_ctrl_4.Hide()
-                editor.Layout()
-            editor.GetSizer().Fit(editor)
-            editor.CenterOnParent()
+            min_size = editor.GetSizer().Fit(editor)
             editor.Layout()
-            editor.Bind(wx.EVT_IDLE, on_idle)
+            editor.SetSizeHints(
+                min_size.GetWidth(),
+                min_size.GetHeight(),
+                -1,
+                min_size.GetHeight()
+                )
+            # Load dialog width
+            if self.settings.has_section('window'):
+                if self.settings.has_option('window', 'editor width'):
+                   editor.SetSize(
+                        wx.Size(
+                            self.settings.getint('window', 'editor width'),
+                            -1
+                            )
+                        )
+            editor.CenterOnParent()
+            # Events
+            editor.Bind(wx.EVT_SIZE, on_size)
             editor.dialog_buttonsOK.Bind(wx.EVT_BUTTON, on_button)
             # Need to use Show instead of ShowModal otherwise EditorCtrlPopup
             # was freezed.
@@ -1284,6 +1618,13 @@ class Window(gui.MainFrame):
             self.menuitem_paste.Enable(False)
         if event:
             event.Skip()
+
+    def on_select_cell(self, event=None):
+        """
+        Process cell selection event.
+
+        """
+        self.update_comp_fields_panel(event.GetRow())
 
     def on_open_sch(self, event=None, sch_file_name=''):
         """
@@ -1368,6 +1709,7 @@ class Window(gui.MainFrame):
             self.menuitem_find.Enable(True)
             self.menuitem_replace.Enable(True)
             self.add_to_recent(self.schematic_file, 'sch')
+            self.update_comp_fields_panel()
 
             # Set cursor back to 'normal'
             wx.EndBusyCursor()
@@ -1436,6 +1778,7 @@ class Window(gui.MainFrame):
                 os.rename(schematic.sch_name + '.tmp', schematic.sch_name)
                 self.saved = True
                 self.menuitem_save_sch.Enable(False)
+                self.update_comp_fields_panel()
             except:
                 if os.path.exists(schematic.sch_name + '.tmp'):
                     os.remove(schematic.sch_name + '.tmp')
@@ -1569,6 +1912,7 @@ class Window(gui.MainFrame):
             self.menuitem_find.Enable(True)
             self.menuitem_replace.Enable(True)
             self.add_to_recent(self.library_file, 'lib')
+            self.update_comp_fields_panel()
 
             # Set cursor back to 'normal'
             wx.EndBusyCursor()
@@ -1627,6 +1971,7 @@ class Window(gui.MainFrame):
             os.rename(self.library_file + '.tmp', self.library_file)
             self.saved = True
             self.menuitem_save_lib.Enable(False)
+            self.update_comp_fields_panel()
         except:
             if os.path.exists(self.library_file + '.tmp'):
                 os.remove(self.library_file + '.tmp')
@@ -1719,6 +2064,13 @@ class Window(gui.MainFrame):
 
         complist = CompList()
         complist_dialog = gui.CompListDialog(self)
+        complist_dialog.SetSizeHints(
+            complist_dialog.GetSize().GetWidth(),
+            complist_dialog.GetSize().GetHeight(),
+            -1,
+            complist_dialog.GetSize().GetHeight()
+            )
+        # Events
         complist_dialog.stamp_decimal_num_text.Bind(wx.EVT_TEXT, on_decimal_num_changed)
         complist_dialog.stamp_title_text.Bind(wx.EVT_TEXT, on_title_changed)
         complist_dialog.checkbox_first_usage.Bind(wx.EVT_CHECKBOX, on_first_usage_checked)
@@ -1731,6 +2083,14 @@ class Window(gui.MainFrame):
         need_changes_sheet = True
         open_complist = False
         if self.settings.has_section('complist'):
+            if self.settings.has_option('complist', 'dialog width'):
+               complist_dialog.SetSize(
+                    wx.Size(
+                        self.settings.getint('complist', 'dialog width'),
+                        -1
+                        )
+                    )
+               complist_dialog.CentreOnParent()
             if self.settings.has_option('complist', 'units'):
                 add_units = self.settings.getboolean('complist', 'units')
             if self.settings.has_option('complist', 'all'):
@@ -1767,6 +2127,15 @@ class Window(gui.MainFrame):
             field_text.SetValue(value)
 
         result = complist_dialog.ShowModal()
+
+        # Save dialog width
+        if not self.settings.has_section('complist'):
+            self.settings.add_section('complist')
+        self.settings.set(
+            'complist',
+            'dialog width',
+            str(complist_dialog.GetSize().GetWidth())
+            )
 
         if result == wx.ID_OK:
             # Set cursor to 'wait'
@@ -1927,11 +2296,6 @@ class Window(gui.MainFrame):
         Open specialized window for editing fields of selected components.
 
         """
-        def on_idle(event):
-            if editor.GetMinSize().GetHeight() == -1:
-                editor.SetMinSize(editor.GetSize())
-                editor.SetMaxSize(wx.Size(-1, editor.GetSize().GetHeight()))
-
         def on_button(event):
             for row in selected_rows:
                 if editor.checkbox.IsChecked():
@@ -1951,8 +2315,21 @@ class Window(gui.MainFrame):
 
             event.Skip()
 
+        def on_size(event):
+            """
+            Save dialog width
+
+            """
+            if not self.settings.has_section('window'):
+                self.settings.add_section('window')
+            self.settings.set(
+                'window',
+                'editor width',
+                str(editor.GetSize().GetWidth())
+                )
+            event.Skip()
+
         editor = gui.EditorDialog(self)
-        editor.SetMaxSize((self.GetSize().GetWidth(), -1))
         editor.space_as_dot = self.grid.space_as_dot
         selected_rows = self.grid.GetSelectedRows()
         col_num = self.grid.GetNumberCols()
@@ -1977,15 +2354,31 @@ class Window(gui.MainFrame):
                 self.values_dict[values_dict_keys[i]],
                 u'<не изменять>'
                 )
+        # Layout
         if self.library:
             editor.checkbox.Hide()
             editor.statictext_4.Hide()
             editor.editor_ctrl_4.Hide()
-            editor.Layout()
-        editor.GetSizer().Fit(editor)
-        editor.CenterOnParent()
+        min_size = editor.GetSizer().Fit(editor)
         editor.Layout()
-        editor.Bind(wx.EVT_IDLE, on_idle)
+        editor.SetSizeHints(
+            min_size.GetWidth(),
+            min_size.GetHeight(),
+            -1,
+            min_size.GetHeight()
+            )
+        # Load dialog width
+        if self.settings.has_section('window'):
+            if self.settings.has_option('window', 'editor width'):
+               editor.SetSize(
+                    wx.Size(
+                        self.settings.getint('window', 'editor width'),
+                        -1
+                        )
+                    )
+        editor.CenterOnParent()
+        # Events
+        editor.Bind(wx.EVT_SIZE, on_size)
         editor.dialog_buttonsOK.Bind(wx.EVT_BUTTON, on_button)
         # Need to use Show instead of ShowModal otherwise EditorCtrlPopup was
         # freezed.
@@ -2497,7 +2890,7 @@ class Window(gui.MainFrame):
                 )
         about_dialog.Layout()
         about_dialog.Fit()
-        about_dialog.Centre()
+        about_dialog.CentreOnParent()
         about_dialog.dialog_buttonOK.SetFocus()
         about_dialog.ShowModal()
 
@@ -2582,7 +2975,7 @@ def main():
             else:
                 exit()
 
-    window.Show(True)
+    window.Show()
     app.MainLoop()
 
 if __name__ == '__main__':
