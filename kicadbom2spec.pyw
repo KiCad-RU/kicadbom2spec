@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*-    Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4    -*-
 ### BEGIN LICENSE
-# Copyright (C) 2017 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
+# Copyright (C) 2018 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
@@ -641,9 +641,10 @@ class Window(gui.MainFrame):
         """
         if self.splitter_main.IsSplit():
             width = -350
-            if self.settings.has_section('comp fields panel'):
-                if self.settings.has_option('comp fields panel', 'width'):
-                    width = self.settings.getint('comp fields panel', 'width')
+            if hasattr(self, 'settings'):
+                if self.settings.has_section('comp fields panel'):
+                    if self.settings.has_option('comp fields panel', 'width'):
+                        width = self.settings.getint('comp fields panel', 'width')
             self.splitter_main.SetSashPosition(width)
         else:
             event.Skip()
