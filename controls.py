@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*-    Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4    -*-
 ### BEGIN LICENSE
-# Copyright (C) 2017 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
+# Copyright (C) 2018 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
@@ -504,7 +504,9 @@ class EditorCtrl(wx.Control):
                     wx.TheClipboard.SetData(wx.TextDataObject(text))
                 wx.TheClipboard.Close()
         else:
+            self.text_ctrl.Unbind(wx.EVT_TEXT_COPY)
             self.text_ctrl.Copy()
+            self.text_ctrl.Bind(wx.EVT_TEXT_COPY, self.on_copy)
         self.skip_selecting = True
 
     def on_cut(self, event):
@@ -524,7 +526,9 @@ class EditorCtrl(wx.Control):
                     wx.TheClipboard.SetData(wx.TextDataObject(text))
                 wx.TheClipboard.Close()
         else:
+            self.text_ctrl.Unbind(wx.EVT_TEXT_CUT)
             self.text_ctrl.Cut()
+            self.text_ctrl.Bind(wx.EVT_TEXT_CUT, self.on_cut)
         self.skip_selecting = True
 
     def on_paste(self, event):
