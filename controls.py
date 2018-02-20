@@ -25,9 +25,11 @@ from complist import REF_REGULAR_EXPRESSION
 
 # Windows XP does not support Unicode characters in grid labels
 if platform.win32_ver()[0] == 'XP':
+    EDITOR_POPUP_LABEL = u'...'
     SORT_IND_UP = ' >'
     SORT_IND_DOWN = ' <'
 else:
+    EDITOR_POPUP_LABEL = u'☰'
     SORT_IND_UP = u' ▲'
     SORT_IND_DOWN = u' ▼'
 
@@ -333,7 +335,7 @@ class EditorCtrl(wx.Control):
         # Popup button
         self.button = wx.Button(
                 parent=self,
-                label=u'☰',
+                label=EDITOR_POPUP_LABEL,
                 style=wx.BU_EXACTFIT
                 )
         self.button.SetCanFocus(False)
