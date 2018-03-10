@@ -849,6 +849,11 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_options.Add( self.checkbox_changes_sheet, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
+		self.checkbox_italic = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Курсив", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_italic.SetToolTipString( u"Использовать курсив для оформления перечня элементов.\nЕсли отметка отсутствует, будет использован прямой шрифт." )
+		
+		sizer_options.Add( self.checkbox_italic, 0, wx.RIGHT|wx.LEFT, 5 )
+		
 		self.checkbox_open = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Открыть перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_open.SetToolTipString( u"Если этот параметр установлен, то после создания перечня элементов он будет открыт в редакторе по умолчанию." )
 		

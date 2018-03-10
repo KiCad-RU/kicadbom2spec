@@ -1742,7 +1742,7 @@ class Window(gui.MainFrame):
             # Initialize grid of the components
             self.init_grid()
 
-            # Remove bad file from rcent
+            # Remove bad file from recent
             self.remove_from_recent(self.schematic_file, 'sch')
 
             wx.MessageBox(
@@ -1945,7 +1945,7 @@ class Window(gui.MainFrame):
             # Initialize grid of the components
             self.init_grid()
 
-            # Remove bad file from rcent
+            # Remove bad file from recent
             self.remove_from_recent(self.library_file, 'lib')
 
             wx.MessageBox(
@@ -2083,6 +2083,7 @@ class Window(gui.MainFrame):
         need_customer_fields = False
         need_changes_sheet = True
         open_complist = False
+        italic = True
         if self.settings.has_section('complist'):
             if self.settings.has_option('complist', 'dialog width'):
                complist_dialog.SetSize(
@@ -2108,6 +2109,8 @@ class Window(gui.MainFrame):
                 open_complist = self.settings.getboolean('complist', 'open')
             if self.settings.has_option('complist', 'inspector'):
                 self.stamp_dict['inspector'] = self.settings.get('complist', 'inspector')
+            if self.settings.has_option('complist', 'italic'):
+                italic = self.settings.getboolean('complist', 'italic')
 
         # Options
         complist_dialog.filepicker_complist.SetPath(self.complist_file)
@@ -2118,6 +2121,7 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_first_usage_fill.Enable(need_first_usage)
         complist_dialog.checkbox_customer_fields.SetValue(need_customer_fields)
         complist_dialog.checkbox_changes_sheet.SetValue(need_changes_sheet)
+        complist_dialog.checkbox_italic.SetValue(italic)
         complist_dialog.checkbox_open.SetValue(open_complist)
         # Stamp
         for field in self.stamp_dict.keys():
@@ -2150,6 +2154,7 @@ class Window(gui.MainFrame):
             fill_first_usage = complist_dialog.checkbox_first_usage_fill.IsChecked()
             need_customer_fields = complist_dialog.checkbox_customer_fields.IsChecked()
             need_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
+            italic = complist_dialog.checkbox_italic.GetValue()
             open_complist = complist_dialog.checkbox_open.GetValue()
             # Stamp
             for field in self.stamp_dict.keys():
@@ -2173,6 +2178,7 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'changes_sheet', str(need_changes_sheet))
             self.settings.set('complist', 'open', str(open_complist))
             self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
+            self.settings.set('complist', 'italic', str(italic))
             self.complist_file = complist_dialog.filepicker_complist.GetPath()
             self.complist_file = os.path.splitext(self.complist_file)[0] + '.ods'
             comp_fields = []
@@ -2249,6 +2255,7 @@ class Window(gui.MainFrame):
                 # Settings
                 complist.need_changes_sheet = need_changes_sheet
                 complist.fill_first_usage = fill_first_usage
+                complist.italic = italic
                 # Stamp
                 complist.decimal_num = complist.convert_decimal_num(self.stamp_dict['decimal_num'])
                 complist.developer = self.stamp_dict['developer']

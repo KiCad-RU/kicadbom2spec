@@ -93,6 +93,27 @@ class CompList():
         self.comp = u''
         self.need_changes_sheet = True
         self.fill_first_usage = False
+        self.italic = False
+
+    def set_font_style(self, italic=True):
+        """
+        Set font style to italic for all cells in the document if italic=Ture.
+        Otherwise, set font as regular.
+        """
+        for style in self.complist.automaticstyles.childNodes:
+            for node in style.childNodes:
+                if node.tagName == u'style:text-properties':
+                    for attr_key in node.attributes.keys():
+                        if attr_key[-1] == u'font-style':
+                            if italic == True:
+                                node.attributes[attr_key] = u'italic'
+                                self.italic = True
+                            else:
+                                node.attributes[attr_key] = u'regular'
+                                self.italic = False
+                            break
+                    break
+
 
     def get_lines_count(self):
         """
@@ -617,6 +638,9 @@ class CompList():
                 )
         self.complist.meta.addElement(meta.CreationDate(text=creation_time_str))
         self.complist.meta.addElement(meta.InitialCreator(text='kicadbom2spec v{}'.format(version)))
+
+        # Set font style
+        self.set_font_style(self.italic)
 
         # Save file of list of the components
         self.complist.save(complist_file_name)
