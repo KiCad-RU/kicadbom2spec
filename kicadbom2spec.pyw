@@ -2189,8 +2189,8 @@ class Window(gui.MainFrame):
                     # Remove extra data from ref in comp like '(R321)R123' or 'R321*'
                     fields[1] = self.grid.get_pure_ref(fields[1])
                     # Split reference on index and number
-                    fields.insert(1, re.search(REF_REGULAR_EXPRESSION, fields[1]).group(1))
-                    fields[2] = re.search(REF_REGULAR_EXPRESSION, fields[2]).group(2)
+                    fields.insert(1, re.search(REF_REGEXP, fields[1]).group(1))
+                    fields[2] = re.search(REF_REGEXP, fields[2]).group(2)
                     # Automatically units addition
                     if add_units and fields[4] != '':
                         if fields[1] == u'C' and fields[4][-1:] != u'Ф':
@@ -2243,17 +2243,12 @@ class Window(gui.MainFrame):
                     # Add prepared fields of an component
                     comp_fields.append(fields)
             try:
-                # Select pattern for first page
-                if not need_first_usage and not need_customer_fields:
-                    complist.cur_table = complist.firstPagePatternV1
-                elif need_first_usage and not need_customer_fields:
-                    complist.cur_table = complist.firstPagePatternV2
-                elif not need_first_usage and need_customer_fields:
-                    complist.cur_table = complist.firstPagePatternV3
-                elif need_first_usage and need_customer_fields:
-                    complist.cur_table = complist.firstPagePatternV4
+                # Load components
+                complist.load(self.schematic_file, comp_fields)
                 # Settings
-                complist.need_changes_sheet = need_changes_sheet
+                complist.add_first_usage = need_first_usage
+                complist.add_customer_fields = need_customer_fields
+                complist.add_changes_sheet = need_changes_sheet
                 complist.fill_first_usage = fill_first_usage
                 complist.italic = italic
                 # Stamp
@@ -2264,8 +2259,7 @@ class Window(gui.MainFrame):
                 complist.approver = self.stamp_dict['approver']
                 complist.comp = self.stamp_dict['comp']
                 complist.title = complist.convert_title(self.stamp_dict['title'])
-                # Comp list
-                complist.load(self.schematic_file, comp_fields, False)
+                # Save comp list
                 complist.save(self.complist_file)
             except:
                 wx.MessageBox(

@@ -29,8 +29,8 @@ from odf import dc, meta
 
 from kicadsch import *
 
-REF_REGULAR_EXPRESSION = r'(.*[^0-9])([0-9]+)'
-NUM_REGULAR_EXPRESSION = u'([А-ЯA-Z0-9]+(?:[^А-ЯA-Z0-9][0-9\.\-\s]+)?)(Э[1-7])?'
+REF_REGEXP = r'(.*[^0-9])([0-9]+)'
+NUM_REGEXP = u'([А-ЯA-Z0-9]+(?:[^А-ЯA-Z0-9][0-9\.\-\s]+)?)(Э[1-7])?'
 
 class CompList():
     """
@@ -40,87 +40,36 @@ class CompList():
     """
 
     def __init__(self):
-        # Load the pattern
-        self.pattern = odf.opendocument.load(os.path.join(os.path.dirname(os.path.realpath(__file__)), u'pattern.ods'))
-        for sheet in self.pattern.spreadsheet.getElementsByType(Table):
-            # Pattern for first page
-            if sheet.getAttribute(u'name') == u'First1':
-                self.firstPagePatternV1 = sheet
-            elif sheet.getAttribute(u'name') == u'First2':
-                self.firstPagePatternV2 = sheet
-            elif sheet.getAttribute(u'name') == u'First3':
-                self.firstPagePatternV3 = sheet
-            elif sheet.getAttribute(u'name') == u'First4':
-                self.firstPagePatternV4 = sheet
-            # Pattern for other pages
-            elif sheet.getAttribute(u'name') == u'Other':
-                self.otherPagesPattern = sheet
-            # Pattern for last pages (the changes sheet)
-            elif sheet.getAttribute(u'name') == u'Last':
-                self.lastPagePattern = sheet
 
-        # Create list of the components file object
-        self.complist = odf.opendocument.OpenDocumentSpreadsheet()
+        # Variables for filling the list
+        self.complist = None
+        self.complist_array = None
 
-        # Copy all parameters from pattern to list of the components
-        for font in self.pattern.fontfacedecls.childNodes[:]:
-            self.complist.fontfacedecls.addElement(font)
-
-        for style in self.pattern.styles.childNodes[:]:
-            self.complist.styles.addElement(style)
-
-        for masterstyle in self.pattern.masterstyles.childNodes[:]:
-            self.complist.masterstyles.addElement(masterstyle)
-
-        for autostyle in self.pattern.automaticstyles.childNodes[:]:
-            self.complist.automaticstyles.addElement(autostyle)
-
-        for setting in self.pattern.settings.childNodes[:]:
-            self.complist.settings.addElement(setting)
-
-        # Current state of filling list of the components
-        self.cur_line = 1
-        self.cur_page = 1
-        self.cur_table = self.firstPagePatternV2
-
-        # Some variables for filling the list
         self.developer = u''
         self.verifier = u''
         self.inspector = u''
         self.approver = u''
         self.decimal_num = u''
         self.title = u''
-        self.comp = u''
-        self.need_changes_sheet = True
+        self.company = u''
+
+        self.add_first_usage = False
+        self.add_customer_fields = False
+        self.add_changes_sheet = False
         self.fill_first_usage = False
         self.italic = False
 
-    def set_font_style(self, italic=True):
-        """
-        Set font style to italic for all cells in the document if italic=Ture.
-        Otherwise, set font as regular.
-        """
-        for style in self.complist.automaticstyles.childNodes:
-            for node in style.childNodes:
-                if node.tagName == u'style:text-properties':
-                    for attr_key in node.attributes.keys():
-                        if attr_key[-1] == u'font-style':
-                            if italic == True:
-                                node.attributes[attr_key] = u'italic'
-                                self.italic = True
-                            else:
-                                node.attributes[attr_key] = u'regular'
-                                self.italic = False
-                            break
-                    break
+        # Current state of filling list of the components
+        self._cur_line = 1
+        self._cur_page_num = 1
+        self._cur_page = None
 
-
-    def get_lines_count(self):
+    def _get_lines_count(self):
         """
         Get lines count of current table
 
         """
-        table_name = self.cur_table.getAttribute(u'name')
+        table_name = self._cur_page.getAttribute(u'name')
         if table_name in (u'First1', u'First2'):
             return 29
         elif table_name in (u'First3', u'First4'):
@@ -130,13 +79,13 @@ class CompList():
         else:
             return 0
 
-    def replace_text(self, table, label, text, group=False):
+    def _replace_text(self, page, label, text, group=False):
         """
-        Replace 'label' (like #1:1) to 'text' in 'table'.
+        Replace 'label' (like #1:1) to 'text' in 'page'.
         If 'group' is set to 'True' will be used special formatting.
 
         """
-        rows = table.getElementsByType(TableRow)
+        rows = page.getElementsByType(TableRow)
         for row in rows:
             cells = row.getElementsByType(TableCell)
             for cell in cells:
@@ -175,7 +124,7 @@ class CompList():
                                     cell.setAttribute(u'stylename', curStyleName + u'g')
                                 return
 
-    def clear_table(self, table):
+    def _clear_table(self, table):
         """
         Clear 'table' of labels.
 
@@ -190,35 +139,27 @@ class CompList():
                             if re.search(r'#\d+:\d+', p_data.data) != None:
                                 p_data.data = u''
 
-    def append_changes_sheet(self):
-        """
-        Add to the end of list the changes sheet from template.
 
-        """
-        self.cur_table = self.lastPagePattern
-        self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
-        self.complist.spreadsheet.addElement(self.cur_table)
-
-    def next_line(self):
+    def _next_line(self):
         """
         Moving to next line.
         If table is full, save it in list object and create a new one.
 
         """
         # Increase line counter
-        self.cur_line += 1
+        self._cur_line += 1
 
         # First page of the list has 29 or 26 lines, other pages has 32 lines
-        if self.cur_line > self.get_lines_count():
+        if self._cur_line > self._get_lines_count():
             # Table is full
-            self.cur_table.setAttribute(u'name', u'стр. %d' % self.cur_page)
-            self.complist.spreadsheet.addElement(self.cur_table)
+            self._cur_page.setAttribute(u'name', u'стр. %d' % self._cur_page_num)
+            self.complist.spreadsheet.addElement(self._cur_page)
 
-            self.cur_table = deepcopy(self.otherPagesPattern)
-            self.cur_page += 1
-            self.cur_line = 1
+            self._cur_page = deepcopy(self._otherPagesPattern)
+            self._cur_page_num += 1
+            self._cur_line = 1
 
-    def set_line(self, element):
+    def _set_line(self, element):
         """
         Fill the line in list of the components using element's fields.
 
@@ -240,66 +181,15 @@ class CompList():
             # Add "*" mark if component "needs adjusting"
             if element[2]:
                 ref = ref + '*'
-        self.replace_text(self.cur_table, u'#1:%d' % self.cur_line, ref)
+        self._replace_text(self._cur_page, u'#1:%d' % self._cur_line, ref)
         # Value - concatenate elements 2..6
-        self.replace_text(self.cur_table, u'#2:%d' % self.cur_line, ''.join(element[3:8]))
+        self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, ''.join(element[3:8]))
         # Count
-        self.replace_text(self.cur_table, u'#3:%d' % self.cur_line, element[9])
+        self._replace_text(self._cur_page, u'#3:%d' % self._cur_line, element[9])
         # Coment
-        self.replace_text(self.cur_table, u'#4:%d' % self.cur_line, element[8])
+        self._replace_text(self._cur_page, u'#4:%d' % self._cur_line, element[8])
 
-    def get_descr(self, sch_file_name):
-        """
-        Open KiCad Schematic file and get title block description.
-
-        """
-        sch = Schematic(sch_file_name)
-        self.developer = sch.descr.comment2.decode('utf-8')
-        self.verifier = sch.descr.comment3.decode('utf-8')
-        self.approver = sch.descr.comment4.decode('utf-8')
-        self.decimal_num = self.convert_decimal_num(sch.descr.comment1)
-        self.title = self.convert_title(sch.descr.title)
-        self.comp = sch.descr.comp.decode('utf-8')
-
-    def get_sheets(self, sch_file_name):
-        """
-        Return list of all hierarchical sheets used in schematic.
-
-        """
-        sheets = []
-        exec_path = os.path.dirname(os.path.realpath(__file__))
-        cur_path = os.path.dirname(sch_file_name)
-        os.chdir(cur_path)
-        sch = Schematic(sch_file_name)
-        for item in sch.items:
-            if item.__class__.__name__ == u'Sheet':
-                sheets.append(os.path.abspath(os.path.join(cur_path, item.file_name.decode('utf-8'))))
-                sheets.extend(self.get_sheets(os.path.abspath(os.path.join(cur_path, item.file_name.decode('utf-8')))))
-        os.chdir(exec_path)
-        return list(set(sheets))
-
-    def get_components(self, sch_file_name, root_only=False):
-        """
-        Open KiCad Schematic file and get all components from it.
-
-        """
-        components = []
-        if os.path.isabs(sch_file_name):
-            exec_path = os.path.dirname(os.path.realpath(__file__))
-            os.chdir(os.path.dirname(sch_file_name))
-        sch = Schematic(sch_file_name)
-        for item in sch.items:
-            if item.__class__.__name__ == u'Comp':
-                # Skip power symbols
-                if not item.fields[0].text.startswith(u'#'):
-                    components.append(item)
-            elif item.__class__.__name__ == u'Sheet' and not root_only:
-                components.extend(self.get_components(item.file_name))
-        if os.path.isabs(sch_file_name):
-            os.chdir(exec_path)
-        return components
-
-    def load(self, sch_file_name, comp_fields=None, load_descr=True):
+    def load(self, sch_file_name, comp_fields=None):
         """
         Load all components from KiCad Schematic file
         or get fields of the components directly
@@ -362,8 +252,15 @@ class CompList():
                                 return comp
             return None
 
-        if load_descr:
-            self.get_descr(sch_file_name)
+        # Get title block description
+        sch = Schematic(sch_file_name)
+        self.developer = sch.descr.comment2.decode('utf-8')
+        self.verifier = sch.descr.comment3.decode('utf-8')
+        self.approver = sch.descr.comment4.decode('utf-8')
+        self.decimal_num = self.convert_decimal_num(sch.descr.comment1)
+        self.title = self.convert_title(sch.descr.title)
+        self.company = sch.descr.comp.decode('utf-8')
+
         components = self.get_components(sch_file_name)
         comp_array = []
         if comp_fields:
@@ -376,7 +273,7 @@ class CompList():
                 if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
                     continue
                 # Skip components with not supported ref type
-                if not re.match(REF_REGULAR_EXPRESSION, comp.fields[0].text):
+                if not re.match(REF_REGEXP, comp.fields[0].text):
                     continue
                 # Skip components excluded manually
                 for field in comp.fields:
@@ -390,9 +287,9 @@ class CompList():
                 else:
                     temp = []
                     temp.append(get_text_from_field(comp, u'Группа'))
-                    ref_type = re.search(REF_REGULAR_EXPRESSION, comp.fields[0].text).group(1)
+                    ref_type = re.search(REF_REGEXP, comp.fields[0].text).group(1)
                     temp.append(ref_type)
-                    ref_num = re.search(REF_REGULAR_EXPRESSION, comp.fields[0].text).group(2)
+                    ref_num = re.search(REF_REGEXP, comp.fields[0].text).group(2)
                     temp.append(ref_num)
                     for field in comp.fields:
                         if hasattr(field, u'name'):
@@ -420,8 +317,8 @@ class CompList():
                                     break
                             else:
                                 new_temp = list(temp)
-                                new_temp[1] = re.search(REF_REGULAR_EXPRESSION, ref[1]).group(1)
-                                new_temp[2] = re.search(REF_REGULAR_EXPRESSION, ref[1]).group(2)
+                                new_temp[1] = re.search(REF_REGEXP, ref[1]).group(1)
+                                new_temp[2] = re.search(REF_REGEXP, ref[1]).group(2)
                                 comp_array.append(new_temp)
                     else:
                         comp_array.append(temp)
@@ -556,71 +453,122 @@ class CompList():
                         temp_group[1].append(element)
                     temp_array.append(temp_group)
                 prev = element[:]
-        comp_lines = temp_array
-
-        # Fill list of the components
-        for group in comp_lines:
-            # One empty line-separator
-            if not (self.cur_page == 1 and self.cur_line == 1):
-                self.next_line() # Skip one line
-
-            if group[0] != u'':
-                # New group title
-                if self.cur_line == self.get_lines_count():
-                    # If name of group at bottom of table without elements, go to beginning of a new table
-                    while self.cur_line != 1:
-                        self.next_line()
-                self.replace_text(self.cur_table, u'#2:%d' % self.cur_line, group[0], group=True)
-                self.next_line() # Skip one line
-            # Place all components of the group into list
-            for comp in group[1]:
-                self.set_line(comp)
-                self.next_line()
-
-        # Current table not empty - save it
-        if self.cur_line != 1:
-            # Set last line as current
-            self.cur_line = self.get_lines_count()
-            # Go to next empty page and save current
-            self.next_line()
+        self.complist_array = temp_array
 
     def save(self, complist_file_name):
         """
         Save created list of the components to the file.
 
         """
+        # Load the pattern
+        pattern = odf.opendocument.load(os.path.join(os.path.dirname(os.path.realpath(__file__)), u'pattern.ods'))
+        for sheet in pattern.spreadsheet.getElementsByType(Table):
+            # Pattern for first page
+            if sheet.getAttribute(u'name') == u'First1':
+                self._firstPagePatternV1 = sheet
+            elif sheet.getAttribute(u'name') == u'First2':
+                self._firstPagePatternV2 = sheet
+            elif sheet.getAttribute(u'name') == u'First3':
+                self._firstPagePatternV3 = sheet
+            elif sheet.getAttribute(u'name') == u'First4':
+                self._firstPagePatternV4 = sheet
+            # Pattern for other pages
+            elif sheet.getAttribute(u'name') == u'Other':
+                self._otherPagesPattern = sheet
+            # Pattern for last pages (the changes sheet)
+            elif sheet.getAttribute(u'name') == u'Last':
+                self._lastPagePattern = sheet
+
+        # Create list of the components file object
+        self.complist = odf.opendocument.OpenDocumentSpreadsheet()
+
+        # Copy all parameters from pattern to list of the components
+        for font in pattern.fontfacedecls.childNodes[:]:
+            self.complist.fontfacedecls.addElement(font)
+
+        for style in pattern.styles.childNodes[:]:
+            self.complist.styles.addElement(style)
+
+        for masterstyle in pattern.masterstyles.childNodes[:]:
+            self.complist.masterstyles.addElement(masterstyle)
+
+        for autostyle in pattern.automaticstyles.childNodes[:]:
+            self.complist.automaticstyles.addElement(autostyle)
+
+        for setting in pattern.settings.childNodes[:]:
+            self.complist.settings.addElement(setting)
+
+        # Select pattern for first page
+        if not self.add_first_usage and not self.add_customer_fields:
+            self._cur_page = self._firstPagePatternV1
+        elif self.add_first_usage and not self.add_customer_fields:
+            self._cur_page = self._firstPagePatternV2
+        elif not self.add_first_usage and self.add_customer_fields:
+            self._cur_page = self._firstPagePatternV3
+        elif self.add_first_usage and self.add_customer_fields:
+            self._cur_page = self._firstPagePatternV4
+
+        # Fill list of the components
+        for group in self.complist_array:
+            # One empty line-separator
+            if not (self._cur_page_num == 1 and self._cur_line == 1):
+                self._next_line() # Skip one line
+
+            if group[0] != u'':
+                # New group title
+                if self._cur_line == self._get_lines_count():
+                    # If name of group at bottom of table without elements, go to beginning of a new table
+                    while self._cur_line != 1:
+                        self._next_line()
+                self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, group[0], group=True)
+                self._next_line() # Skip one line
+            # Place all components of the group into list
+            for comp in group[1]:
+                self._set_line(comp)
+                self._next_line()
+
+        # Current table not empty - save it
+        if self._cur_line != 1:
+            # Set last line as current
+            self._cur_line = self._get_lines_count()
+            # Go to next empty page and save current
+            self._next_line()
+
         # If the sheet of changes is needed - append it
-        if self.need_changes_sheet:
-            self.append_changes_sheet()
+        if self.add_changes_sheet == True:
+            self._cur_page = self._lastPagePattern
+            self._cur_page.setAttribute(u'name', u'стр. %d' % self._cur_page_num)
+            self.complist.spreadsheet.addElement(self._cur_page)
+
         # Fill stamp fields on each page
         pg_cnt = len(self.complist.spreadsheet.getElementsByType(Table))
         for index, table in enumerate(self.complist.spreadsheet.getElementsByType(Table)):
             # First page - big stamp
             if index == 0:
 
-                self.replace_text(table, u'#5:1', self.developer)
-                self.replace_text(table, u'#5:2', self.verifier)
-                self.replace_text(table, u'#5:3', self.inspector)
-                self.replace_text(table, u'#5:4', self.approver)
-                self.replace_text(table, u'#5:5', self.decimal_num)
-                self.replace_text(table, u'#5:6', self.title)
+                self._replace_text(table, u'#5:1', self.developer)
+                self._replace_text(table, u'#5:2', self.verifier)
+                self._replace_text(table, u'#5:3', self.inspector)
+                self._replace_text(table, u'#5:4', self.approver)
+                self._replace_text(table, u'#5:5', self.decimal_num)
+                self._replace_text(table, u'#5:6', self.title)
                 if pg_cnt > 1:
-                    self.replace_text(table, u'#5:7', str(index + 1))
-                self.replace_text(table, u'#5:8', str(pg_cnt))
-                self.replace_text(table, u'#5:9', self.comp)
+                    self._replace_text(table, u'#5:7', str(index + 1))
+                self._replace_text(table, u'#5:8', str(pg_cnt))
+                self._replace_text(table, u'#5:9', self.company)
                 if self.fill_first_usage:
-                    first_usage = re.search(NUM_REGULAR_EXPRESSION, self.decimal_num)
+                    first_usage = re.search(NUM_REGEXP, self.decimal_num)
                     if first_usage != None:
-                        self.replace_text(table, u'#6:1', first_usage.group(1).rstrip(' '))
+                        self._replace_text(table, u'#6:1', first_usage.group(1).rstrip(' '))
 
             # Other pages - smal stamp
             else:
-                self.replace_text(table, u'#5:1', self.decimal_num)
-                self.replace_text(table, u'#5:2', str(index + 1))
+                self._replace_text(table, u'#5:1', self.decimal_num)
+                self._replace_text(table, u'#5:2', str(index + 1))
 
         # Clear tables from labels
         for table in self.complist.spreadsheet.getElementsByType(Table):
-            self.clear_table(table)
+            self._clear_table(table)
 
         # Add meta data
         version_file = open('version', 'r')
@@ -640,7 +588,18 @@ class CompList():
         self.complist.meta.addElement(meta.InitialCreator(text='kicadbom2spec v{}'.format(version)))
 
         # Set font style
-        self.set_font_style(self.italic)
+        styles = self.complist.automaticstyles.childNodes + self.complist.styles.childNodes
+        for style in styles:
+            for node in style.childNodes:
+                if node.tagName == u'style:text-properties':
+                    for attr_key in node.attributes.keys():
+                        if attr_key[-1] == u'font-style':
+                            if self.italic == True:
+                                node.attributes[attr_key] = u'italic'
+                            else:
+                                node.attributes[attr_key] = u'regular'
+                            break
+                    break
 
         # Save file of list of the components
         self.complist.save(complist_file_name)
@@ -651,7 +610,7 @@ class CompList():
         of the schematic type).
 
         """
-        num_parts = re.search(NUM_REGULAR_EXPRESSION, num)
+        num_parts = re.search(NUM_REGEXP, num)
         if num_parts != None:
             if num_parts.group(1) != None and num_parts.group(2) != None:
                 return u'П'.join(num_parts.groups())
@@ -684,3 +643,41 @@ class CompList():
             if title != u'':
                 suffix = u'\\n' + suffix
             return title + suffix
+
+    def get_sheets(self, sch_file_name):
+        """
+        Return list of all hierarchical sheets used in schematic.
+
+        """
+        sheets = []
+        exec_path = os.path.dirname(os.path.realpath(__file__))
+        cur_path = os.path.dirname(sch_file_name)
+        os.chdir(cur_path)
+        sch = Schematic(sch_file_name)
+        for item in sch.items:
+            if item.__class__.__name__ == u'Sheet':
+                sheets.append(os.path.abspath(os.path.join(cur_path, item.file_name.decode('utf-8'))))
+                sheets.extend(self.get_sheets(os.path.abspath(os.path.join(cur_path, item.file_name.decode('utf-8')))))
+        os.chdir(exec_path)
+        return list(set(sheets))
+
+    def get_components(self, sch_file_name, root_only=False):
+        """
+        Open KiCad Schematic file and get all components from it.
+
+        """
+        components = []
+        if os.path.isabs(sch_file_name):
+            exec_path = os.path.dirname(os.path.realpath(__file__))
+            os.chdir(os.path.dirname(sch_file_name))
+        sch = Schematic(sch_file_name)
+        for item in sch.items:
+            if item.__class__.__name__ == u'Comp':
+                # Skip power symbols
+                if not item.fields[0].text.startswith(u'#'):
+                    components.append(item)
+            elif item.__class__.__name__ == u'Sheet' and not root_only:
+                components.extend(self.get_components(item.file_name))
+        if os.path.isabs(sch_file_name):
+            os.chdir(exec_path)
+        return components

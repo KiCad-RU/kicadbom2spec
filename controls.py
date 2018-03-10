@@ -21,7 +21,7 @@ import platform
 import wx
 import wx.grid
 from operator import itemgetter
-from complist import REF_REGULAR_EXPRESSION
+from complist import REF_REGEXP
 
 # Windows XP does not support Unicode characters in grid labels
 if platform.win32_ver()[0] == 'XP':
@@ -1250,7 +1250,7 @@ class Grid(wx.grid.Grid):
             # Remove extra data from ref in comp like '(R321)R123' or 'R321*'
             ref = self.get_pure_ref(ref)
 
-            matches = re.search(REF_REGULAR_EXPRESSION, ref)
+            matches = re.search(REF_REGEXP, ref)
             ref_val = matches.group(1)
             return ref_val
 
@@ -1264,7 +1264,7 @@ class Grid(wx.grid.Grid):
             # Remove extra data from ref in comp like '(R321)R123' or 'R321*'
             ref = self.get_pure_ref(ref)
 
-            matches = re.search(REF_REGULAR_EXPRESSION, ref)
+            matches = re.search(REF_REGEXP, ref)
             num_val = int(matches.group(2))
             return num_val
 
