@@ -797,161 +797,103 @@ class AboutDialog ( wx.Dialog ):
 class CompListDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( 400,630 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( 400,515 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
 		
 		self.SetSizeHintsSz( wx.Size( -1,-1 ), wx.DefaultSize )
 		
-		sizer_spec_dialog = wx.BoxSizer( wx.VERTICAL )
+		sizer_complist_dialog = wx.BoxSizer( wx.VERTICAL )
 		
-		self.panel_spec_dialog = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		sizer_spec = wx.BoxSizer( wx.VERTICAL )
+		self.complist_notebook = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.panel_file = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		sizer_file = wx.BoxSizer( wx.VERTICAL )
 		
-		sizer_file = wx.BoxSizer( wx.HORIZONTAL )
+		sizer_filepicker = wx.StaticBoxSizer( wx.StaticBox( self.panel_file, wx.ID_ANY, u"Файл" ), wx.HORIZONTAL )
 		
-		sizer_filepicker = wx.StaticBoxSizer( wx.StaticBox( self.panel_spec_dialog, wx.ID_ANY, u"Файл" ), wx.HORIZONTAL )
-		
-		self.filepicker_complist = wx.FilePickerCtrl( sizer_filepicker.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Выбор файла перечня элементов", u"Все файлы (*.*)|*.*|Текстовый документ (*.odt)|*.odt|Электронная таблица (*.ods)|*.ods", wx.DefaultPosition, wx.DefaultSize, wx.FLP_OVERWRITE_PROMPT|wx.FLP_SAVE|wx.FLP_SMALL|wx.FLP_USE_TEXTCTRL )
-		sizer_filepicker.Add( self.filepicker_complist, 1, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.LEFT, 5 )
+		self.filepicker_complist = wx.FilePickerCtrl( sizer_filepicker.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Выбор файла перечня элементов", u"Все файлы (*.*)|*.*|Текстовый документ (*.odt)|*.odt|Электронная таблица (*.ods)|*.ods", wx.DefaultPosition, wx.DefaultSize, wx.FLP_OVERWRITE_PROMPT|wx.FLP_SAVE|wx.FLP_USE_TEXTCTRL )
+		sizer_filepicker.Add( self.filepicker_complist, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		
-		sizer_file.Add( sizer_filepicker, 1, wx.EXPAND|wx.RIGHT, 5 )
+		sizer_file.Add( sizer_filepicker, 0, wx.EXPAND|wx.ALL, 5 )
 		
-		sizer_format = wx.StaticBoxSizer( wx.StaticBox( self.panel_spec_dialog, wx.ID_ANY, u"Формат файла" ), wx.VERTICAL )
+		sizer_format = wx.StaticBoxSizer( wx.StaticBox( self.panel_file, wx.ID_ANY, u"Формат документа" ), wx.VERTICAL )
 		
 		self.rbutton_odt = wx.RadioButton( sizer_format.GetStaticBox(), wx.ID_ANY, u"Текстовый документ (*.odt)", wx.DefaultPosition, wx.DefaultSize, 0 )
-		sizer_format.Add( self.rbutton_odt, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		sizer_format.Add( self.rbutton_odt, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL, 5 )
 		
 		self.rbutton_ods = wx.RadioButton( sizer_format.GetStaticBox(), wx.ID_ANY, u"Электронная таблица (*.ods)", wx.DefaultPosition, wx.DefaultSize, 0 )
-		sizer_format.Add( self.rbutton_ods, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		sizer_format.Add( self.rbutton_ods, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		sizer_file.Add( sizer_format, 0, wx.ALIGN_CENTER_VERTICAL, 5 )
+		sizer_file.Add( sizer_format, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
 		
 		
-		sizer_spec.Add( sizer_file, 0, wx.EXPAND|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
+		self.panel_file.SetSizer( sizer_file )
+		self.panel_file.Layout()
+		sizer_file.Fit( self.panel_file )
+		self.complist_notebook.AddPage( self.panel_file, u"Файл", True )
+		self.panel_options = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		sizer_options = wx.BoxSizer( wx.VERTICAL )
 		
-		sizer_options = wx.StaticBoxSizer( wx.StaticBox( self.panel_spec_dialog, wx.ID_ANY, u"Параметры" ), wx.VERTICAL )
-		
-		self.checkbox_add_units = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Добавить единицы измерения", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_add_units.SetToolTipString( u"Если для резисторов, конденсаторов или индуктивностей указаны только значения и данная опция включена, то к значениям будут добавлены соответствующие единицы измерения (Ом, Ф, Гн)." )
-		
-		sizer_options.Add( self.checkbox_add_units, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
-		
-		self.checkbox_all_components = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Все элементы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_all_components = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Все элементы", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_all_components.SetToolTipString( u"Если данная функция включена, в перечень элементов будут включены все элементы, не зависимо от того установлен флажок для элемента или нет." )
 		
-		sizer_options.Add( self.checkbox_all_components, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options.Add( self.checkbox_all_components, 0, wx.EXPAND|wx.ALL, 5 )
 		
-		self.checkbox_first_usage = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Добавить графы первичной применяемости", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_add_units = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Добавить единицы измерения", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_add_units.SetToolTipString( u"Если для резисторов, конденсаторов или индуктивностей указаны только значения и данная опция включена, то к значениям будут добавлены соответствующие единицы измерения (Ом, Ф, Гн)." )
+		
+		sizer_options.Add( self.checkbox_add_units, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.checkbox_first_usage = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Добавить графы первичной применяемости", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_first_usage.SetToolTipString( u"Если данная опция включена, то форматная рамка будет содержать графы первичной применяемости (24, 25 по ГОСТ2.104-2006)" )
 		
-		sizer_options.Add( self.checkbox_first_usage, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options.Add( self.checkbox_first_usage, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		sizer_first_usage = wx.BoxSizer( wx.HORIZONTAL )
 		
 		
 		sizer_first_usage.AddSpacer( ( 20, 0), 0, wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		self.checkbox_first_usage_fill = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Указать первичную применяемость", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_first_usage_fill = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Указать первичную применяемость", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_first_usage_fill.SetToolTipString( u"Если данная опция включена, то графа Перв. примен. будет заполнена значением децимального номера без кода документа" )
 		
-		sizer_first_usage.Add( self.checkbox_first_usage_fill, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, 5 )
+		sizer_first_usage.Add( self.checkbox_first_usage_fill, 1, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
 		sizer_options.Add( sizer_first_usage, 0, wx.EXPAND, 5 )
 		
-		self.checkbox_customer_fields = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Добавить графы заказчика", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_customer_fields = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Добавить графы заказчика", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_customer_fields.SetToolTipString( u"Если данная опция включена, то над основной надписью будут показаны графы заказчика (27-30 по ГОСТ2.104-2006)" )
 		
-		sizer_options.Add( self.checkbox_customer_fields, 0, wx.EXPAND|wx.LEFT|wx.RIGHT, 5 )
+		sizer_options.Add( self.checkbox_customer_fields, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.checkbox_changes_sheet = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Добавить лист регистрации изменений", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_changes_sheet = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Добавить лист регистрации изменений", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_changes_sheet.SetToolTipString( u"Если данная опция включена, то в конец перечня элементов будет добавлен лист регистрации изменений." )
 		
-		sizer_options.Add( self.checkbox_changes_sheet, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options.Add( self.checkbox_changes_sheet, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.checkbox_italic = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Курсив", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_italic = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Курсив", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_italic.SetToolTipString( u"Использовать курсив для оформления перечня элементов.\nЕсли отметка отсутствует, будет использован прямой шрифт." )
 		
-		sizer_options.Add( self.checkbox_italic, 0, wx.RIGHT|wx.LEFT, 5 )
+		sizer_options.Add( self.checkbox_italic, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.checkbox_open = wx.CheckBox( sizer_options.GetStaticBox(), wx.ID_ANY, u"Открыть перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_open = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Открыть перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_open.SetToolTipString( u"Если этот параметр установлен, то после создания перечня элементов он будет открыт в редакторе по умолчанию." )
 		
-		sizer_options.Add( self.checkbox_open, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options.Add( self.checkbox_open, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		sizer_spec.Add( sizer_options, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		self.panel_options.SetSizer( sizer_options )
+		self.panel_options.Layout()
+		sizer_options.Fit( self.panel_options )
+		self.complist_notebook.AddPage( self.panel_options, u"Параметры", False )
+		self.panel_stamp = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		sizer_stamp = wx.BoxSizer( wx.VERTICAL )
 		
-		sizer_stamp = wx.StaticBoxSizer( wx.StaticBox( self.panel_spec_dialog, wx.ID_ANY, u"Основная надпись" ), wx.VERTICAL )
-		
-		sizer_decimal_num = wx.StaticBoxSizer( wx.StaticBox( sizer_stamp.GetStaticBox(), wx.ID_ANY, u"Децимальный номер" ), wx.HORIZONTAL )
-		
-		self.stamp_decimal_num_text = wx.TextCtrl( sizer_decimal_num.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		sizer_decimal_num.Add( self.stamp_decimal_num_text, 1, wx.EXPAND|wx.TOP|wx.BOTTOM|wx.LEFT, 5 )
-		
-		self.stamp_decimal_num_converted = wx.StaticText( sizer_decimal_num.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.stamp_decimal_num_converted.Wrap( -1 )
-		self.stamp_decimal_num_converted.SetToolTipString( u"Децимальный номер автоматически корректируется\nсогласно ЕСКД.\nДанное значение будет указано в основной надписи\nперечня элементов." )
-		
-		sizer_decimal_num.Add( self.stamp_decimal_num_converted, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
-		
-		
-		sizer_stamp.Add( sizer_decimal_num, 1, wx.EXPAND, 5 )
-		
-		sizer2_spamp = wx.BoxSizer( wx.HORIZONTAL )
-		
-		sizer21_stamp = wx.BoxSizer( wx.VERTICAL )
-		
-		sizer_developer = wx.StaticBoxSizer( wx.StaticBox( sizer_stamp.GetStaticBox(), wx.ID_ANY, u"Разработал" ), wx.VERTICAL )
-		
-		self.stamp_developer_text = wx.TextCtrl( sizer_developer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		sizer_developer.Add( self.stamp_developer_text, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		
-		sizer21_stamp.Add( sizer_developer, 0, wx.EXPAND, 5 )
-		
-		sizer_verifer = wx.StaticBoxSizer( wx.StaticBox( sizer_stamp.GetStaticBox(), wx.ID_ANY, u"Проверил" ), wx.VERTICAL )
-		
-		self.stamp_verifier_text = wx.TextCtrl( sizer_verifer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		sizer_verifer.Add( self.stamp_verifier_text, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		
-		sizer21_stamp.Add( sizer_verifer, 0, wx.EXPAND, 5 )
-		
-		sizer_inspector = wx.StaticBoxSizer( wx.StaticBox( sizer_stamp.GetStaticBox(), wx.ID_ANY, u"Нормоконтролер" ), wx.VERTICAL )
-		
-		self.stamp_inspector_text = wx.TextCtrl( sizer_inspector.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		sizer_inspector.Add( self.stamp_inspector_text, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		
-		sizer21_stamp.Add( sizer_inspector, 0, wx.EXPAND, 5 )
-		
-		sizer_approver = wx.StaticBoxSizer( wx.StaticBox( sizer_stamp.GetStaticBox(), wx.ID_ANY, u"Утвердил" ), wx.VERTICAL )
-		
-		self.stamp_approver_text = wx.TextCtrl( sizer_approver.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		sizer_approver.Add( self.stamp_approver_text, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		
-		sizer21_stamp.Add( sizer_approver, 0, wx.EXPAND, 5 )
-		
-		
-		sizer2_spamp.Add( sizer21_stamp, 1, wx.EXPAND, 5 )
-		
-		sizer22_stamp = wx.BoxSizer( wx.VERTICAL )
-		
-		sizer_comp = wx.StaticBoxSizer( wx.StaticBox( sizer_stamp.GetStaticBox(), wx.ID_ANY, u"Организация" ), wx.VERTICAL )
-		
-		self.stamp_comp_text = wx.TextCtrl( sizer_comp.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		sizer_comp.Add( self.stamp_comp_text, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		
-		sizer22_stamp.Add( sizer_comp, 0, wx.EXPAND, 5 )
-		
-		sizer_title = wx.StaticBoxSizer( wx.StaticBox( sizer_stamp.GetStaticBox(), wx.ID_ANY, u"Наименование" ), wx.VERTICAL )
+		sizer_title = wx.StaticBoxSizer( wx.StaticBox( self.panel_stamp, wx.ID_ANY, u"Наименование" ), wx.VERTICAL )
 		
 		self.stamp_title_text = wx.TextCtrl( sizer_title.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.TE_MULTILINE )
-		sizer_title.Add( self.stamp_title_text, 1, wx.ALL|wx.EXPAND, 5 )
+		sizer_title.Add( self.stamp_title_text, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.stamp_title_converted = wx.StaticText( sizer_title.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.stamp_title_converted.Wrap( -1 )
@@ -960,7 +902,70 @@ class CompListDialog ( wx.Dialog ):
 		sizer_title.Add( self.stamp_title_converted, 1, wx.ALL|wx.EXPAND, 5 )
 		
 		
-		sizer22_stamp.Add( sizer_title, 1, wx.EXPAND, 5 )
+		sizer_stamp.Add( sizer_title, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		sizer_decimal_num = wx.StaticBoxSizer( wx.StaticBox( self.panel_stamp, wx.ID_ANY, u"Децимальный номер" ), wx.VERTICAL )
+		
+		self.stamp_decimal_num_text = wx.TextCtrl( sizer_decimal_num.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_decimal_num.Add( self.stamp_decimal_num_text, 1, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL, 5 )
+		
+		self.stamp_decimal_num_converted = wx.StaticText( sizer_decimal_num.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.stamp_decimal_num_converted.Wrap( -1 )
+		self.stamp_decimal_num_converted.SetToolTipString( u"Децимальный номер автоматически корректируется\nсогласно ЕСКД.\nДанное значение будет указано в основной надписи\nперечня элементов." )
+		
+		sizer_decimal_num.Add( self.stamp_decimal_num_converted, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, 5 )
+		
+		
+		sizer_stamp.Add( sizer_decimal_num, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		sizer_comp = wx.StaticBoxSizer( wx.StaticBox( self.panel_stamp, wx.ID_ANY, u"Организация" ), wx.VERTICAL )
+		
+		self.stamp_comp_text = wx.TextCtrl( sizer_comp.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_comp.Add( self.stamp_comp_text, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		sizer_stamp.Add( sizer_comp, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		
+		sizer2_spamp = wx.BoxSizer( wx.HORIZONTAL )
+		
+		sizer21_stamp = wx.BoxSizer( wx.VERTICAL )
+		
+		sizer_developer = wx.StaticBoxSizer( wx.StaticBox( self.panel_stamp, wx.ID_ANY, u"Разработал" ), wx.VERTICAL )
+		
+		self.stamp_developer_text = wx.TextCtrl( sizer_developer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_developer.Add( self.stamp_developer_text, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		sizer21_stamp.Add( sizer_developer, 0, wx.EXPAND|wx.ALL, 5 )
+		
+		sizer_verifer = wx.StaticBoxSizer( wx.StaticBox( self.panel_stamp, wx.ID_ANY, u"Проверил" ), wx.VERTICAL )
+		
+		self.stamp_verifier_text = wx.TextCtrl( sizer_verifer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_verifer.Add( self.stamp_verifier_text, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		sizer21_stamp.Add( sizer_verifer, 0, wx.EXPAND|wx.ALL, 5 )
+		
+		
+		sizer2_spamp.Add( sizer21_stamp, 1, wx.EXPAND, 5 )
+		
+		sizer22_stamp = wx.BoxSizer( wx.VERTICAL )
+		
+		sizer_approver = wx.StaticBoxSizer( wx.StaticBox( self.panel_stamp, wx.ID_ANY, u"Утвердил" ), wx.VERTICAL )
+		
+		self.stamp_approver_text = wx.TextCtrl( sizer_approver.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_approver.Add( self.stamp_approver_text, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		sizer22_stamp.Add( sizer_approver, 0, wx.EXPAND|wx.ALL, 5 )
+		
+		sizer_inspector = wx.StaticBoxSizer( wx.StaticBox( self.panel_stamp, wx.ID_ANY, u"Нормоконтролер" ), wx.VERTICAL )
+		
+		self.stamp_inspector_text = wx.TextCtrl( sizer_inspector.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_inspector.Add( self.stamp_inspector_text, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		sizer22_stamp.Add( sizer_inspector, 0, wx.EXPAND|wx.ALL, 5 )
 		
 		
 		sizer2_spamp.Add( sizer22_stamp, 1, wx.EXPAND, 5 )
@@ -969,13 +974,12 @@ class CompListDialog ( wx.Dialog ):
 		sizer_stamp.Add( sizer2_spamp, 0, wx.EXPAND, 5 )
 		
 		
-		sizer_spec.Add( sizer_stamp, 1, wx.EXPAND|wx.ALL, 5 )
+		self.panel_stamp.SetSizer( sizer_stamp )
+		self.panel_stamp.Layout()
+		sizer_stamp.Fit( self.panel_stamp )
+		self.complist_notebook.AddPage( self.panel_stamp, u"Основная надпись", False )
 		
-		
-		self.panel_spec_dialog.SetSizer( sizer_spec )
-		self.panel_spec_dialog.Layout()
-		sizer_spec.Fit( self.panel_spec_dialog )
-		sizer_spec_dialog.Add( self.panel_spec_dialog, 1, wx.EXPAND, 5 )
+		sizer_complist_dialog.Add( self.complist_notebook, 1, wx.EXPAND |wx.ALL, 5 )
 		
 		dialog_buttons = wx.StdDialogButtonSizer()
 		self.dialog_buttonsOK = wx.Button( self, wx.ID_OK )
@@ -984,10 +988,10 @@ class CompListDialog ( wx.Dialog ):
 		dialog_buttons.AddButton( self.dialog_buttonsCancel )
 		dialog_buttons.Realize();
 		
-		sizer_spec_dialog.Add( dialog_buttons, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_complist_dialog.Add( dialog_buttons, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		
-		self.SetSizer( sizer_spec_dialog )
+		self.SetSizer( sizer_complist_dialog )
 		self.Layout()
 		
 		self.Centre( wx.BOTH )

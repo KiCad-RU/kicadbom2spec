@@ -2060,6 +2060,24 @@ class Window(gui.MainFrame):
             value = complist.convert_title(value)
             value = value.replace('\\n', '\n')
             complist_dialog.stamp_title_converted.SetLabel(value)
+            # Resize dialog height
+            dialog_width = complist_dialog.GetSize().GetWidth()
+            complist_dialog.SetSizeHints(
+                -1,
+                -1,
+                -1,
+                -1)
+            complist_dialog.Fit()
+            complist_dialog.SetSizeHints(
+                complist_dialog.GetSize().GetWidth(),
+                complist_dialog.GetSize().GetHeight(),
+                -1,
+                complist_dialog.GetSize().GetHeight()
+                )
+            complist_dialog.SetSize(wx.Size(
+                dialog_width,
+                complist_dialog.GetSize().GetHeight()
+                ))
 
         def on_first_usage_checked(event):
             """
@@ -2096,6 +2114,14 @@ class Window(gui.MainFrame):
 
         complist = CompList()
         complist_dialog = gui.CompListDialog(self)
+        # Calculate and set min size for title text control
+        complist_dialog.Fit()
+        textctl_minsize = complist_dialog.stamp_title_text.GetSize()
+        textctl_minsize.SetHeight(textctl_minsize.GetHeight() * 2)
+        textctl_minsize.SetWidth(-1)
+        complist_dialog.stamp_title_text.SetMinSize(textctl_minsize)
+        complist_dialog.SetInitialSize()
+        # Set min size of dialog
         complist_dialog.Fit()
         complist_dialog.SetSizeHints(
             complist_dialog.GetSize().GetWidth(),
