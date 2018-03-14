@@ -22,6 +22,7 @@ from copy import deepcopy
 from operator import itemgetter
 
 import odf.opendocument
+from odf.draw import Frame
 from odf.text import P, LineBreak
 from odf.table import *
 from odf.style import Style, ParagraphProperties, TextProperties
@@ -43,7 +44,8 @@ class CompList():
 
         # Variables for filling the list
         self.complist = None
-        self.complist_array = None
+        self.components_array = None
+        self.complist_pages = []
 
         self.developer = u''
         self.verifier = u''
@@ -58,26 +60,13 @@ class CompList():
         self.add_changes_sheet = False
         self.fill_first_usage = False
         self.italic = False
+        self.file_format = u'.ods' # or u'.odt'
 
         # Current state of filling list of the components
         self._cur_line = 1
         self._cur_page_num = 1
         self._cur_page = None
-
-    def _get_lines_count(self):
-        """
-        Get lines count of current table
-
-        """
-        table_name = self._cur_page.getAttribute(u'name')
-        if table_name in (u'First1', u'First2'):
-            return 29
-        elif table_name in (u'First3', u'First4'):
-            return 26
-        elif table_name == u'Other':
-            return 32
-        else:
-            return 0
+        self._lines_on_page = 0
 
     def _replace_text(self, page, label, text, group=False):
         """
@@ -85,10 +74,20 @@ class CompList():
         If 'group' is set to 'True' will be used special formatting.
 
         """
-        rows = page.getElementsByType(TableRow)
-        for row in rows:
-            cells = row.getElementsByType(TableCell)
-            for cell in cells:
+        if self.file_format == u'.ods':
+            self._replace_text_in_table(page, label, text, group)
+        else:
+            for table in page.body.getElementsByType(Table):
+                self._replace_text_in_table(table, label, text, group)
+
+    def _replace_text_in_table(self, table, label, text, group=False):
+        """
+        Replace 'label' (like #1:1) to 'text' in 'table'.
+        If 'group' is set to 'True' will be used special formatting.
+
+        """
+        for row in table.getElementsByType(TableRow):
+            for cell in row.getElementsByType(TableCell):
                 for p in cell.getElementsByType(P):
                     for p_data in p.childNodes:
                         if p_data.tagName == u'Text':
@@ -103,26 +102,57 @@ class CompList():
                                 p_data.data = text_lines[0]
                                 # Line breaks
                                 if len(text_lines) > 1:
+                                    p_style = p.getAttribute(u'stylename')
                                     for line in text_lines[1:]:
                                         new_p = P(text=line)
+                                        if self.file_format == u'.odt':
+                                            new_p.setAttribute(u'stylename', p_style)
                                         cell.addElement(new_p)
                                 if group == True:
-                                    # Set center align and underline for ghoup name
-                                    curStyleName = cell.getAttribute(u'stylename')
+                                    # Set center align and underline for group name
+                                    if self.file_format == u'.ods':
+                                        # If used ODS format the text properties stored
+                                        # in cell style.
+                                        groupStyleName = cell.getAttribute(u'stylename') + u'g'
+                                    else:
+                                        # But if used ODT format the text properties stored
+                                        # in paragraph style inside cell.
+                                        groupStyleName = u'group-name'
                                     try:
-                                        groupStyle = self.complist.getStyleByName(curStyleName + u'g')
+                                        groupStyle = self.complist.getStyleByName(groupStyleName)
                                         # Needed for backwards compatibility
                                         if groupStyle == None:
                                             raise
                                     except:
-                                        groupStyle = deepcopy(self.complist.getStyleByName(curStyleName))
-                                        groupStyle.setAttribute(u'name', curStyleName + u'g')
-                                        groupStyle.addElement(ParagraphProperties(textalignlast=u'center'))
+                                        if self.file_format == u'.ods':
+                                            groupStyleName = cell.getAttribute(u'stylename')
+                                        else:
+                                            groupStyleName = p.getAttribute(u'stylename')
+                                        groupStyle = deepcopy(self.complist.getStyleByName(groupStyleName))
+                                        if self.file_format == u'.ods':
+                                            groupStyle.setAttribute(u'name', groupStyleName + u'g')
+                                        else:
+                                            groupStyle.setAttribute(u'name', u'group-name')
+                                        groupStyle.addElement(ParagraphProperties(textalign=u'center'))
                                         groupStyle.addElement(TextProperties(textunderlinetype=u'single',
                                                                              textunderlinestyle=u'solid',))
-                                        self.complist.styles.addElement(groupStyle)
-                                    cell.setAttribute(u'stylename', curStyleName + u'g')
+                                        self.complist.automaticstyles.addElement(groupStyle)
+                                    if self.file_format == u'.ods':
+                                        cell.setAttribute(u'stylename', groupStyleName + u'g')
+                                    else:
+                                        p.setAttribute(u'stylename', u'group-name')
                                 return
+
+    def _clear_page(self, page):
+        """
+        Clear 'page' of labels.
+
+        """
+        if self.file_format == u'.ods':
+            self._clear_table(page)
+        else:
+            for table in page.body.getElementsByType(Table):
+                self._clear_table(table)
 
     def _clear_table(self, table):
         """
@@ -150,14 +180,19 @@ class CompList():
         self._cur_line += 1
 
         # First page of the list has 29 or 26 lines, other pages has 32 lines
-        if self._cur_line > self._get_lines_count():
+        if self._cur_line > self._lines_on_page:
             # Table is full
-            self._cur_page.setAttribute(u'name', u'стр. %d' % self._cur_page_num)
-            self.complist.spreadsheet.addElement(self._cur_page)
+            if self.file_format == u'.ods':
+                self._cur_page.setAttribute(u'name', u'стр. %d' % self._cur_page_num)
+            self.complist_pages.append(self._cur_page)
 
             self._cur_page = deepcopy(self._otherPagesPattern)
+            if self.file_format == u'.odt':
+                # Needed for getting styles in _replace_text_in_table
+                self.complist = self._cur_page
             self._cur_page_num += 1
             self._cur_line = 1
+            self._lines_on_page = 32
 
     def _set_line(self, element):
         """
@@ -453,70 +488,93 @@ class CompList():
                         temp_group[1].append(element)
                     temp_array.append(temp_group)
                 prev = element[:]
-        self.complist_array = temp_array
+        self.components_array = temp_array
 
     def save(self, complist_file_name):
         """
         Save created list of the components to the file.
 
         """
-        # Load the pattern
-        pattern = odf.opendocument.load(os.path.join(os.path.dirname(os.path.realpath(__file__)), u'pattern.ods'))
-        for sheet in pattern.spreadsheet.getElementsByType(Table):
-            # Pattern for first page
-            if sheet.getAttribute(u'name') == u'First1':
-                self._firstPagePatternV1 = sheet
-            elif sheet.getAttribute(u'name') == u'First2':
-                self._firstPagePatternV2 = sheet
-            elif sheet.getAttribute(u'name') == u'First3':
-                self._firstPagePatternV3 = sheet
-            elif sheet.getAttribute(u'name') == u'First4':
-                self._firstPagePatternV4 = sheet
+        base_path = os.path.dirname(os.path.realpath(__file__))
+        if self.file_format == u'.ods':
+            # Load the pattern
+            pattern = odf.opendocument.load(os.path.join(
+                base_path, u'patterns', u'all_in_one.ods'))
+            for sheet in pattern.spreadsheet.getElementsByType(Table):
+                # Patterns for first page
+                if sheet.getAttribute(u'name') == u'First1':
+                    self._firstPagePatternV1 = sheet
+                elif sheet.getAttribute(u'name') == u'First2':
+                    self._firstPagePatternV2 = sheet
+                elif sheet.getAttribute(u'name') == u'First3':
+                    self._firstPagePatternV3 = sheet
+                elif sheet.getAttribute(u'name') == u'First4':
+                    self._firstPagePatternV4 = sheet
+                # Pattern for other pages
+                elif sheet.getAttribute(u'name') == u'Other':
+                    self._otherPagesPattern = sheet
+                # Pattern for last pages (the changes sheet)
+                elif sheet.getAttribute(u'name') == u'Last':
+                    self._lastPagePattern = sheet
+
+            # Create list of the components file object
+            self.complist = odf.opendocument.OpenDocumentSpreadsheet()
+
+            # Copy all parameters from pattern to list of the components
+            for font in pattern.fontfacedecls.childNodes[:]:
+                self.complist.fontfacedecls.addElement(font)
+            for style in pattern.styles.childNodes[:]:
+                self.complist.styles.addElement(style)
+            for masterstyle in pattern.masterstyles.childNodes[:]:
+                self.complist.masterstyles.addElement(masterstyle)
+            for autostyle in pattern.automaticstyles.childNodes[:]:
+                self.complist.automaticstyles.addElement(autostyle)
+            for setting in pattern.settings.childNodes[:]:
+                self.complist.settings.addElement(setting)
+        else:
+            # Patterns for first page
+            self._firstPagePatternV1 = odf.opendocument.load(os.path.join(
+                base_path, u'patterns', u'first1.odt'))
+            self._firstPagePatternV2 = odf.opendocument.load(os.path.join(
+                base_path, u'patterns', u'first2.odt'))
+            self._firstPagePatternV3 = odf.opendocument.load(os.path.join(
+                base_path, u'patterns', u'first3.odt'))
+            self._firstPagePatternV4 = odf.opendocument.load(os.path.join(
+                base_path, u'patterns', u'first4.odt'))
             # Pattern for other pages
-            elif sheet.getAttribute(u'name') == u'Other':
-                self._otherPagesPattern = sheet
+            self._otherPagesPattern = odf.opendocument.load(os.path.join(
+                base_path, u'patterns', u'other.odt'))
             # Pattern for last pages (the changes sheet)
-            elif sheet.getAttribute(u'name') == u'Last':
-                self._lastPagePattern = sheet
-
-        # Create list of the components file object
-        self.complist = odf.opendocument.OpenDocumentSpreadsheet()
-
-        # Copy all parameters from pattern to list of the components
-        for font in pattern.fontfacedecls.childNodes[:]:
-            self.complist.fontfacedecls.addElement(font)
-
-        for style in pattern.styles.childNodes[:]:
-            self.complist.styles.addElement(style)
-
-        for masterstyle in pattern.masterstyles.childNodes[:]:
-            self.complist.masterstyles.addElement(masterstyle)
-
-        for autostyle in pattern.automaticstyles.childNodes[:]:
-            self.complist.automaticstyles.addElement(autostyle)
-
-        for setting in pattern.settings.childNodes[:]:
-            self.complist.settings.addElement(setting)
+            self._lastPagePattern = odf.opendocument.load(os.path.join(
+                base_path, u'patterns', u'last.odt'))
 
         # Select pattern for first page
         if not self.add_first_usage and not self.add_customer_fields:
             self._cur_page = self._firstPagePatternV1
+            self._lines_on_page = 29
         elif self.add_first_usage and not self.add_customer_fields:
             self._cur_page = self._firstPagePatternV2
+            self._lines_on_page = 29
         elif not self.add_first_usage and self.add_customer_fields:
             self._cur_page = self._firstPagePatternV3
+            self._lines_on_page = 26
         elif self.add_first_usage and self.add_customer_fields:
             self._cur_page = self._firstPagePatternV4
+            self._lines_on_page = 26
+
+        if self.file_format == u'.odt':
+            # Needed for getting styles in _replace_text_in_table
+            self.complist = self._cur_page
 
         # Fill list of the components
-        for group in self.complist_array:
+        for group in self.components_array:
             # One empty line-separator
             if not (self._cur_page_num == 1 and self._cur_line == 1):
                 self._next_line() # Skip one line
 
             if group[0] != u'':
                 # New group title
-                if self._cur_line == self._get_lines_count():
+                if self._cur_line == self._lines_on_page:
                     # If name of group at bottom of table without elements, go to beginning of a new table
                     while self._cur_line != 1:
                         self._next_line()
@@ -530,45 +588,96 @@ class CompList():
         # Current table not empty - save it
         if self._cur_line != 1:
             # Set last line as current
-            self._cur_line = self._get_lines_count()
+            self._cur_line = self._lines_on_page
             # Go to next empty page and save current
             self._next_line()
 
         # If the sheet of changes is needed - append it
         if self.add_changes_sheet == True:
             self._cur_page = self._lastPagePattern
-            self._cur_page.setAttribute(u'name', u'стр. %d' % self._cur_page_num)
-            self.complist.spreadsheet.addElement(self._cur_page)
+            if self.file_format == u'.ods':
+                self._cur_page.setAttribute(u'name', u'стр. %d' % self._cur_page_num)
+            self.complist_pages.append(self._cur_page)
 
         # Fill stamp fields on each page
-        pg_cnt = len(self.complist.spreadsheet.getElementsByType(Table))
-        for index, table in enumerate(self.complist.spreadsheet.getElementsByType(Table)):
+        pg_cnt = len(self.complist_pages)
+        for index, page in enumerate(self.complist_pages):
             # First page - big stamp
             if index == 0:
 
-                self._replace_text(table, u'#5:1', self.developer)
-                self._replace_text(table, u'#5:2', self.verifier)
-                self._replace_text(table, u'#5:3', self.inspector)
-                self._replace_text(table, u'#5:4', self.approver)
-                self._replace_text(table, u'#5:5', self.decimal_num)
-                self._replace_text(table, u'#5:6', self.title)
+                self._replace_text(page, u'#5:1', self.developer)
+                self._replace_text(page, u'#5:2', self.verifier)
+                self._replace_text(page, u'#5:3', self.inspector)
+                self._replace_text(page, u'#5:4', self.approver)
+                self._replace_text(page, u'#5:5', self.decimal_num)
+                self._replace_text(page, u'#5:6', self.title)
                 if pg_cnt > 1:
-                    self._replace_text(table, u'#5:7', str(index + 1))
-                self._replace_text(table, u'#5:8', str(pg_cnt))
-                self._replace_text(table, u'#5:9', self.company)
+                    self._replace_text(page, u'#5:7', str(index + 1))
+                self._replace_text(page, u'#5:8', str(pg_cnt))
+                self._replace_text(page, u'#5:9', self.company)
                 if self.fill_first_usage:
                     first_usage = re.search(NUM_REGEXP, self.decimal_num)
                     if first_usage != None:
-                        self._replace_text(table, u'#6:1', first_usage.group(1).rstrip(' '))
+                        self._replace_text(page, u'#6:1', first_usage.group(1).rstrip(' '))
 
-            # Other pages - smal stamp
+            # Other pages - small stamp
             else:
-                self._replace_text(table, u'#5:1', self.decimal_num)
-                self._replace_text(table, u'#5:2', str(index + 1))
+                self._replace_text(page, u'#5:1', self.decimal_num)
+                self._replace_text(page, u'#5:2', str(index + 1))
 
         # Clear tables from labels
-        for table in self.complist.spreadsheet.getElementsByType(Table):
-            self._clear_table(table)
+        for page in self.complist_pages:
+            self._clear_page(page)
+
+        # Merge all pages in single document
+        # ODS
+        if self.file_format == u'.ods':
+            for table in self.complist_pages:
+                self.complist.spreadsheet.addElement(table)
+        # ODT
+        else:
+            self.complist = self.complist_pages[0]
+            if len(self.complist_pages) > 1:
+                # Every style, frame or table must have unique name
+                # on every separate page!
+                for num, page in enumerate(self.complist_pages[1:]):
+                    for autostyle in page.automaticstyles.childNodes[:]:
+                        astyle_name = autostyle.getAttribute(u'name')
+                        astyle_name = u'_{}_{}'.format(num + 2, astyle_name)
+                        autostyle.setAttribute(u'name', astyle_name)
+                        self.complist.automaticstyles.addElement(autostyle)
+                    for body in page.body.childNodes[:]:
+                        for frame in body.getElementsByType(Frame):
+                            name = frame.getAttribute(u'name')
+                            stylename = frame.getAttribute(u'stylename')
+                            name = str(num + 2) + name
+                            stylename = u'_{}_{}'.format(num + 2, stylename)
+                            frame.setAttribute(u'name', name)
+                            frame.setAttribute(u'stylename', stylename)
+                            for table in frame.getElementsByType(Table):
+                                name = table.getAttribute(u'name')
+                                stylename = table.getAttribute(u'stylename')
+                                name = str(num + 2) + name
+                                stylename = u'_{}_{}'.format(num + 2, stylename)
+                                table.setAttribute(u'name', name)
+                                table.setAttribute(u'stylename', stylename)
+                                for col in table.getElementsByType(TableColumn):
+                                    stylename = col.getAttribute(u'stylename')
+                                    stylename = u'_{}_{}'.format(num + 2, stylename)
+                                    col.setAttribute(u'stylename', stylename)
+                                for row in table.getElementsByType(TableRow):
+                                    stylename = row.getAttribute(u'stylename')
+                                    stylename = u'_{}_{}'.format(num + 2, stylename)
+                                    row.setAttribute(u'stylename', stylename)
+                                    for cell in row.getElementsByType(TableCell):
+                                        stylename = cell.getAttribute(u'stylename')
+                                        stylename = u'_{}_{}'.format(num + 2, stylename)
+                                        cell.setAttribute(u'stylename', stylename)
+                                        for p in cell.getElementsByType(P):
+                                            stylename = p.getAttribute(u'stylename')
+                                            stylename = u'_{}_{}'.format(num + 2, stylename)
+                                            p.setAttribute(u'stylename', stylename)
+                        self.complist.body.addElement(body)
 
         # Add meta data
         version_file = open('version', 'r')
@@ -602,7 +711,8 @@ class CompList():
                     break
 
         # Save file of list of the components
-        self.complist.save(complist_file_name)
+        file_name = os.path.splitext(complist_file_name)[0] + self.file_format
+        self.complist.save(file_name)
 
     def convert_decimal_num(self, num):
         """

@@ -797,7 +797,7 @@ class AboutDialog ( wx.Dialog ):
 class CompListDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( 400,630 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
 		
 		self.SetSizeHintsSz( wx.Size( -1,-1 ), wx.DefaultSize )
 		
@@ -806,8 +806,29 @@ class CompListDialog ( wx.Dialog ):
 		self.panel_spec_dialog = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_spec = wx.BoxSizer( wx.VERTICAL )
 		
-		self.filepicker_complist = wx.FilePickerCtrl( self.panel_spec_dialog, wx.ID_ANY, wx.EmptyString, u"Выбор файла перечня элементов", u"Таблица (*.ods)|*.ods|Все файлы (*.*)|*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_OVERWRITE_PROMPT|wx.FLP_SAVE|wx.FLP_USE_TEXTCTRL )
-		sizer_spec.Add( self.filepicker_complist, 0, wx.ALL|wx.EXPAND, 5 )
+		sizer_file = wx.BoxSizer( wx.HORIZONTAL )
+		
+		sizer_filepicker = wx.StaticBoxSizer( wx.StaticBox( self.panel_spec_dialog, wx.ID_ANY, u"Файл" ), wx.HORIZONTAL )
+		
+		self.filepicker_complist = wx.FilePickerCtrl( sizer_filepicker.GetStaticBox(), wx.ID_ANY, wx.EmptyString, u"Выбор файла перечня элементов", u"Все файлы (*.*)|*.*|Текстовый документ (*.odt)|*.odt|Электронная таблица (*.ods)|*.ods", wx.DefaultPosition, wx.DefaultSize, wx.FLP_OVERWRITE_PROMPT|wx.FLP_SAVE|wx.FLP_SMALL|wx.FLP_USE_TEXTCTRL )
+		sizer_filepicker.Add( self.filepicker_complist, 1, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.LEFT, 5 )
+		
+		
+		sizer_file.Add( sizer_filepicker, 1, wx.EXPAND|wx.RIGHT, 5 )
+		
+		sizer_format = wx.StaticBoxSizer( wx.StaticBox( self.panel_spec_dialog, wx.ID_ANY, u"Формат файла" ), wx.VERTICAL )
+		
+		self.rbutton_odt = wx.RadioButton( sizer_format.GetStaticBox(), wx.ID_ANY, u"Текстовый документ (*.odt)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_format.Add( self.rbutton_odt, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.rbutton_ods = wx.RadioButton( sizer_format.GetStaticBox(), wx.ID_ANY, u"Электронная таблица (*.ods)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_format.Add( self.rbutton_ods, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
+		
+		
+		sizer_file.Add( sizer_format, 0, wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		
+		sizer_spec.Add( sizer_file, 0, wx.EXPAND|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
 		
 		sizer_options = wx.StaticBoxSizer( wx.StaticBox( self.panel_spec_dialog, wx.ID_ANY, u"Параметры" ), wx.VERTICAL )
 		
@@ -860,11 +881,9 @@ class CompListDialog ( wx.Dialog ):
 		sizer_options.Add( self.checkbox_open, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		sizer_spec.Add( sizer_options, 1, wx.EXPAND, 5 )
+		sizer_spec.Add( sizer_options, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		sizer_stamp = wx.StaticBoxSizer( wx.StaticBox( self.panel_spec_dialog, wx.ID_ANY, u"Основная надпись" ), wx.VERTICAL )
-		
-		sizer1_spamp = wx.BoxSizer( wx.VERTICAL )
 		
 		sizer_decimal_num = wx.StaticBoxSizer( wx.StaticBox( sizer_stamp.GetStaticBox(), wx.ID_ANY, u"Децимальный номер" ), wx.HORIZONTAL )
 		
@@ -878,7 +897,7 @@ class CompListDialog ( wx.Dialog ):
 		sizer_decimal_num.Add( self.stamp_decimal_num_converted, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		
-		sizer1_spamp.Add( sizer_decimal_num, 1, wx.EXPAND|wx.TOP, 5 )
+		sizer_stamp.Add( sizer_decimal_num, 1, wx.EXPAND, 5 )
 		
 		sizer2_spamp = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -947,13 +966,10 @@ class CompListDialog ( wx.Dialog ):
 		sizer2_spamp.Add( sizer22_stamp, 1, wx.EXPAND, 5 )
 		
 		
-		sizer1_spamp.Add( sizer2_spamp, 0, wx.EXPAND, 5 )
+		sizer_stamp.Add( sizer2_spamp, 0, wx.EXPAND, 5 )
 		
 		
-		sizer_stamp.Add( sizer1_spamp, 1, wx.EXPAND, 5 )
-		
-		
-		sizer_spec.Add( sizer_stamp, 0, wx.EXPAND|wx.ALL, 5 )
+		sizer_spec.Add( sizer_stamp, 1, wx.EXPAND|wx.ALL, 5 )
 		
 		
 		self.panel_spec_dialog.SetSizer( sizer_spec )
@@ -973,7 +989,6 @@ class CompListDialog ( wx.Dialog ):
 		
 		self.SetSizer( sizer_spec_dialog )
 		self.Layout()
-		sizer_spec_dialog.Fit( self )
 		
 		self.Centre( wx.BOTH )
 	

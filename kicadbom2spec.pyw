@@ -436,12 +436,6 @@ class Window(gui.MainFrame):
                         for param in temp_settings.options('complist'):
                             value = temp_settings.get('complist', param)
                             self.settings.set('complist', param, value)
-                        if temp_settings.has_option('complist', 'dialog width'):
-                            self.settings.set(
-                                'complist',
-                                'dialog width',
-                                str(temp_settings.getint('complist', 'dialog width')),
-                                )
                     if import_settings['recent_sch']:
                         recent_files = []
                         for recent in temp_settings.options('recent sch'):
@@ -1676,7 +1670,11 @@ class Window(gui.MainFrame):
             self.menuitem_replace.Enable(False)
 
             self.library_file = ''
-            self.complist_file = os.path.splitext(self.schematic_file)[0] + '.ods'
+            file_format = u'.ods'
+            if self.settings.has_section('complist'):
+                if self.settings.has_option('complist', 'file_format'):
+                    file_format = self.settings.get('complist', 'file_format')
+            self.complist_file = os.path.splitext(self.schematic_file)[0] + file_format
             self.library = None
             self.init_grid()
             complist = CompList()
@@ -2033,6 +2031,16 @@ class Window(gui.MainFrame):
         Make list of the components.
 
         """
+        def on_file_name_changed(event):
+            """
+            Update file format.
+            """
+            file_name = complist_dialog.filepicker_complist.GetPath()
+            if file_name.endswith(u'.odt'):
+                complist_dialog.rbutton_odt.SetValue(True)
+            elif file_name.endswith(u'.ods'):
+                complist_dialog.rbutton_ods.SetValue(True)
+
         def on_decimal_num_changed(event):
             """
             Show converted value of decimal number.
@@ -2063,8 +2071,32 @@ class Window(gui.MainFrame):
             else:
                 complist_dialog.checkbox_first_usage_fill.Enable(False)
 
+        def set_file_ext(ext):
+            """
+            Set file extension in filepicker.
+            """
+            complist_dialog.filepicker_complist.Unbind(wx.EVT_FILEPICKER_CHANGED)
+            file_name = complist_dialog.filepicker_complist.GetPath()
+            name_and_ext = os.path.splitext(file_name)
+            complist_dialog.filepicker_complist.SetPath(name_and_ext[0] + ext)
+            complist_dialog.filepicker_complist.Bind(wx.EVT_FILEPICKER_CHANGED, on_file_name_changed)
+            complist_dialog.filepicker_complist.SetFocus()
+
+        def on_rbutton_odt(event):
+            """
+            Update file extension.
+            """
+            set_file_ext(u'.odt')
+
+        def on_rbutton_ods(event):
+            """
+            Update file extension.
+            """
+            set_file_ext(u'.ods')
+
         complist = CompList()
         complist_dialog = gui.CompListDialog(self)
+        complist_dialog.Fit()
         complist_dialog.SetSizeHints(
             complist_dialog.GetSize().GetWidth(),
             complist_dialog.GetSize().GetHeight(),
@@ -2072,9 +2104,12 @@ class Window(gui.MainFrame):
             complist_dialog.GetSize().GetHeight()
             )
         # Events
+        complist_dialog.filepicker_complist.Bind(wx.EVT_FILEPICKER_CHANGED, on_file_name_changed)
         complist_dialog.stamp_decimal_num_text.Bind(wx.EVT_TEXT, on_decimal_num_changed)
         complist_dialog.stamp_title_text.Bind(wx.EVT_TEXT, on_title_changed)
         complist_dialog.checkbox_first_usage.Bind(wx.EVT_CHECKBOX, on_first_usage_checked)
+        complist_dialog.rbutton_odt.Bind(wx.EVT_RADIOBUTTON, on_rbutton_odt)
+        complist_dialog.rbutton_ods.Bind(wx.EVT_RADIOBUTTON, on_rbutton_ods)
         # Load settings
         add_units = False
         all_components = False
@@ -2084,6 +2119,7 @@ class Window(gui.MainFrame):
         need_changes_sheet = True
         open_complist = False
         italic = True
+        file_format = u'.ods'
         if self.settings.has_section('complist'):
             if self.settings.has_option('complist', 'dialog width'):
                complist_dialog.SetSize(
@@ -2111,6 +2147,8 @@ class Window(gui.MainFrame):
                 self.stamp_dict['inspector'] = self.settings.get('complist', 'inspector')
             if self.settings.has_option('complist', 'italic'):
                 italic = self.settings.getboolean('complist', 'italic')
+            if self.settings.has_option('complist', 'file_format'):
+                file_format = self.settings.get('complist', 'file_format')
 
         # Options
         complist_dialog.filepicker_complist.SetPath(self.complist_file)
@@ -2123,6 +2161,10 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_changes_sheet.SetValue(need_changes_sheet)
         complist_dialog.checkbox_italic.SetValue(italic)
         complist_dialog.checkbox_open.SetValue(open_complist)
+        if file_format == u'.odt':
+            complist_dialog.rbutton_odt.SetValue(True)
+        else:
+            complist_dialog.rbutton_ods.SetValue(True)
         # Stamp
         for field in self.stamp_dict.keys():
             field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
@@ -2156,6 +2198,10 @@ class Window(gui.MainFrame):
             need_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
             italic = complist_dialog.checkbox_italic.GetValue()
             open_complist = complist_dialog.checkbox_open.GetValue()
+            if complist_dialog.rbutton_odt.GetValue() == True:
+                file_format = u'.odt'
+            else:
+                file_format = u'.ods'
             # Stamp
             for field in self.stamp_dict.keys():
                 field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
@@ -2179,8 +2225,9 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'open', str(open_complist))
             self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
             self.settings.set('complist', 'italic', str(italic))
+            self.settings.set('complist', 'file_format', file_format)
             self.complist_file = complist_dialog.filepicker_complist.GetPath()
-            self.complist_file = os.path.splitext(self.complist_file)[0] + '.ods'
+            self.complist_file = os.path.splitext(self.complist_file)[0] + file_format
             comp_fields = []
             grid_values = self.grid.get_values()
             for row in grid_values:
@@ -2251,6 +2298,7 @@ class Window(gui.MainFrame):
                 complist.add_changes_sheet = need_changes_sheet
                 complist.fill_first_usage = fill_first_usage
                 complist.italic = italic
+                complist.file_format = file_format
                 # Stamp
                 complist.decimal_num = complist.convert_decimal_num(self.stamp_dict['decimal_num'])
                 complist.developer = self.stamp_dict['developer']
@@ -2962,7 +3010,11 @@ def main():
             window.on_open_sch(sch_file_name=sch_file_name)
             if args.complist:
                 os.chdir(os.path.abspath(EXEC_PATH))
-                window.complist_file = os.path.splitext(os.path.abspath(args.complist))[0] + '.ods'
+                name_and_ext = os.path.splitext(os.path.abspath(args.complist))
+                if name_and_ext[-1] in (u'.odt', u'.ods'):
+                    window.complist_file = ''.join(name_and_ext)
+                else:
+                    window.complist_file = name_and_ext[0] + u'.ods'
                 os.chdir(os.path.dirname(os.path.abspath(__file__)))
         else:
             if wx.MessageBox(
