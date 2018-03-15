@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Mar  1 2017)
+## Python code generated with wxFormBuilder (version Mar 15 2018)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -797,7 +797,7 @@ class AboutDialog ( wx.Dialog ):
 class CompListDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( 400,515 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( 400,480 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
 		
 		self.SetSizeHintsSz( wx.Size( -1,-1 ), wx.DefaultSize )
 		
@@ -834,53 +834,68 @@ class CompListDialog ( wx.Dialog ):
 		self.panel_options = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_options = wx.BoxSizer( wx.VERTICAL )
 		
-		self.checkbox_all_components = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Все элементы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		sizer_options_comp = wx.StaticBoxSizer( wx.StaticBox( self.panel_options, wx.ID_ANY, u"Элементы" ), wx.VERTICAL )
+		
+		self.checkbox_all_components = wx.CheckBox( sizer_options_comp.GetStaticBox(), wx.ID_ANY, u"Все элементы", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_all_components.SetToolTipString( u"Если данная функция включена, в перечень элементов будут включены все элементы, не зависимо от того установлен флажок для элемента или нет." )
 		
-		sizer_options.Add( self.checkbox_all_components, 0, wx.EXPAND|wx.ALL, 5 )
+		sizer_options_comp.Add( self.checkbox_all_components, 0, wx.EXPAND|wx.ALL, 5 )
 		
-		self.checkbox_add_units = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Добавить единицы измерения", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_add_units = wx.CheckBox( sizer_options_comp.GetStaticBox(), wx.ID_ANY, u"Добавить единицы измерения", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_add_units.SetToolTipString( u"Если для резисторов, конденсаторов или индуктивностей указаны только значения и данная опция включена, то к значениям будут добавлены соответствующие единицы измерения (Ом, Ф, Гн)." )
 		
-		sizer_options.Add( self.checkbox_add_units, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options_comp.Add( self.checkbox_add_units, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.checkbox_first_usage = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Добавить графы первичной применяемости", wx.DefaultPosition, wx.DefaultSize, 0 )
+		
+		sizer_options.Add( sizer_options_comp, 0, wx.EXPAND|wx.ALL, 5 )
+		
+		sizer_options_format = wx.StaticBoxSizer( wx.StaticBox( self.panel_options, wx.ID_ANY, u"Формат" ), wx.VERTICAL )
+		
+		self.checkbox_first_usage = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Добавить графы первичной применяемости", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_first_usage.SetToolTipString( u"Если данная опция включена, то форматная рамка будет содержать графы первичной применяемости (24, 25 по ГОСТ2.104-2006)" )
 		
-		sizer_options.Add( self.checkbox_first_usage, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options_format.Add( self.checkbox_first_usage, 0, wx.EXPAND|wx.ALL, 5 )
 		
 		sizer_first_usage = wx.BoxSizer( wx.HORIZONTAL )
 		
 		
 		sizer_first_usage.AddSpacer( ( 20, 0), 0, wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		self.checkbox_first_usage_fill = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Указать первичную применяемость", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_first_usage_fill = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Указать первичную применяемость", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_first_usage_fill.SetToolTipString( u"Если данная опция включена, то графа Перв. примен. будет заполнена значением децимального номера без кода документа" )
 		
 		sizer_first_usage.Add( self.checkbox_first_usage_fill, 1, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		sizer_options.Add( sizer_first_usage, 0, wx.EXPAND, 5 )
+		sizer_options_format.Add( sizer_first_usage, 0, wx.EXPAND, 5 )
 		
-		self.checkbox_customer_fields = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Добавить графы заказчика", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_customer_fields = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Добавить графы заказчика", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_customer_fields.SetToolTipString( u"Если данная опция включена, то над основной надписью будут показаны графы заказчика (27-30 по ГОСТ2.104-2006)" )
 		
-		sizer_options.Add( self.checkbox_customer_fields, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options_format.Add( self.checkbox_customer_fields, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.checkbox_changes_sheet = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Добавить лист регистрации изменений", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_changes_sheet = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Добавить лист регистрации изменений", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_changes_sheet.SetToolTipString( u"Если данная опция включена, то в конец перечня элементов будет добавлен лист регистрации изменений." )
 		
-		sizer_options.Add( self.checkbox_changes_sheet, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options_format.Add( self.checkbox_changes_sheet, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.checkbox_italic = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Курсив", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_italic = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Курсив", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_italic.SetToolTipString( u"Использовать курсив для оформления перечня элементов.\nЕсли отметка отсутствует, будет использован прямой шрифт." )
 		
-		sizer_options.Add( self.checkbox_italic, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options_format.Add( self.checkbox_italic, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.checkbox_open = wx.CheckBox( self.panel_options, wx.ID_ANY, u"Открыть перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		
+		sizer_options.Add( sizer_options_format, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		sizer_options_other = wx.StaticBoxSizer( wx.StaticBox( self.panel_options, wx.ID_ANY, u"Прочее" ), wx.VERTICAL )
+		
+		self.checkbox_open = wx.CheckBox( sizer_options_other.GetStaticBox(), wx.ID_ANY, u"Открыть перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_open.SetToolTipString( u"Если этот параметр установлен, то после создания перечня элементов он будет открыт в редакторе по умолчанию." )
 		
-		sizer_options.Add( self.checkbox_open, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options_other.Add( self.checkbox_open, 0, wx.EXPAND|wx.ALL, 5 )
+		
+		
+		sizer_options.Add( sizer_options_other, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
 		self.panel_options.SetSizer( sizer_options )
@@ -1014,31 +1029,28 @@ class SettingsDialog ( wx.Dialog ):
 		sizer_settings_dialog = wx.BoxSizer( wx.VERTICAL )
 		
 		self.settings_tabs = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_TOP )
-		self.general_tab_scrolledwindow = wx.ScrolledWindow( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
-		self.general_tab_scrolledwindow.SetScrollRate( 5, 5 )
-		self.general_tab_scrolledwindow.SetMaxSize( wx.Size( 0,0 ) )
-		
+		self.general_panel = wx.Panel( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		general_tab_sizer = wx.BoxSizer( wx.VERTICAL )
 		
-		self.space_as_dot_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Отображать пробелы в виде точек \"·\"", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.space_as_dot_checkbox = wx.CheckBox( self.general_panel, wx.ID_ANY, u"Отображать пробелы в виде точек \"·\"", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.space_as_dot_checkbox.SetToolTipString( u"Если этот параметр установлен, то в таблице и в полях ввода пробелы будут отображаться в виде специальных символов." )
 		
 		general_tab_sizer.Add( self.space_as_dot_checkbox, 0, wx.EXPAND|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.remember_selection_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Запоминать выбор элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.remember_selection_checkbox = wx.CheckBox( self.general_panel, wx.ID_ANY, u"Запоминать выбор элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.remember_selection_checkbox.SetToolTipString( u"Если этот параметр установлен, то при сохранении схемы элементам, которые не отмечены для вывода в перечень элементов, будет добавлено поле \"Исключен из ПЭ\". \nПри открытии схемы для элементов с полем \"Исключен из ПЭ\" будет автоматически снята отметка о выводе в перечень элементов." )
 		
 		general_tab_sizer.Add( self.remember_selection_checkbox, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.show_need_adjust_mark_checkbox = wx.CheckBox( self.general_tab_scrolledwindow, wx.ID_ANY, u"Показывать метку \"*\" возле обозначения на схеме", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.show_need_adjust_mark_checkbox = wx.CheckBox( self.general_panel, wx.ID_ANY, u"Показывать метку \"*\" возле обозначения на схеме", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.show_need_adjust_mark_checkbox.SetToolTipString( u"Если этот параметр установлен, то на схеме, возле обозначения компонента, номинал которого \"Подбирают при регулировании\", будет отображаться метка \"*\"." )
 		
 		general_tab_sizer.Add( self.show_need_adjust_mark_checkbox, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
-		self.staticline2 = wx.StaticLine( self.general_tab_scrolledwindow, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		self.staticline2 = wx.StaticLine( self.general_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		general_tab_sizer.Add( self.staticline2, 0, wx.EXPAND |wx.ALL, 5 )
 		
-		self.auto_groups_statictext = wx.StaticText( self.general_tab_scrolledwindow, wx.ID_ANY, u"Автоматически заполнять поле \"Группа\" для:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.auto_groups_statictext = wx.StaticText( self.general_panel, wx.ID_ANY, u"Автоматически заполнять поле \"Группа\" для:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.auto_groups_statictext.Wrap( -1 )
 		self.auto_groups_statictext.SetToolTipString( u"Если элементам не назначено значие поля \"Группа\", то при загрузке элементов из файла схемы/библиотеки для выбранных типов они будут сформированны автоматически." )
 		
@@ -1049,21 +1061,31 @@ class SettingsDialog ( wx.Dialog ):
 		
 		auto_groups_sizer.AddSpacer( ( 20, 0), 0, 0, 5 )
 		
+		self.auto_group_scrolledwindow = wx.ScrolledWindow( self.general_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.VSCROLL )
+		self.auto_group_scrolledwindow.SetScrollRate( 5, 5 )
+		auto_group_scrolledwindow_sizer = wx.BoxSizer( wx.VERTICAL )
+		
 		auto_groups_checklistboxChoices = []
-		self.auto_groups_checklistbox = wx.CheckListBox( self.general_tab_scrolledwindow, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,200 ), auto_groups_checklistboxChoices, wx.LB_NEEDED_SB|wx.LB_SORT )
-		auto_groups_sizer.Add( self.auto_groups_checklistbox, 1, wx.ALL|wx.EXPAND, 5 )
+		self.auto_groups_checklistbox = wx.CheckListBox( self.auto_group_scrolledwindow, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,100 ), auto_groups_checklistboxChoices, wx.LB_NEEDED_SB|wx.LB_SORT )
+		auto_group_scrolledwindow_sizer.Add( self.auto_groups_checklistbox, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.auto_group_scrolledwindow.SetSizer( auto_group_scrolledwindow_sizer )
+		self.auto_group_scrolledwindow.Layout()
+		auto_group_scrolledwindow_sizer.Fit( self.auto_group_scrolledwindow )
+		auto_groups_sizer.Add( self.auto_group_scrolledwindow, 1, wx.EXPAND |wx.ALL, 5 )
 		
 		auto_groups_buttons_sizer = wx.BoxSizer( wx.VERTICAL )
 		
-		self.auto_groups_add_button = wx.Button( self.general_tab_scrolledwindow, wx.ID_ANY, u"Добавить", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.auto_groups_add_button = wx.Button( self.general_panel, wx.ID_ANY, u"Добавить", wx.DefaultPosition, wx.DefaultSize, 0 )
 		auto_groups_buttons_sizer.Add( self.auto_groups_add_button, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
 		
-		self.auto_groups_edit_button = wx.Button( self.general_tab_scrolledwindow, wx.ID_ANY, u"Изменить", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.auto_groups_edit_button = wx.Button( self.general_panel, wx.ID_ANY, u"Изменить", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.auto_groups_edit_button.Enable( False )
 		
 		auto_groups_buttons_sizer.Add( self.auto_groups_edit_button, 0, wx.ALL|wx.ALIGN_RIGHT, 5 )
 		
-		self.auto_groups_remove_button = wx.Button( self.general_tab_scrolledwindow, wx.ID_ANY, u"Удалить", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.auto_groups_remove_button = wx.Button( self.general_panel, wx.ID_ANY, u"Удалить", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.auto_groups_remove_button.Enable( False )
 		
 		auto_groups_buttons_sizer.Add( self.auto_groups_remove_button, 0, wx.ALL|wx.ALIGN_RIGHT, 5 )
@@ -1075,10 +1097,10 @@ class SettingsDialog ( wx.Dialog ):
 		general_tab_sizer.Add( auto_groups_sizer, 1, wx.EXPAND, 5 )
 		
 		
-		self.general_tab_scrolledwindow.SetSizer( general_tab_sizer )
-		self.general_tab_scrolledwindow.Layout()
-		general_tab_sizer.Fit( self.general_tab_scrolledwindow )
-		self.settings_tabs.AddPage( self.general_tab_scrolledwindow, u"Основные", True )
+		self.general_panel.SetSizer( general_tab_sizer )
+		self.general_panel.Layout()
+		general_tab_sizer.Fit( self.general_panel )
+		self.settings_tabs.AddPage( self.general_panel, u"Основные", True )
 		self.values_tab_panel = wx.Panel( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		values_tab_sizer = wx.BoxSizer( wx.VERTICAL )
 		
@@ -1278,13 +1300,12 @@ class SettingsDialog ( wx.Dialog ):
 		self.separators_panel.Layout()
 		separators_common_sizer.Fit( self.separators_panel )
 		self.settings_tabs.AddPage( self.separators_panel, u"Разделители", False )
-		self.alises_scrollpanel = wx.ScrolledWindow( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
-		self.alises_scrollpanel.SetScrollRate( 5, 5 )
+		self.aliases_panel = wx.Panel( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		alias_sizer = wx.BoxSizer( wx.VERTICAL )
 		
 		alias_header_sizer = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.alias_field_header_panel = wx.Panel( self.alises_scrollpanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.alias_field_header_panel = wx.Panel( self.aliases_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		alias_field_header_sizer = wx.BoxSizer( wx.VERTICAL )
 		
 		self.alias_field_header_label = wx.StaticText( self.alias_field_header_panel, wx.ID_ANY, u"Поле", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -1299,7 +1320,7 @@ class SettingsDialog ( wx.Dialog ):
 		alias_field_header_sizer.Fit( self.alias_field_header_panel )
 		alias_header_sizer.Add( self.alias_field_header_panel, 1, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.alias_value_header_panel = wx.Panel( self.alises_scrollpanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.alias_value_header_panel = wx.Panel( self.aliases_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		alias_value_header_sizer = wx.BoxSizer( wx.VERTICAL )
 		
 		self.alias_value_header_label = wx.StaticText( self.alias_value_header_panel, wx.ID_ANY, u"Псевдоним", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -1317,8 +1338,12 @@ class SettingsDialog ( wx.Dialog ):
 		
 		alias_sizer.Add( alias_header_sizer, 0, wx.EXPAND, 5 )
 		
-		self.m_staticline15 = wx.StaticLine( self.alises_scrollpanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		self.m_staticline15 = wx.StaticLine( self.aliases_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		alias_sizer.Add( self.m_staticline15, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.alises_scrollpanel = wx.ScrolledWindow( self.aliases_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
+		self.alises_scrollpanel.SetScrollRate( 5, 5 )
+		aliases_scrollpanel_sizer = wx.BoxSizer( wx.VERTICAL )
 		
 		alias1_sizer = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -1330,7 +1355,7 @@ class SettingsDialog ( wx.Dialog ):
 		alias1_sizer.Add( self.alias1_text, 2, wx.ALL, 5 )
 		
 		
-		alias_sizer.Add( alias1_sizer, 0, wx.EXPAND, 5 )
+		aliases_scrollpanel_sizer.Add( alias1_sizer, 0, wx.EXPAND, 5 )
 		
 		alias2_sizer = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -1342,7 +1367,7 @@ class SettingsDialog ( wx.Dialog ):
 		alias2_sizer.Add( self.alias2_text, 2, wx.ALL, 5 )
 		
 		
-		alias_sizer.Add( alias2_sizer, 0, wx.EXPAND, 5 )
+		aliases_scrollpanel_sizer.Add( alias2_sizer, 0, wx.EXPAND, 5 )
 		
 		alias3_sizer = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -1354,7 +1379,7 @@ class SettingsDialog ( wx.Dialog ):
 		alias3_sizer.Add( self.alias3_text, 2, wx.ALL, 5 )
 		
 		
-		alias_sizer.Add( alias3_sizer, 0, wx.EXPAND, 5 )
+		aliases_scrollpanel_sizer.Add( alias3_sizer, 0, wx.EXPAND, 5 )
 		
 		alias4_sizer = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -1366,7 +1391,7 @@ class SettingsDialog ( wx.Dialog ):
 		alias4_sizer.Add( self.alias4_text, 2, wx.ALL, 5 )
 		
 		
-		alias_sizer.Add( alias4_sizer, 0, wx.EXPAND, 5 )
+		aliases_scrollpanel_sizer.Add( alias4_sizer, 0, wx.EXPAND, 5 )
 		
 		alias5_sizer = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -1378,7 +1403,7 @@ class SettingsDialog ( wx.Dialog ):
 		alias5_sizer.Add( self.alias5_text, 2, wx.ALL, 5 )
 		
 		
-		alias_sizer.Add( alias5_sizer, 0, wx.EXPAND, 5 )
+		aliases_scrollpanel_sizer.Add( alias5_sizer, 0, wx.EXPAND, 5 )
 		
 		alias6_sizer = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -1390,7 +1415,7 @@ class SettingsDialog ( wx.Dialog ):
 		alias6_sizer.Add( self.alias6_text, 2, wx.ALL, 5 )
 		
 		
-		alias_sizer.Add( alias6_sizer, 0, wx.EXPAND, 5 )
+		aliases_scrollpanel_sizer.Add( alias6_sizer, 0, wx.EXPAND, 5 )
 		
 		alias7_sizer = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -1402,13 +1427,19 @@ class SettingsDialog ( wx.Dialog ):
 		alias7_sizer.Add( self.alias7_text, 2, wx.ALL, 5 )
 		
 		
-		alias_sizer.Add( alias7_sizer, 0, wx.EXPAND, 5 )
+		aliases_scrollpanel_sizer.Add( alias7_sizer, 0, wx.EXPAND, 5 )
 		
 		
-		self.alises_scrollpanel.SetSizer( alias_sizer )
+		self.alises_scrollpanel.SetSizer( aliases_scrollpanel_sizer )
 		self.alises_scrollpanel.Layout()
-		alias_sizer.Fit( self.alises_scrollpanel )
-		self.settings_tabs.AddPage( self.alises_scrollpanel, u"Псевдонимы", False )
+		aliases_scrollpanel_sizer.Fit( self.alises_scrollpanel )
+		alias_sizer.Add( self.alises_scrollpanel, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		
+		self.aliases_panel.SetSizer( alias_sizer )
+		self.aliases_panel.Layout()
+		alias_sizer.Fit( self.aliases_panel )
+		self.settings_tabs.AddPage( self.aliases_panel, u"Псевдонимы", False )
 		
 		sizer_settings_dialog.Add( self.settings_tabs, 1, wx.EXPAND |wx.ALL, 5 )
 		
