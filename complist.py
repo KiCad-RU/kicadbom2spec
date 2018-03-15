@@ -18,6 +18,7 @@
 import os
 import re
 import time
+import csv
 from copy import deepcopy
 from operator import itemgetter
 
@@ -60,7 +61,7 @@ class CompList():
         self.add_changes_sheet = False
         self.fill_first_usage = False
         self.italic = False
-        self.file_format = u'.ods' # or u'.odt'
+        self.file_format = u'.ods' # u'.odt', u'.csv'
 
         # Current state of filling list of the components
         self._cur_line = 1
@@ -76,7 +77,7 @@ class CompList():
         """
         if self.file_format == u'.ods':
             self._replace_text_in_table(page, label, text, group)
-        else:
+        elif self.file_format == u'.odt':
             for table in page.body.getElementsByType(Table):
                 self._replace_text_in_table(table, label, text, group)
 
@@ -114,7 +115,7 @@ class CompList():
                                         # If used ODS format the text properties stored
                                         # in cell style.
                                         groupStyleName = cell.getAttribute(u'stylename') + u'g'
-                                    else:
+                                    elif self.file_format == u'.odt':
                                         # But if used ODT format the text properties stored
                                         # in paragraph style inside cell.
                                         groupStyleName = u'group-name'
@@ -126,12 +127,12 @@ class CompList():
                                     except:
                                         if self.file_format == u'.ods':
                                             groupStyleName = cell.getAttribute(u'stylename')
-                                        else:
+                                        elif self.file_format == u'.odt':
                                             groupStyleName = p.getAttribute(u'stylename')
                                         groupStyle = deepcopy(self.complist.getStyleByName(groupStyleName))
                                         if self.file_format == u'.ods':
                                             groupStyle.setAttribute(u'name', groupStyleName + u'g')
-                                        else:
+                                        elif self.file_format == u'.odt':
                                             groupStyle.setAttribute(u'name', u'group-name')
                                         groupStyle.addElement(ParagraphProperties(textalign=u'center'))
                                         groupStyle.addElement(TextProperties(textunderlinetype=u'single',
@@ -139,7 +140,7 @@ class CompList():
                                         self.complist.automaticstyles.addElement(groupStyle)
                                     if self.file_format == u'.ods':
                                         cell.setAttribute(u'stylename', groupStyleName + u'g')
-                                    else:
+                                    elif self.file_format == u'.odt':
                                         p.setAttribute(u'stylename', u'group-name')
                                 return
 
@@ -150,7 +151,7 @@ class CompList():
         """
         if self.file_format == u'.ods':
             self._clear_table(page)
-        else:
+        elif self.file_format == u'.odt':
             for table in page.body.getElementsByType(Table):
                 self._clear_table(table)
 
@@ -194,11 +195,11 @@ class CompList():
             self._cur_line = 1
             self._lines_on_page = 32
 
-    def _set_line(self, element):
+    def _get_final_values(self, element):
         """
-        Fill the line in list of the components using element's fields.
-
+        Get list with final fields values of component.
         """
+        values = []
         # Reference
         ref = u''
         if int(element[9]) > 1:
@@ -216,13 +217,26 @@ class CompList():
             # Add "*" mark if component "needs adjusting"
             if element[2]:
                 ref = ref + '*'
-        self._replace_text(self._cur_page, u'#1:%d' % self._cur_line, ref)
-        # Value - concatenate elements 2..6
-        self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, ''.join(element[3:8]))
+        values.append(ref)
+        # Value
+        values.append(''.join(element[3:8]))
         # Count
-        self._replace_text(self._cur_page, u'#3:%d' % self._cur_line, element[9])
-        # Coment
-        self._replace_text(self._cur_page, u'#4:%d' % self._cur_line, element[8])
+        values.append(element[9])
+        # Comment
+        values.append(element[8])
+        return values
+
+    def _set_line(self, element):
+        """
+        Fill the line in list of the components using element's fields.
+
+        """
+        for index, value in enumerate(self._get_final_values(element)):
+            self._replace_text(
+                self._cur_page,
+                u'#{}:{}'.format(index + 1, self._cur_line),
+                value
+                )
 
     def load(self, sch_file_name, comp_fields=None):
         """
@@ -496,7 +510,26 @@ class CompList():
 
         """
         base_path = os.path.dirname(os.path.realpath(__file__))
-        if self.file_format == u'.ods':
+        if self.file_format == u'.csv':
+            # File for writing the list of the components
+            file_name = os.path.splitext(complist_file_name)[0] + self.file_format
+            headers_row = [u'Поз. обозначение', u'Наименование', u'Кол.', u'Примечание']
+            empty_row = ['', '', '', '']
+            with open(file_name, 'wb') as csv_file:
+                csv_writer = csv.writer(csv_file)
+                csv_writer.writerow(headers_row)
+                # Fill list of the components
+                for group in self.components_array:
+                    # One empty line-separator
+                    csv_writer.writerow(empty_row)
+                    if group[0] != u'':
+                        # New group title
+                        csv_writer.writerow(['', group[0], '', ''])
+                    # Write all components of the group into list
+                    for comp in group[1]:
+                        csv_writer.writerow(self._get_final_values(comp))
+            return
+        elif self.file_format == u'.ods':
             # Load the pattern
             pattern = odf.opendocument.load(os.path.join(
                 base_path, u'patterns', u'all_in_one.ods'))
@@ -531,7 +564,7 @@ class CompList():
                 self.complist.automaticstyles.addElement(autostyle)
             for setting in pattern.settings.childNodes[:]:
                 self.complist.settings.addElement(setting)
-        else:
+        elif self.file_format == u'.odt':
             # Patterns for first page
             self._firstPagePatternV1 = odf.opendocument.load(os.path.join(
                 base_path, u'patterns', u'first1.odt'))
@@ -635,7 +668,7 @@ class CompList():
             for table in self.complist_pages:
                 self.complist.spreadsheet.addElement(table)
         # ODT
-        else:
+        elif self.file_format == u'.odt':
             self.complist = self.complist_pages[0]
             if len(self.complist_pages) > 1:
                 # Every style, frame or table must have unique name

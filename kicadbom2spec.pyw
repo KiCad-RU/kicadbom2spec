@@ -2040,6 +2040,8 @@ class Window(gui.MainFrame):
                 complist_dialog.rbutton_odt.SetValue(True)
             elif file_name.endswith(u'.ods'):
                 complist_dialog.rbutton_ods.SetValue(True)
+            elif file_name.endswith(u'.csv'):
+                complist_dialog.rbutton_csv.SetValue(True)
 
         def on_decimal_num_changed(event):
             """
@@ -2112,6 +2114,12 @@ class Window(gui.MainFrame):
             """
             set_file_ext(u'.ods')
 
+        def on_rbutton_csv(event):
+            """
+            Update file extension.
+            """
+            set_file_ext(u'.csv')
+
         complist = CompList()
         complist_dialog = gui.CompListDialog(self)
         # Calculate and set min size for title text control
@@ -2136,6 +2144,7 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_first_usage.Bind(wx.EVT_CHECKBOX, on_first_usage_checked)
         complist_dialog.rbutton_odt.Bind(wx.EVT_RADIOBUTTON, on_rbutton_odt)
         complist_dialog.rbutton_ods.Bind(wx.EVT_RADIOBUTTON, on_rbutton_ods)
+        complist_dialog.rbutton_csv.Bind(wx.EVT_RADIOBUTTON, on_rbutton_csv)
         # Load settings
         add_units = False
         all_components = False
@@ -2189,8 +2198,10 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_open.SetValue(open_complist)
         if file_format == u'.odt':
             complist_dialog.rbutton_odt.SetValue(True)
-        else:
+        elif file_format == u'.ods':
             complist_dialog.rbutton_ods.SetValue(True)
+        elif file_format == u'.csv':
+            complist_dialog.rbutton_csv.SetValue(True)
         # Stamp
         for field in self.stamp_dict.keys():
             field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
@@ -2226,8 +2237,10 @@ class Window(gui.MainFrame):
             open_complist = complist_dialog.checkbox_open.GetValue()
             if complist_dialog.rbutton_odt.GetValue() == True:
                 file_format = u'.odt'
-            else:
+            elif complist_dialog.rbutton_ods.GetValue() == True:
                 file_format = u'.ods'
+            elif complist_dialog.rbutton_csv.GetValue() == True:
+                file_format = u'.csv'
             # Stamp
             for field in self.stamp_dict.keys():
                 field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
@@ -3037,7 +3050,7 @@ def main():
             if args.complist:
                 os.chdir(os.path.abspath(EXEC_PATH))
                 name_and_ext = os.path.splitext(os.path.abspath(args.complist))
-                if name_and_ext[-1] in (u'.odt', u'.ods'):
+                if name_and_ext[-1] in (u'.odt', u'.ods', u'csv'):
                     window.complist_file = ''.join(name_and_ext)
                 else:
                     window.complist_file = name_and_ext[0] + u'.ods'
