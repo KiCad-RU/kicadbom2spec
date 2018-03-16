@@ -835,9 +835,13 @@ class CompListDialog ( wx.Dialog ):
 		sizer_file.Fit( self.panel_file )
 		self.complist_notebook.AddPage( self.panel_file, u"Файл", True )
 		self.panel_options = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		sizer_options_panel = wx.BoxSizer( wx.VERTICAL )
+		
+		self.option_scrolledwindow = wx.ScrolledWindow( self.panel_options, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
+		self.option_scrolledwindow.SetScrollRate( 5, 5 )
 		sizer_options = wx.BoxSizer( wx.VERTICAL )
 		
-		sizer_options_comp = wx.StaticBoxSizer( wx.StaticBox( self.panel_options, wx.ID_ANY, u"Элементы" ), wx.VERTICAL )
+		sizer_options_comp = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Элементы" ), wx.VERTICAL )
 		
 		self.checkbox_all_components = wx.CheckBox( sizer_options_comp.GetStaticBox(), wx.ID_ANY, u"Все элементы", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_all_components.SetToolTipString( u"Если данная функция включена, в перечень элементов будут включены все элементы, не зависимо от того установлен флажок для элемента или нет." )
@@ -852,7 +856,7 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_options.Add( sizer_options_comp, 0, wx.EXPAND|wx.ALL, 5 )
 		
-		sizer_options_format = wx.StaticBoxSizer( wx.StaticBox( self.panel_options, wx.ID_ANY, u"Формат" ), wx.VERTICAL )
+		sizer_options_format = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Формат" ), wx.VERTICAL )
 		
 		self.checkbox_first_usage = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Добавить графы первичной применяемости", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_first_usage.SetToolTipString( u"Если данная опция включена, то форматная рамка будет содержать графы первичной применяемости (24, 25 по ГОСТ2.104-2006)" )
@@ -885,12 +889,64 @@ class CompListDialog ( wx.Dialog ):
 		self.checkbox_italic = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Курсив", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_italic.SetToolTipString( u"Использовать курсив для оформления перечня элементов.\nЕсли отметка отсутствует, будет использован прямой шрифт." )
 		
-		sizer_options_format.Add( self.checkbox_italic, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options_format.Add( self.checkbox_italic, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		self.checkbox_underline = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Подчёркивать наименования групп", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_underline.SetToolTipString( u"Есле параметр отмечен, то наименование групп элементов будет подчёркнуто сплошной линией." )
+		
+		sizer_options_format.Add( self.checkbox_underline, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		
 		sizer_options.Add( sizer_options_format, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
-		sizer_options_other = wx.StaticBoxSizer( wx.StaticBox( self.panel_options, wx.ID_ANY, u"Прочее" ), wx.VERTICAL )
+		sizer_empty_rows = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Пустые строки" ), wx.VERTICAL )
+		
+		sizer_empty_rows_groups = wx.BoxSizer( wx.HORIZONTAL )
+		
+		choice_groupsChoices = [ u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9" ]
+		self.choice_groups = wx.Choice( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_groupsChoices, 0 )
+		self.choice_groups.SetSelection( 1 )
+		sizer_empty_rows_groups.Add( self.choice_groups, 0, wx.ALL, 5 )
+		
+		self.empty_rows_groups_label = wx.StaticText( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"после каждой группы компонентов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.empty_rows_groups_label.Wrap( -1 )
+		sizer_empty_rows_groups.Add( self.empty_rows_groups_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		
+		sizer_empty_rows.Add( sizer_empty_rows_groups, 1, wx.EXPAND, 5 )
+		
+		sizer_empty_rows_above_name = wx.BoxSizer( wx.HORIZONTAL )
+		
+		choice_aboveChoices = [ u"0", u"1" ]
+		self.choice_above = wx.Choice( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_aboveChoices, 0 )
+		self.choice_above.SetSelection( 0 )
+		sizer_empty_rows_above_name.Add( self.choice_above, 0, wx.ALL, 5 )
+		
+		self.empty_rows_above_name_label = wx.StaticText( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"перед наименованием группы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.empty_rows_above_name_label.Wrap( -1 )
+		sizer_empty_rows_above_name.Add( self.empty_rows_above_name_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		
+		sizer_empty_rows.Add( sizer_empty_rows_above_name, 1, wx.EXPAND, 5 )
+		
+		sizer_empty_rows_below_name = wx.BoxSizer( wx.HORIZONTAL )
+		
+		choice_belowChoices = [ u"0", u"1" ]
+		self.choice_below = wx.Choice( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_belowChoices, 0 )
+		self.choice_below.SetSelection( 0 )
+		sizer_empty_rows_below_name.Add( self.choice_below, 0, wx.ALL, 5 )
+		
+		self.empty_rows_below_name_label = wx.StaticText( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"после наименования группы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.empty_rows_below_name_label.Wrap( -1 )
+		sizer_empty_rows_below_name.Add( self.empty_rows_below_name_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		
+		sizer_empty_rows.Add( sizer_empty_rows_below_name, 1, wx.EXPAND, 5 )
+		
+		
+		sizer_options.Add( sizer_empty_rows, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		sizer_options_other = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Прочее" ), wx.VERTICAL )
 		
 		self.checkbox_open = wx.CheckBox( sizer_options_other.GetStaticBox(), wx.ID_ANY, u"Открыть перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_open.SetToolTipString( u"Если этот параметр установлен, то после создания перечня элементов он будет открыт в редакторе по умолчанию." )
@@ -901,9 +957,15 @@ class CompListDialog ( wx.Dialog ):
 		sizer_options.Add( sizer_options_other, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
-		self.panel_options.SetSizer( sizer_options )
+		self.option_scrolledwindow.SetSizer( sizer_options )
+		self.option_scrolledwindow.Layout()
+		sizer_options.Fit( self.option_scrolledwindow )
+		sizer_options_panel.Add( self.option_scrolledwindow, 1, wx.EXPAND, 5 )
+		
+		
+		self.panel_options.SetSizer( sizer_options_panel )
 		self.panel_options.Layout()
-		sizer_options.Fit( self.panel_options )
+		sizer_options_panel.Fit( self.panel_options )
 		self.complist_notebook.AddPage( self.panel_options, u"Параметры", False )
 		self.panel_stamp = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_stamp = wx.BoxSizer( wx.VERTICAL )

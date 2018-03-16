@@ -2154,6 +2154,7 @@ class Window(gui.MainFrame):
         need_changes_sheet = True
         open_complist = False
         italic = True
+        underline = True
         file_format = u'.ods'
         if self.settings.has_section('complist'):
             if self.settings.has_option('complist', 'dialog width'):
@@ -2182,6 +2183,8 @@ class Window(gui.MainFrame):
                 self.stamp_dict['inspector'] = self.settings.get('complist', 'inspector')
             if self.settings.has_option('complist', 'italic'):
                 italic = self.settings.getboolean('complist', 'italic')
+            if self.settings.has_option('complist', 'underline_group_name'):
+                underline = self.settings.getboolean('complist', 'underline_group_name')
             if self.settings.has_option('complist', 'file_format'):
                 file_format = self.settings.get('complist', 'file_format')
 
@@ -2195,6 +2198,7 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_customer_fields.SetValue(need_customer_fields)
         complist_dialog.checkbox_changes_sheet.SetValue(need_changes_sheet)
         complist_dialog.checkbox_italic.SetValue(italic)
+        complist_dialog.checkbox_underline.SetValue(underline)
         complist_dialog.checkbox_open.SetValue(open_complist)
         if file_format == u'.odt':
             complist_dialog.rbutton_odt.SetValue(True)
@@ -2234,6 +2238,7 @@ class Window(gui.MainFrame):
             need_customer_fields = complist_dialog.checkbox_customer_fields.IsChecked()
             need_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
             italic = complist_dialog.checkbox_italic.GetValue()
+            underline = complist_dialog.checkbox_underline.GetValue()
             open_complist = complist_dialog.checkbox_open.GetValue()
             if complist_dialog.rbutton_odt.GetValue() == True:
                 file_format = u'.odt'
@@ -2264,6 +2269,7 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'open', str(open_complist))
             self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
             self.settings.set('complist', 'italic', str(italic))
+            self.settings.set('complist', 'underline_group_name', str(underline))
             self.settings.set('complist', 'file_format', file_format)
             self.complist_file = complist_dialog.filepicker_complist.GetPath()
             self.complist_file = os.path.splitext(self.complist_file)[0] + file_format
@@ -2337,6 +2343,7 @@ class Window(gui.MainFrame):
                 complist.add_changes_sheet = need_changes_sheet
                 complist.fill_first_usage = fill_first_usage
                 complist.italic = italic
+                complist.underline_group_name = underline
                 complist.file_format = file_format
                 # Stamp
                 complist.decimal_num = complist.convert_decimal_num(self.stamp_dict['decimal_num'])

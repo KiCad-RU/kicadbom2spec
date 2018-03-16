@@ -48,6 +48,7 @@ class CompList():
         self.components_array = None
         self.complist_pages = []
 
+        # Stamp fields
         self.developer = u''
         self.verifier = u''
         self.inspector = u''
@@ -56,12 +57,17 @@ class CompList():
         self.title = u''
         self.company = u''
 
+        # Options
         self.add_first_usage = False
         self.add_customer_fields = False
         self.add_changes_sheet = False
         self.fill_first_usage = False
         self.italic = False
+        self.underline_group_name = True
         self.file_format = u'.ods' # u'.odt', u'.csv'
+        self.empty_rows_groups = 1
+        self.empty_rows_above = 0
+        self.empty_rows_below = 0
 
         # Current state of filling list of the components
         self._cur_line = 1
@@ -134,9 +140,16 @@ class CompList():
                                             groupStyle.setAttribute(u'name', groupStyleName + u'g')
                                         elif self.file_format == u'.odt':
                                             groupStyle.setAttribute(u'name', u'group-name')
-                                        groupStyle.addElement(ParagraphProperties(textalign=u'center'))
-                                        groupStyle.addElement(TextProperties(textunderlinetype=u'single',
-                                                                             textunderlinestyle=u'solid',))
+                                        groupStyle.addElement(
+                                            ParagraphProperties(textalign=u'center')
+                                            )
+                                        if self.underline_group_name == True:
+                                            groupStyle.addElement(
+                                                TextProperties(
+                                                    textunderlinetype=u'single',
+                                                    textunderlinestyle=u'solid',
+                                                    )
+                                                )
                                         self.complist.automaticstyles.addElement(groupStyle)
                                     if self.file_format == u'.ods':
                                         cell.setAttribute(u'stylename', groupStyleName + u'g')
