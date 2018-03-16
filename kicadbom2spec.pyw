@@ -2193,6 +2193,8 @@ class Window(gui.MainFrame):
                 complist.empty_row_above_group_name = self.settings.getboolean('complist', 'empty_row_above_group_name')
             if self.settings.has_option('complist', 'empty_row_below_group_name'):
                 complist.empty_row_below_group_name = self.settings.getboolean('complist', 'empty_row_below_group_name')
+            if self.settings.has_option('complist', 'gost_in_group_name'):
+                complist.gost_in_group_name = self.settings.getboolean('complist', 'gost_in_group_name')
 
         # Options
         complist_dialog.filepicker_complist.SetPath(self.complist_file)
@@ -2216,6 +2218,7 @@ class Window(gui.MainFrame):
         complist_dialog.choice_after_groups.SetSelection(complist.empty_rows_after_group)
         complist_dialog.checkbox_above.SetValue(complist.empty_row_above_group_name)
         complist_dialog.checkbox_below.SetValue(complist.empty_row_below_group_name)
+        complist_dialog.checkbox_gost_in_group_name.SetValue(complist.gost_in_group_name)
         # Stamp
         for field in self.stamp_dict.keys():
             field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
@@ -2264,6 +2267,7 @@ class Window(gui.MainFrame):
             complist.empty_rows_after_group = complist_dialog.choice_after_groups.GetSelection()
             complist.empty_row_above_group_name = complist_dialog.checkbox_above.GetValue()
             complist.empty_row_below_group_name = complist_dialog.checkbox_below.GetValue()
+            complist.gost_in_group_name = complist_dialog.checkbox_gost_in_group_name.GetValue()
 
             # Stamp
             for field in self.stamp_dict.keys():
@@ -2295,6 +2299,7 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'empty_rows_after_group', str(complist.empty_rows_after_group))
             self.settings.set('complist', 'empty_row_above_group_name', str(complist.empty_row_above_group_name))
             self.settings.set('complist', 'empty_row_below_group_name', str(complist.empty_row_below_group_name))
+            self.settings.set('complist', 'gost_in_group_name', str(complist.gost_in_group_name))
 
             comp_fields = []
             grid_values = self.grid.get_values()

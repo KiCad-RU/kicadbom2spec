@@ -892,9 +892,14 @@ class CompListDialog ( wx.Dialog ):
 		sizer_options_format.Add( self.checkbox_italic, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		self.checkbox_underline = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Подчёркивать наименования групп", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_underline.SetToolTipString( u"Есле параметр отмечен, то наименование групп элементов будет подчёркнуто сплошной линией." )
+		self.checkbox_underline.SetToolTipString( u"Если параметр отмечен, то наименование групп элементов будет подчёркнуто сплошной линией." )
 		
 		sizer_options_format.Add( self.checkbox_underline, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		self.checkbox_gost_in_group_name = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Указывать ГОСТ в наименовании группы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_gost_in_group_name.SetToolTipString( u"Если параметр отмечен, то ГОСТ для каждой марки компонентов будет указан в заголовке группы, а не в строке компонента." )
+		
+		sizer_options_format.Add( self.checkbox_gost_in_group_name, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		
 		sizer_options.Add( sizer_options_format, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )

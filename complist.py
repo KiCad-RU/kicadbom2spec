@@ -68,6 +68,7 @@ class CompList():
         self.empty_rows_after_group = 1
         self.empty_row_above_group_name = False
         self.empty_row_below_group_name = False
+        self.gost_in_group_name = False
 
         # Current state of filling list of the components
         self._cur_line = 1
@@ -137,7 +138,8 @@ class CompList():
                                             groupStyleName = p.getAttribute(u'stylename')
                                         groupStyle = deepcopy(self.complist.getStyleByName(groupStyleName))
                                         if self.file_format == u'.ods':
-                                            groupStyle.setAttribute(u'name', groupStyleName + u'g')
+                                            groupStyleName += u'g'
+                                            groupStyle.setAttribute(u'name', groupStyleName)
                                         elif self.file_format == u'.odt':
                                             groupStyle.setAttribute(u'name', u'group-name')
                                         groupStyle.addElement(
@@ -152,7 +154,7 @@ class CompList():
                                                 )
                                         self.complist.automaticstyles.addElement(groupStyle)
                                     if self.file_format == u'.ods':
-                                        cell.setAttribute(u'stylename', groupStyleName + u'g')
+                                        cell.setAttribute(u'stylename', groupStyleName)
                                     elif self.file_format == u'.odt':
                                         p.setAttribute(u'stylename', u'group-name')
                                 return
@@ -231,13 +233,28 @@ class CompList():
             if element[2]:
                 ref = ref + '*'
         values.append(ref)
-        # Value
-        values.append(''.join(element[3:8]))
+        # Name
+        if self.gost_in_group_name == True and element[3] != '':
+            # GOST placed in name of the group and don't needed here
+            values.append(''.join(element[3:7]))
+        else:
+            values.append(''.join(element[3:8]))
         # Count
         values.append(element[9])
         # Comment
         values.append(element[8])
         return values
+
+    def _get_group_names_with_gost(self, group):
+        """
+        Get list of group names with GOST for every mark of components.
+        """
+        group_names = []
+        for comp in group[1]:
+            if comp[3] != '' and comp[7] != '':
+                # Format: "Groupname Mark GOST"
+                group_names.append(u' '.join([group[0], comp[3], comp[7]]))
+        return list(set(group_names))
 
     def _set_line(self, element):
         """
@@ -537,7 +554,12 @@ class CompList():
                         # New group title
                         if self.empty_row_above_group_name == True:
                             csv_writer.writerow(empty_row)
-                        csv_writer.writerow(['', group[0], '', ''])
+                        group_names = self._get_group_names_with_gost(group)
+                        if self.gost_in_group_name == True and group_names != []:
+                            for name in group_names:
+                                csv_writer.writerow(['', name, '', ''])
+                        else:
+                            csv_writer.writerow(['', group[0], '', ''])
                         if self.empty_row_below_group_name == True:
                             csv_writer.writerow(empty_row)
                     # Write all components of the group into list
@@ -627,8 +649,14 @@ class CompList():
                     # If name of group at bottom of table without elements, go to beginning of a new table
                     while self._cur_line != 1:
                         self._next_line()
-                self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, group[0], group=True)
-                self._next_line()
+                group_names = self._get_group_names_with_gost(group)
+                if self.gost_in_group_name == True and group_names != []:
+                    for name in group_names:
+                        self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, name, group=True)
+                        self._next_line()
+                else:
+                    self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, group[0], group=True)
+                    self._next_line()
                 if self.empty_row_below_group_name == True:
                         self._next_line()
             # Place all components of the group into list
