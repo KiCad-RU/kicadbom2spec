@@ -903,45 +903,29 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_empty_rows_groups = wx.BoxSizer( wx.HORIZONTAL )
 		
-		choice_groupsChoices = [ u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9" ]
-		self.choice_groups = wx.Choice( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_groupsChoices, 0 )
-		self.choice_groups.SetSelection( 1 )
-		sizer_empty_rows_groups.Add( self.choice_groups, 0, wx.ALL, 5 )
+		choice_after_groupsChoices = [ u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9" ]
+		self.choice_after_groups = wx.Choice( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_after_groupsChoices, 0 )
+		self.choice_after_groups.SetSelection( 1 )
+		sizer_empty_rows_groups.Add( self.choice_after_groups, 0, wx.ALL, 5 )
 		
-		self.empty_rows_groups_label = wx.StaticText( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"после каждой группы компонентов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.empty_rows_groups_label = wx.StaticText( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"пустых строк после каждой группы", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.empty_rows_groups_label.Wrap( -1 )
+		self.empty_rows_groups_label.SetToolTipString( u"После каждой группы (с наименованием или без) будет добавлено указанное число пустых строк." )
+		
 		sizer_empty_rows_groups.Add( self.empty_rows_groups_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		
 		sizer_empty_rows.Add( sizer_empty_rows_groups, 1, wx.EXPAND, 5 )
 		
-		sizer_empty_rows_above_name = wx.BoxSizer( wx.HORIZONTAL )
+		self.checkbox_above = wx.CheckBox( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"Пустая строка перед наименованием группы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_above.SetToolTipString( u"Если отмечено, то перед наименованием группы будет всталена одна пустая строка." )
 		
-		choice_aboveChoices = [ u"0", u"1" ]
-		self.choice_above = wx.Choice( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_aboveChoices, 0 )
-		self.choice_above.SetSelection( 0 )
-		sizer_empty_rows_above_name.Add( self.choice_above, 0, wx.ALL, 5 )
+		sizer_empty_rows.Add( self.checkbox_above, 0, wx.ALL|wx.EXPAND, 5 )
 		
-		self.empty_rows_above_name_label = wx.StaticText( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"перед наименованием группы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.empty_rows_above_name_label.Wrap( -1 )
-		sizer_empty_rows_above_name.Add( self.empty_rows_above_name_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		self.checkbox_below = wx.CheckBox( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"Пустая строка после наименования группы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_below.SetToolTipString( u"Если отмечено, то после наименования группы будет всталена одна пустая строка." )
 		
-		
-		sizer_empty_rows.Add( sizer_empty_rows_above_name, 1, wx.EXPAND, 5 )
-		
-		sizer_empty_rows_below_name = wx.BoxSizer( wx.HORIZONTAL )
-		
-		choice_belowChoices = [ u"0", u"1" ]
-		self.choice_below = wx.Choice( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_belowChoices, 0 )
-		self.choice_below.SetSelection( 0 )
-		sizer_empty_rows_below_name.Add( self.choice_below, 0, wx.ALL, 5 )
-		
-		self.empty_rows_below_name_label = wx.StaticText( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"после наименования группы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.empty_rows_below_name_label.Wrap( -1 )
-		sizer_empty_rows_below_name.Add( self.empty_rows_below_name_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
-		
-		
-		sizer_empty_rows.Add( sizer_empty_rows_below_name, 1, wx.EXPAND, 5 )
+		sizer_empty_rows.Add( self.checkbox_below, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		
 		sizer_options.Add( sizer_empty_rows, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )

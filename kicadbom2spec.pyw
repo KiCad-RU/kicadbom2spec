@@ -2122,6 +2122,7 @@ class Window(gui.MainFrame):
 
         complist = CompList()
         complist_dialog = gui.CompListDialog(self)
+
         # Calculate and set min size for title text control
         complist_dialog.Fit()
         textctl_minsize = complist_dialog.stamp_title_text.GetSize()
@@ -2129,6 +2130,7 @@ class Window(gui.MainFrame):
         textctl_minsize.SetWidth(-1)
         complist_dialog.stamp_title_text.SetMinSize(textctl_minsize)
         complist_dialog.SetInitialSize()
+
         # Set min size of dialog
         complist_dialog.Fit()
         complist_dialog.SetSizeHints(
@@ -2137,6 +2139,7 @@ class Window(gui.MainFrame):
             -1,
             complist_dialog.GetSize().GetHeight()
             )
+
         # Events
         complist_dialog.filepicker_complist.Bind(wx.EVT_FILEPICKER_CHANGED, on_file_name_changed)
         complist_dialog.stamp_decimal_num_text.Bind(wx.EVT_TEXT, on_decimal_num_changed)
@@ -2145,17 +2148,12 @@ class Window(gui.MainFrame):
         complist_dialog.rbutton_odt.Bind(wx.EVT_RADIOBUTTON, on_rbutton_odt)
         complist_dialog.rbutton_ods.Bind(wx.EVT_RADIOBUTTON, on_rbutton_ods)
         complist_dialog.rbutton_csv.Bind(wx.EVT_RADIOBUTTON, on_rbutton_csv)
+
         # Load settings
-        add_units = False
         all_components = False
-        need_first_usage = True
-        fill_first_usage = False
-        need_customer_fields = False
-        need_changes_sheet = True
+        add_units = False
         open_complist = False
-        italic = True
-        underline = True
-        file_format = u'.ods'
+
         if self.settings.has_section('complist'):
             if self.settings.has_option('complist', 'dialog width'):
                complist_dialog.SetSize(
@@ -2165,47 +2163,59 @@ class Window(gui.MainFrame):
                         )
                     )
                complist_dialog.CentreOnParent()
-            if self.settings.has_option('complist', 'units'):
-                add_units = self.settings.getboolean('complist', 'units')
+
             if self.settings.has_option('complist', 'all'):
                 all_components = self.settings.getboolean('complist', 'all')
-            if self.settings.has_option('complist', 'first_usage'):
-                need_first_usage = self.settings.getboolean('complist', 'first_usage')
-            if self.settings.has_option('complist', 'fill_first_usage'):
-                fill_first_usage = self.settings.getboolean('complist', 'fill_first_usage')
-            if self.settings.has_option('complist', 'customer_fields'):
-                need_customer_fields = self.settings.getboolean('complist', 'customer_fields')
-            if self.settings.has_option('complist', 'changes_sheet'):
-                need_changes_sheet = self.settings.getboolean('complist', 'changes_sheet')
+            if self.settings.has_option('complist', 'units'):
+                add_units = self.settings.getboolean('complist', 'units')
             if self.settings.has_option('complist', 'open'):
                 open_complist = self.settings.getboolean('complist', 'open')
             if self.settings.has_option('complist', 'inspector'):
                 self.stamp_dict['inspector'] = self.settings.get('complist', 'inspector')
-            if self.settings.has_option('complist', 'italic'):
-                italic = self.settings.getboolean('complist', 'italic')
-            if self.settings.has_option('complist', 'underline_group_name'):
-                underline = self.settings.getboolean('complist', 'underline_group_name')
+
             if self.settings.has_option('complist', 'file_format'):
-                file_format = self.settings.get('complist', 'file_format')
+                complist.file_format = self.settings.get('complist', 'file_format')
+            if self.settings.has_option('complist', 'first_usage'):
+                complist.add_first_usage = self.settings.getboolean('complist', 'first_usage')
+            if self.settings.has_option('complist', 'fill_first_usage'):
+                complist.fill_first_usage = self.settings.getboolean('complist', 'fill_first_usage')
+            if self.settings.has_option('complist', 'customer_fields'):
+                complist.add_customer_fields = self.settings.getboolean('complist', 'customer_fields')
+            if self.settings.has_option('complist', 'changes_sheet'):
+                complist.add_changes_sheet = self.settings.getboolean('complist', 'changes_sheet')
+            if self.settings.has_option('complist', 'italic'):
+                complist.italic = self.settings.getboolean('complist', 'italic')
+            if self.settings.has_option('complist', 'underline_group_name'):
+                complist.underline_group_name = self.settings.getboolean('complist', 'underline_group_name')
+            if self.settings.has_option('complist', 'empty_rows_after_group'):
+                complist.empty_rows_after_group = self.settings.getint('complist', 'empty_rows_after_group')
+            if self.settings.has_option('complist', 'empty_row_above_group_name'):
+                complist.empty_row_above_group_name = self.settings.getboolean('complist', 'empty_row_above_group_name')
+            if self.settings.has_option('complist', 'empty_row_below_group_name'):
+                complist.empty_row_below_group_name = self.settings.getboolean('complist', 'empty_row_below_group_name')
 
         # Options
         complist_dialog.filepicker_complist.SetPath(self.complist_file)
-        complist_dialog.checkbox_add_units.SetValue(add_units)
-        complist_dialog.checkbox_all_components.SetValue(all_components)
-        complist_dialog.checkbox_first_usage.SetValue(need_first_usage)
-        complist_dialog.checkbox_first_usage_fill.SetValue(fill_first_usage)
-        complist_dialog.checkbox_first_usage_fill.Enable(need_first_usage)
-        complist_dialog.checkbox_customer_fields.SetValue(need_customer_fields)
-        complist_dialog.checkbox_changes_sheet.SetValue(need_changes_sheet)
-        complist_dialog.checkbox_italic.SetValue(italic)
-        complist_dialog.checkbox_underline.SetValue(underline)
-        complist_dialog.checkbox_open.SetValue(open_complist)
-        if file_format == u'.odt':
+        if complist.file_format == u'.odt':
             complist_dialog.rbutton_odt.SetValue(True)
-        elif file_format == u'.ods':
+        elif complist.file_format == u'.ods':
             complist_dialog.rbutton_ods.SetValue(True)
-        elif file_format == u'.csv':
+        elif complist.file_format == u'.csv':
             complist_dialog.rbutton_csv.SetValue(True)
+        complist_dialog.checkbox_all_components.SetValue(all_components)
+        complist_dialog.checkbox_add_units.SetValue(add_units)
+        complist_dialog.checkbox_open.SetValue(open_complist)
+
+        complist_dialog.checkbox_first_usage.SetValue(complist.add_first_usage)
+        complist_dialog.checkbox_first_usage_fill.SetValue(complist.fill_first_usage)
+        complist_dialog.checkbox_first_usage_fill.Enable(complist.add_first_usage)
+        complist_dialog.checkbox_customer_fields.SetValue(complist.add_customer_fields)
+        complist_dialog.checkbox_changes_sheet.SetValue(complist.add_changes_sheet)
+        complist_dialog.checkbox_italic.SetValue(complist.italic)
+        complist_dialog.checkbox_underline.SetValue(complist.underline_group_name)
+        complist_dialog.choice_after_groups.SetSelection(complist.empty_rows_after_group)
+        complist_dialog.checkbox_above.SetValue(complist.empty_row_above_group_name)
+        complist_dialog.checkbox_below.SetValue(complist.empty_row_below_group_name)
         # Stamp
         for field in self.stamp_dict.keys():
             field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
@@ -2230,22 +2240,31 @@ class Window(gui.MainFrame):
             wx.BeginBusyCursor()
             wx.SafeYield()
 
-            # Save settings from complist dialog
-            add_units = complist_dialog.checkbox_add_units.IsChecked()
-            all_components = complist_dialog.checkbox_all_components.IsChecked()
-            need_first_usage = complist_dialog.checkbox_first_usage.IsChecked()
-            fill_first_usage = complist_dialog.checkbox_first_usage_fill.IsChecked()
-            need_customer_fields = complist_dialog.checkbox_customer_fields.IsChecked()
-            need_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
-            italic = complist_dialog.checkbox_italic.GetValue()
-            underline = complist_dialog.checkbox_underline.GetValue()
-            open_complist = complist_dialog.checkbox_open.GetValue()
+            # File name and format
             if complist_dialog.rbutton_odt.GetValue() == True:
-                file_format = u'.odt'
+                complist.file_format = u'.odt'
             elif complist_dialog.rbutton_ods.GetValue() == True:
-                file_format = u'.ods'
+                complist.file_format = u'.ods'
             elif complist_dialog.rbutton_csv.GetValue() == True:
-                file_format = u'.csv'
+                complist.file_format = u'.csv'
+            self.complist_file = complist_dialog.filepicker_complist.GetPath()
+            self.complist_file = os.path.splitext(self.complist_file)[0] + complist.file_format
+
+            # Save settings from complist dialog
+            all_components = complist_dialog.checkbox_all_components.IsChecked()
+            add_units = complist_dialog.checkbox_add_units.IsChecked()
+            open_complist = complist_dialog.checkbox_open.GetValue()
+
+            complist.add_first_usage = complist_dialog.checkbox_first_usage.IsChecked()
+            complist.fill_first_usage = complist_dialog.checkbox_first_usage_fill.IsChecked()
+            complist.add_customer_fields = complist_dialog.checkbox_customer_fields.IsChecked()
+            complist.add_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
+            complist.italic = complist_dialog.checkbox_italic.GetValue()
+            complist.underline_group_name = complist_dialog.checkbox_underline.GetValue()
+            complist.empty_rows_after_group = complist_dialog.choice_after_groups.GetSelection()
+            complist.empty_row_above_group_name = complist_dialog.checkbox_above.GetValue()
+            complist.empty_row_below_group_name = complist_dialog.checkbox_below.GetValue()
+
             # Stamp
             for field in self.stamp_dict.keys():
                 field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
@@ -2258,21 +2277,25 @@ class Window(gui.MainFrame):
                         self.saved = False
                         self.menuitem_save_sch.Enable(True)
 
+            # Save settings
             if not self.settings.has_section('complist'):
                 self.settings.add_section('complist')
-            self.settings.set('complist', 'units', str(add_units))
             self.settings.set('complist', 'all', str(all_components))
-            self.settings.set('complist', 'first_usage', str(need_first_usage))
-            self.settings.set('complist', 'fill_first_usage', str(fill_first_usage))
-            self.settings.set('complist', 'customer_fields', str(need_customer_fields))
-            self.settings.set('complist', 'changes_sheet', str(need_changes_sheet))
+            self.settings.set('complist', 'units', str(add_units))
             self.settings.set('complist', 'open', str(open_complist))
             self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
-            self.settings.set('complist', 'italic', str(italic))
-            self.settings.set('complist', 'underline_group_name', str(underline))
-            self.settings.set('complist', 'file_format', file_format)
-            self.complist_file = complist_dialog.filepicker_complist.GetPath()
-            self.complist_file = os.path.splitext(self.complist_file)[0] + file_format
+
+            self.settings.set('complist', 'file_format', complist.file_format)
+            self.settings.set('complist', 'first_usage', str(complist.add_first_usage))
+            self.settings.set('complist', 'fill_first_usage', str(complist.fill_first_usage))
+            self.settings.set('complist', 'customer_fields', str(complist.add_customer_fields))
+            self.settings.set('complist', 'changes_sheet', str(complist.add_changes_sheet))
+            self.settings.set('complist', 'italic', str(complist.italic))
+            self.settings.set('complist', 'underline_group_name', str(complist.underline_group_name))
+            self.settings.set('complist', 'empty_rows_after_group', str(complist.empty_rows_after_group))
+            self.settings.set('complist', 'empty_row_above_group_name', str(complist.empty_row_above_group_name))
+            self.settings.set('complist', 'empty_row_below_group_name', str(complist.empty_row_below_group_name))
+
             comp_fields = []
             grid_values = self.grid.get_values()
             for row in grid_values:
@@ -2337,14 +2360,6 @@ class Window(gui.MainFrame):
             try:
                 # Load components
                 complist.load(self.schematic_file, comp_fields)
-                # Settings
-                complist.add_first_usage = need_first_usage
-                complist.add_customer_fields = need_customer_fields
-                complist.add_changes_sheet = need_changes_sheet
-                complist.fill_first_usage = fill_first_usage
-                complist.italic = italic
-                complist.underline_group_name = underline
-                complist.file_format = file_format
                 # Stamp
                 complist.decimal_num = complist.convert_decimal_num(self.stamp_dict['decimal_num'])
                 complist.developer = self.stamp_dict['developer']

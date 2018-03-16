@@ -58,16 +58,16 @@ class CompList():
         self.company = u''
 
         # Options
+        self.file_format = u'.ods' # u'.odt', u'.csv'
         self.add_first_usage = False
+        self.fill_first_usage = False
         self.add_customer_fields = False
         self.add_changes_sheet = False
-        self.fill_first_usage = False
         self.italic = False
         self.underline_group_name = True
-        self.file_format = u'.ods' # u'.odt', u'.csv'
-        self.empty_rows_groups = 1
-        self.empty_rows_above = 0
-        self.empty_rows_below = 0
+        self.empty_rows_after_group = 1
+        self.empty_row_above_group_name = False
+        self.empty_row_below_group_name = False
 
         # Current state of filling list of the components
         self._cur_line = 1
@@ -147,7 +147,7 @@ class CompList():
                                             groupStyle.addElement(
                                                 TextProperties(
                                                     textunderlinetype=u'single',
-                                                    textunderlinestyle=u'solid',
+                                                    textunderlinestyle=u'solid'
                                                     )
                                                 )
                                         self.complist.automaticstyles.addElement(groupStyle)
@@ -453,7 +453,7 @@ class CompList():
             else:
                 if len(temp_noname_group[1]) > 0:
                     comp_lines.append(temp_noname_group)
-        # Sort grops by reference (ref & num) of first element
+        # Sort groups by reference (ref & num) of first element
         comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][1])
         comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][0])
         # Combining the identical elements in one line
@@ -533,14 +533,19 @@ class CompList():
                 csv_writer.writerow(headers_row)
                 # Fill list of the components
                 for group in self.components_array:
-                    # One empty line-separator
-                    csv_writer.writerow(empty_row)
                     if group[0] != u'':
                         # New group title
+                        if self.empty_row_above_group_name == True:
+                            csv_writer.writerow(empty_row)
                         csv_writer.writerow(['', group[0], '', ''])
+                        if self.empty_row_below_group_name == True:
+                            csv_writer.writerow(empty_row)
                     # Write all components of the group into list
                     for comp in group[1]:
                         csv_writer.writerow(self._get_final_values(comp))
+                    # Empty rows after group
+                    for _ in range(self.empty_rows_after_group):
+                        csv_writer.writerow(empty_row)
             return
         elif self.file_format == u'.ods':
             # Load the pattern
@@ -614,21 +619,24 @@ class CompList():
 
         # Fill list of the components
         for group in self.components_array:
-            # One empty line-separator
-            if not (self._cur_page_num == 1 and self._cur_line == 1):
-                self._next_line() # Skip one line
-
             if group[0] != u'':
                 # New group title
+                if self.empty_row_above_group_name == True:
+                        self._next_line()
                 if self._cur_line == self._lines_on_page:
                     # If name of group at bottom of table without elements, go to beginning of a new table
                     while self._cur_line != 1:
                         self._next_line()
                 self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, group[0], group=True)
-                self._next_line() # Skip one line
+                self._next_line()
+                if self.empty_row_below_group_name == True:
+                        self._next_line()
             # Place all components of the group into list
             for comp in group[1]:
                 self._set_line(comp)
+                self._next_line()
+            # Empty rows after group
+            for _ in range(self.empty_rows_after_group):
                 self._next_line()
 
         # Current table not empty - save it
