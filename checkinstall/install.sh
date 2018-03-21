@@ -5,8 +5,10 @@ mkdir -p $INSTDIR
 mkdir -p $INSTDIR/bitmaps
 mkdir -p $INSTDIR/doc
 mkdir -p $INSTDIR/doc/images
+mkdir -p $INSTDIR/patterns
 mkdir -p $INSTDIR/sample
 cp -f ../bitmaps/* $INSTDIR/bitmaps
+cp -f ../patterns/* $INSTDIR/patterns
 cp -f ../doc/images/* $INSTDIR/doc/images
 cp -f ../doc/user_manual.html $INSTDIR/doc
 cp -f ../sample/* $INSTDIR/sample
@@ -17,7 +19,6 @@ cp -f ../controls.py $INSTDIR
 cp -f ../gui.py $INSTDIR
 cp -f ../kicadbom2spec.pyw $INSTDIR
 cp -f ../kicadsch.py $INSTDIR
-cp -f ../pattern.ods $INSTDIR
 cp -f ../README $INSTDIR
 cp -f ../settings.ini $INSTDIR
 cp -f ../version $INSTDIR

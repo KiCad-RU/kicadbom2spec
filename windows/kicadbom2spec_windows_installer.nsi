@@ -229,6 +229,10 @@ SectionGroup /e "!${PROG_NAME}" secgrp_main
 		SetOutPath "$INSTDIR\bitmaps"
 		File "..\bitmaps\*.*"
 
+		CreateDirectory "$INSTDIR\patterns"
+		SetOutPath "$INSTDIR\patterns"
+		File "..\patterns\*.*"
+
 		CreateDirectory "$INSTDIR\doc"
 		SetOutPath "$INSTDIR\doc"
 		File "..\doc\user_manual.html"
@@ -247,7 +251,6 @@ SectionGroup /e "!${PROG_NAME}" secgrp_main
 		File "..\controls.py"
 		File "..\kicadsch.py"
 		File "..\settings.ini"
-		File "..\pattern.ods"
 		File "..\gui.py"
 		File "..\kicadbom2spec.pyw"
 		File "..\version"
