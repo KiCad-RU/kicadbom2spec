@@ -797,7 +797,7 @@ class AboutDialog ( wx.Dialog ):
 class CompListDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( 400,480 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Создание перечня элементов", pos = wx.DefaultPosition, size = wx.Size( 430,480 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER )
 		
 		self.SetSizeHintsSz( wx.Size( -1,-1 ), wx.DefaultSize )
 		
@@ -856,6 +856,47 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_options.Add( sizer_options_comp, 0, wx.EXPAND|wx.ALL, 5 )
 		
+		sizer_groups = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Группы элементов" ), wx.VERTICAL )
+		
+		sizer_empty_rows_groups = wx.BoxSizer( wx.HORIZONTAL )
+		
+		choice_after_groupsChoices = [ u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9" ]
+		self.choice_after_groups = wx.Choice( sizer_groups.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_after_groupsChoices, 0 )
+		self.choice_after_groups.SetSelection( 1 )
+		sizer_empty_rows_groups.Add( self.choice_after_groups, 0, wx.ALL, 5 )
+		
+		self.empty_rows_groups_label = wx.StaticText( sizer_groups.GetStaticBox(), wx.ID_ANY, u"пустых строк между разными типами элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.empty_rows_groups_label.Wrap( -1 )
+		self.empty_rows_groups_label.SetToolTipString( u"Между элементами с разным обозначением будет вставлено указанное число пустых строк." )
+		
+		sizer_empty_rows_groups.Add( self.empty_rows_groups_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		
+		sizer_groups.Add( sizer_empty_rows_groups, 1, wx.EXPAND, 5 )
+		
+		self.checkbox_underline = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Подчёркивать наименования групп", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_underline.SetToolTipString( u"Если параметр отмечен, то наименование группы элементов будет подчёркнуто сплошной линией." )
+		
+		sizer_groups.Add( self.checkbox_underline, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		self.checkbox_center = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Наименование группы по центру", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_center.SetToolTipString( u"Если параметр отмечен, то наименование группы элементов будет расположено по центру ячейки таблицы." )
+		
+		sizer_groups.Add( self.checkbox_center, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		self.checkbox_gost_in_group_name = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Указывать ГОСТ в наименовании группы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_gost_in_group_name.SetToolTipString( u"Если параметр отмечен, то ГОСТ для каждой марки компонентов будет указан в заголовке группы, а не в строке компонента." )
+		
+		sizer_groups.Add( self.checkbox_gost_in_group_name, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.checkbox_singular_group_name = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Указывать наименование группы единственного\nэлемента в строке компонента", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_singular_group_name.SetToolTipString( u"По умолчанию, для каждой группы наименование указывается в виде заголовка на отдельной строке.\nЕсли параметр отмечен, то наименование группы состоящей из одного элемента будет указано в наименовании этого элемента, а не отдельно." )
+		
+		sizer_groups.Add( self.checkbox_singular_group_name, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		
+		sizer_options.Add( sizer_groups, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
 		sizer_options_format = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Формат" ), wx.VERTICAL )
 		
 		self.checkbox_first_usage = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Добавить графы первичной применяемости", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -891,49 +932,8 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_options_format.Add( self.checkbox_italic, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
-		self.checkbox_underline = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Подчёркивать наименования групп", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_underline.SetToolTipString( u"Если параметр отмечен, то наименование групп элементов будет подчёркнуто сплошной линией." )
-		
-		sizer_options_format.Add( self.checkbox_underline, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
-		
-		self.checkbox_gost_in_group_name = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Указывать ГОСТ в наименовании группы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_gost_in_group_name.SetToolTipString( u"Если параметр отмечен, то ГОСТ для каждой марки компонентов будет указан в заголовке группы, а не в строке компонента." )
-		
-		sizer_options_format.Add( self.checkbox_gost_in_group_name, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
-		
 		
 		sizer_options.Add( sizer_options_format, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
-		
-		sizer_empty_rows = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Пустые строки" ), wx.VERTICAL )
-		
-		sizer_empty_rows_groups = wx.BoxSizer( wx.HORIZONTAL )
-		
-		choice_after_groupsChoices = [ u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9" ]
-		self.choice_after_groups = wx.Choice( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_after_groupsChoices, 0 )
-		self.choice_after_groups.SetSelection( 1 )
-		sizer_empty_rows_groups.Add( self.choice_after_groups, 0, wx.ALL, 5 )
-		
-		self.empty_rows_groups_label = wx.StaticText( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"пустых строк после каждой группы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.empty_rows_groups_label.Wrap( -1 )
-		self.empty_rows_groups_label.SetToolTipString( u"После каждой группы (с наименованием или без) будет добавлено указанное число пустых строк." )
-		
-		sizer_empty_rows_groups.Add( self.empty_rows_groups_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
-		
-		
-		sizer_empty_rows.Add( sizer_empty_rows_groups, 1, wx.EXPAND, 5 )
-		
-		self.checkbox_above = wx.CheckBox( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"Пустая строка перед наименованием группы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_above.SetToolTipString( u"Если отмечено, то перед наименованием группы будет всталена одна пустая строка." )
-		
-		sizer_empty_rows.Add( self.checkbox_above, 0, wx.ALL|wx.EXPAND, 5 )
-		
-		self.checkbox_below = wx.CheckBox( sizer_empty_rows.GetStaticBox(), wx.ID_ANY, u"Пустая строка после наименования группы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_below.SetToolTipString( u"Если отмечено, то после наименования группы будет всталена одна пустая строка." )
-		
-		sizer_empty_rows.Add( self.checkbox_below, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
-		
-		
-		sizer_options.Add( sizer_empty_rows, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		sizer_options_other = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Прочее" ), wx.VERTICAL )
 		
@@ -1132,17 +1132,17 @@ class SettingsDialog ( wx.Dialog ):
 		auto_groups_buttons_sizer = wx.BoxSizer( wx.VERTICAL )
 		
 		self.auto_groups_add_button = wx.Button( self.general_panel, wx.ID_ANY, u"Добавить", wx.DefaultPosition, wx.DefaultSize, 0 )
-		auto_groups_buttons_sizer.Add( self.auto_groups_add_button, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+		auto_groups_buttons_sizer.Add( self.auto_groups_add_button, 0, wx.ALIGN_RIGHT|wx.ALL|wx.EXPAND, 5 )
 		
 		self.auto_groups_edit_button = wx.Button( self.general_panel, wx.ID_ANY, u"Изменить", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.auto_groups_edit_button.Enable( False )
 		
-		auto_groups_buttons_sizer.Add( self.auto_groups_edit_button, 0, wx.ALL|wx.ALIGN_RIGHT, 5 )
+		auto_groups_buttons_sizer.Add( self.auto_groups_edit_button, 0, wx.ALL|wx.ALIGN_RIGHT|wx.EXPAND, 5 )
 		
 		self.auto_groups_remove_button = wx.Button( self.general_panel, wx.ID_ANY, u"Удалить", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.auto_groups_remove_button.Enable( False )
 		
-		auto_groups_buttons_sizer.Add( self.auto_groups_remove_button, 0, wx.ALL|wx.ALIGN_RIGHT, 5 )
+		auto_groups_buttons_sizer.Add( self.auto_groups_remove_button, 0, wx.ALL|wx.ALIGN_RIGHT|wx.EXPAND, 5 )
 		
 		
 		auto_groups_sizer.Add( auto_groups_buttons_sizer, 0, 0, 5 )
@@ -1494,6 +1494,59 @@ class SettingsDialog ( wx.Dialog ):
 		self.aliases_panel.Layout()
 		alias_sizer.Fit( self.aliases_panel )
 		self.settings_tabs.AddPage( self.aliases_panel, u"Псевдонимы", False )
+		self.group_names_panel = wx.Panel( self.settings_tabs, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		group_names_panel_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.group_names_statictext = wx.StaticText( self.group_names_panel, wx.ID_ANY, u"Наименования групп", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.group_names_statictext.Wrap( -1 )
+		self.group_names_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		
+		group_names_panel_sizer.Add( self.group_names_statictext, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		
+		self.m_staticline11 = wx.StaticLine( self.group_names_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		group_names_panel_sizer.Add( self.m_staticline11, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		group_names_editor_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.group_names_scrollpanel = wx.ScrolledWindow( self.group_names_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
+		self.group_names_scrollpanel.SetScrollRate( 5, 5 )
+		group_names_sp_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.group_names_listctrl = wx.ListCtrl( self.group_names_scrollpanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_HRULES|wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VRULES )
+		group_names_sp_sizer.Add( self.group_names_listctrl, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.group_names_scrollpanel.SetSizer( group_names_sp_sizer )
+		self.group_names_scrollpanel.Layout()
+		group_names_sp_sizer.Fit( self.group_names_scrollpanel )
+		group_names_editor_sizer.Add( self.group_names_scrollpanel, 1, wx.EXPAND, 5 )
+		
+		group_names_buttons_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.group_names_add_button = wx.Button( self.group_names_panel, wx.ID_ANY, u"Добавить", wx.DefaultPosition, wx.DefaultSize, 0 )
+		group_names_buttons_sizer.Add( self.group_names_add_button, 0, wx.ALIGN_RIGHT|wx.ALL|wx.EXPAND, 5 )
+		
+		self.group_names_edit_button = wx.Button( self.group_names_panel, wx.ID_ANY, u"Изменить", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.group_names_edit_button.Enable( False )
+		
+		group_names_buttons_sizer.Add( self.group_names_edit_button, 0, wx.ALL|wx.ALIGN_RIGHT|wx.EXPAND, 5 )
+		
+		self.group_names_remove_button = wx.Button( self.group_names_panel, wx.ID_ANY, u"Удалить", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.group_names_remove_button.Enable( False )
+		
+		group_names_buttons_sizer.Add( self.group_names_remove_button, 0, wx.ALL|wx.ALIGN_RIGHT|wx.EXPAND, 5 )
+		
+		
+		group_names_editor_sizer.Add( group_names_buttons_sizer, 0, wx.EXPAND, 5 )
+		
+		
+		group_names_panel_sizer.Add( group_names_editor_sizer, 1, wx.EXPAND, 5 )
+		
+		
+		self.group_names_panel.SetSizer( group_names_panel_sizer )
+		self.group_names_panel.Layout()
+		group_names_panel_sizer.Fit( self.group_names_panel )
+		self.settings_tabs.AddPage( self.group_names_panel, u"Словарь", False )
 		
 		sizer_settings_dialog.Add( self.settings_tabs, 1, wx.EXPAND |wx.ALL, 5 )
 		
@@ -1575,6 +1628,11 @@ class SettingsSelector ( wx.Dialog ):
 		self.checkbox_aliases.SetToolTipString( u"Псевдонимы позволяют использовать\nлюбые пользователские поля для \nработы с приложением." )
 		
 		sizer_settings.Add( self.checkbox_aliases, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		self.checkbox_group_names = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Словарь наименований полей", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_group_names.SetToolTipString( u"Наименования групп в множественном и единственном числе." )
+		
+		sizer_settings.Add( self.checkbox_group_names, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		self.checkbox_complist = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Параметры перечня элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_complist.SetToolTipString( u"Параметры из диалогового окна\nсоздания перечня элементов." )
@@ -1682,6 +1740,56 @@ class EditAutoGroupsDialog ( wx.Dialog ):
 		self.SetSizer( edit_auto_groups_sizer )
 		self.Layout()
 		edit_auto_groups_sizer.Fit( self )
+		
+		self.Centre( wx.BOTH )
+	
+	def __del__( self ):
+		pass
+	
+
+###########################################################################
+## Class SingularGroupNameDialog
+###########################################################################
+
+class SingularGroupNameDialog ( wx.Dialog ):
+	
+	def __init__( self, parent ):
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Наименование группы", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.DEFAULT_DIALOG_STYLE )
+		
+		self.SetSizeHintsSz( wx.Size( 400,-1 ), wx.DefaultSize )
+		
+		sizer_main = wx.BoxSizer( wx.VERTICAL )
+		
+		self.statictext1 = wx.StaticText( self, wx.ID_ANY, u"В множественном числе:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.statictext1.Wrap( -1 )
+		sizer_main.Add( self.statictext1, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, 5 )
+		
+		self.group_name_text = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 250,-1 ), 0 )
+		sizer_main.Add( self.group_name_text, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.m_staticline10 = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		sizer_main.Add( self.m_staticline10, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		self.statictext2 = wx.StaticText( self, wx.ID_ANY, u"В единственном числе:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.statictext2.Wrap( -1 )
+		sizer_main.Add( self.statictext2, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.singular_group_name_text = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 250,-1 ), 0 )
+		sizer_main.Add( self.singular_group_name_text, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		dialog_buttons = wx.StdDialogButtonSizer()
+		self.dialog_buttonsOK = wx.Button( self, wx.ID_OK )
+		dialog_buttons.AddButton( self.dialog_buttonsOK )
+		self.dialog_buttonsCancel = wx.Button( self, wx.ID_CANCEL )
+		dialog_buttons.AddButton( self.dialog_buttonsCancel )
+		dialog_buttons.Realize();
+		
+		sizer_main.Add( dialog_buttons, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.SetSizer( sizer_main )
+		self.Layout()
+		sizer_main.Fit( self )
 		
 		self.Centre( wx.BOTH )
 	

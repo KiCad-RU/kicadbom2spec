@@ -141,6 +141,7 @@ class Window(gui.MainFrame):
             'comp':u'',
             'title':u''
             }
+        self.group_names_dict = {}
 
         if sys.platform == 'win32':
             icon = wx.Icon('bitmaps/icon.ico', wx.BITMAP_TYPE_ICO)
@@ -223,6 +224,14 @@ class Window(gui.MainFrame):
                             if values_list != ['']:
                                 self.values_dict[item] = values_list
 
+                if self.settings.has_section('group names singular') and \
+                        self.settings.has_section('group names plural'):
+                    for name in self.settings.options('group names singular'):
+                        if self.settings.has_option('group names plural', name):
+                            singular = self.settings.get('group names singular', name)
+                            plural = self.settings.get('group names plural', name)
+                            self.group_names_dict[plural] = singular
+
                 if self.settings.has_section('general'):
                     if self.settings.has_option('general', 'space as dot'):
                         self.grid.space_as_dot = self.settings.getboolean('general', 'space as dot')
@@ -276,6 +285,7 @@ class Window(gui.MainFrame):
                     'auto_filling_groups':False,
                     'separators':False,
                     'aliases':False,
+                    'group_names':False,
                     'complist':False,
                     'recent_sch':False,
                     'recent_lib':False
@@ -322,6 +332,11 @@ class Window(gui.MainFrame):
                     selector.checkbox_aliases.SetValue(True)
                 else:
                     selector.checkbox_aliases.Hide()
+                if temp_settings.has_section('group names singular') and \
+                        temp_settings.has_section('group names plural'):
+                    selector.checkbox_group_names.SetValue(True)
+                else:
+                    selector.checkbox_group_names.Hide()
                 if temp_settings.has_section('complist'):
                     selector.checkbox_complist.SetValue(True)
                 else:
@@ -430,6 +445,13 @@ class Window(gui.MainFrame):
                                 # Empty alias - default value
                                 if alias_value != '':
                                     self.aliases_dict[item] = alias_value
+                    if import_settings['group_names']:
+                        self.group_names_dict = {}
+                        for name in temp_settings.options('group names singular'):
+                            if temp_settings.has_option('group names plural', name):
+                                singular = temp_settings.get('group names singular', name)
+                                plural = temp_settings.get('group names plural', name)
+                                self.group_names_dict[plural] = singular
                     if import_settings['complist']:
                         if not self.settings.has_section('complist'):
                             self.settings.add_section('complist')
@@ -516,6 +538,15 @@ class Window(gui.MainFrame):
                 self.settings.set('aliases', field, '')
             else:
                 self.settings.set('aliases', field, alias)
+
+
+        self.settings.remove_section('group names singular')
+        self.settings.add_section('group names singular')
+        self.settings.remove_section('group names plural')
+        self.settings.add_section('group names plural')
+        for i, names in enumerate(self.group_names_dict.items()):
+                self.settings.set('group names singular', str(i), names[1])
+                self.settings.set('group names plural', str(i), names[0])
 
         if not self.settings.has_section('general'):
             self.settings.add_section('general')
@@ -2026,6 +2057,26 @@ class Window(gui.MainFrame):
                 wx.ICON_ERROR|wx.OK, self
                 )
 
+    def get_singular_group_name(self, group_name):
+        """
+        Get name of the group in singular.
+        """
+        if self.group_names_dict.has_key(group_name):
+            return self.group_names_dict[group_name]
+        else:
+            request_dialog = gui.SingularGroupNameDialog(self)
+            request_dialog.group_name_text.SetValue(group_name)
+            request_dialog.singular_group_name_text.SetValue(group_name)
+            request_dialog.group_name_text.SetEditable(False)
+            request_dialog.group_name_text.Enable(False)
+            result = request_dialog.ShowModal()
+            singular = request_dialog.singular_group_name_text.GetValue()
+            if result == wx.ID_OK and singular != '':
+                self.group_names_dict[group_name] = singular
+                return singular
+            else:
+                return group_name
+
     def on_complist(self, event):
         """
         Make list of the components.
@@ -2121,6 +2172,8 @@ class Window(gui.MainFrame):
             set_file_ext(u'.csv')
 
         complist = CompList()
+        # Specify callback
+        complist.get_singular_group_name = self.get_singular_group_name
         complist_dialog = gui.CompListDialog(self)
 
         # Calculate and set min size for title text control
@@ -2175,6 +2228,16 @@ class Window(gui.MainFrame):
 
             if self.settings.has_option('complist', 'file_format'):
                 complist.file_format = self.settings.get('complist', 'file_format')
+            if self.settings.has_option('complist', 'empty_rows_after_group'):
+                complist.empty_rows_after_group = self.settings.getint('complist', 'empty_rows_after_group')
+            if self.settings.has_option('complist', 'underline_group_name'):
+                complist.underline_group_name = self.settings.getboolean('complist', 'underline_group_name')
+            if self.settings.has_option('complist', 'center_group_name'):
+                complist.center_group_name = self.settings.getboolean('complist', 'center_group_name')
+            if self.settings.has_option('complist', 'gost_in_group_name'):
+                complist.gost_in_group_name = self.settings.getboolean('complist', 'gost_in_group_name')
+            if self.settings.has_option('complist', 'singular_group_name'):
+                complist.singular_group_name = self.settings.getboolean('complist', 'singular_group_name')
             if self.settings.has_option('complist', 'first_usage'):
                 complist.add_first_usage = self.settings.getboolean('complist', 'first_usage')
             if self.settings.has_option('complist', 'fill_first_usage'):
@@ -2185,16 +2248,6 @@ class Window(gui.MainFrame):
                 complist.add_changes_sheet = self.settings.getboolean('complist', 'changes_sheet')
             if self.settings.has_option('complist', 'italic'):
                 complist.italic = self.settings.getboolean('complist', 'italic')
-            if self.settings.has_option('complist', 'underline_group_name'):
-                complist.underline_group_name = self.settings.getboolean('complist', 'underline_group_name')
-            if self.settings.has_option('complist', 'empty_rows_after_group'):
-                complist.empty_rows_after_group = self.settings.getint('complist', 'empty_rows_after_group')
-            if self.settings.has_option('complist', 'empty_row_above_group_name'):
-                complist.empty_row_above_group_name = self.settings.getboolean('complist', 'empty_row_above_group_name')
-            if self.settings.has_option('complist', 'empty_row_below_group_name'):
-                complist.empty_row_below_group_name = self.settings.getboolean('complist', 'empty_row_below_group_name')
-            if self.settings.has_option('complist', 'gost_in_group_name'):
-                complist.gost_in_group_name = self.settings.getboolean('complist', 'gost_in_group_name')
 
         # Options
         complist_dialog.filepicker_complist.SetPath(self.complist_file)
@@ -2208,17 +2261,18 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_add_units.SetValue(add_units)
         complist_dialog.checkbox_open.SetValue(open_complist)
 
+        complist_dialog.choice_after_groups.SetSelection(complist.empty_rows_after_group)
+        complist_dialog.checkbox_underline.SetValue(complist.underline_group_name)
+        complist_dialog.checkbox_center.SetValue(complist.center_group_name)
+        complist_dialog.checkbox_gost_in_group_name.SetValue(complist.gost_in_group_name)
+        complist_dialog.checkbox_singular_group_name.SetValue(complist.singular_group_name)
         complist_dialog.checkbox_first_usage.SetValue(complist.add_first_usage)
         complist_dialog.checkbox_first_usage_fill.SetValue(complist.fill_first_usage)
         complist_dialog.checkbox_first_usage_fill.Enable(complist.add_first_usage)
         complist_dialog.checkbox_customer_fields.SetValue(complist.add_customer_fields)
         complist_dialog.checkbox_changes_sheet.SetValue(complist.add_changes_sheet)
         complist_dialog.checkbox_italic.SetValue(complist.italic)
-        complist_dialog.checkbox_underline.SetValue(complist.underline_group_name)
-        complist_dialog.choice_after_groups.SetSelection(complist.empty_rows_after_group)
-        complist_dialog.checkbox_above.SetValue(complist.empty_row_above_group_name)
-        complist_dialog.checkbox_below.SetValue(complist.empty_row_below_group_name)
-        complist_dialog.checkbox_gost_in_group_name.SetValue(complist.gost_in_group_name)
+
         # Stamp
         for field in self.stamp_dict.keys():
             field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
@@ -2258,16 +2312,16 @@ class Window(gui.MainFrame):
             add_units = complist_dialog.checkbox_add_units.IsChecked()
             open_complist = complist_dialog.checkbox_open.GetValue()
 
+            complist.empty_rows_after_group = complist_dialog.choice_after_groups.GetSelection()
+            complist.underline_group_name = complist_dialog.checkbox_underline.GetValue()
+            complist.center_group_name = complist_dialog.checkbox_center.GetValue()
+            complist.gost_in_group_name = complist_dialog.checkbox_gost_in_group_name.GetValue()
+            complist.singular_group_name = complist_dialog.checkbox_singular_group_name.GetValue()
             complist.add_first_usage = complist_dialog.checkbox_first_usage.IsChecked()
             complist.fill_first_usage = complist_dialog.checkbox_first_usage_fill.IsChecked()
             complist.add_customer_fields = complist_dialog.checkbox_customer_fields.IsChecked()
             complist.add_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
             complist.italic = complist_dialog.checkbox_italic.GetValue()
-            complist.underline_group_name = complist_dialog.checkbox_underline.GetValue()
-            complist.empty_rows_after_group = complist_dialog.choice_after_groups.GetSelection()
-            complist.empty_row_above_group_name = complist_dialog.checkbox_above.GetValue()
-            complist.empty_row_below_group_name = complist_dialog.checkbox_below.GetValue()
-            complist.gost_in_group_name = complist_dialog.checkbox_gost_in_group_name.GetValue()
 
             # Stamp
             for field in self.stamp_dict.keys():
@@ -2290,16 +2344,16 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
 
             self.settings.set('complist', 'file_format', complist.file_format)
+            self.settings.set('complist', 'empty_rows_after_group', str(complist.empty_rows_after_group))
+            self.settings.set('complist', 'underline_group_name', str(complist.underline_group_name))
+            self.settings.set('complist', 'center_group_name', str(complist.center_group_name))
+            self.settings.set('complist', 'gost_in_group_name', str(complist.gost_in_group_name))
+            self.settings.set('complist', 'singular_group_name', str(complist.singular_group_name))
             self.settings.set('complist', 'first_usage', str(complist.add_first_usage))
             self.settings.set('complist', 'fill_first_usage', str(complist.fill_first_usage))
             self.settings.set('complist', 'customer_fields', str(complist.add_customer_fields))
             self.settings.set('complist', 'changes_sheet', str(complist.add_changes_sheet))
             self.settings.set('complist', 'italic', str(complist.italic))
-            self.settings.set('complist', 'underline_group_name', str(complist.underline_group_name))
-            self.settings.set('complist', 'empty_rows_after_group', str(complist.empty_rows_after_group))
-            self.settings.set('complist', 'empty_row_above_group_name', str(complist.empty_row_above_group_name))
-            self.settings.set('complist', 'empty_row_below_group_name', str(complist.empty_row_below_group_name))
-            self.settings.set('complist', 'gost_in_group_name', str(complist.gost_in_group_name))
 
             comp_fields = []
             grid_values = self.grid.get_values()
@@ -2598,12 +2652,74 @@ class Window(gui.MainFrame):
                     wx.TheClipboard.SetData(wx.TextDataObject(text))
                 wx.TheClipboard.Close()
 
+        def on_group_names_listctrl_selected(event):
+            """
+            Enable buttons when item selected.
+
+            """
+            settings_editor.group_names_edit_button.Enable(True)
+            settings_editor.group_names_remove_button.Enable(True)
+
+        def on_group_names_listctrl_unselected(event):
+            """
+            Disable buttons when item selected.
+
+            """
+            settings_editor.group_names_edit_button.Enable(False)
+            settings_editor.group_names_remove_button.Enable(False)
+
+        def on_group_names_add_button_clicked(event):
+            """
+            Add an names pair to group_names_listbox.
+
+            """
+            add_dialog = gui.SingularGroupNameDialog(self)
+            result = add_dialog.ShowModal()
+            if result == wx.ID_OK:
+                singular = add_dialog.singular_group_name_text.GetValue()
+                plural = add_dialog.group_name_text.GetValue()
+                settings_editor.group_names_listctrl.Append((plural, singular))
+
+        def on_group_names_edit_button_clicked(event):
+            """
+            Edit selected element in group_names_listbox.
+
+            """
+            edit_dialog = gui.SingularGroupNameDialog(self)
+            index = settings_editor.group_names_listctrl.GetFirstSelected()
+            singular = settings_editor.group_names_listctrl.GetItemText(index, 1)
+            plural = settings_editor.group_names_listctrl.GetItemText(index, 0)
+            edit_dialog.singular_group_name_text.SetValue(singular)
+            edit_dialog.group_name_text.SetValue(plural)
+            result = edit_dialog.ShowModal()
+            if result == wx.ID_OK:
+                singular = edit_dialog.singular_group_name_text.GetValue()
+                plural = edit_dialog.group_name_text.GetValue()
+                settings_editor.group_names_listctrl.SetStringItem(index, 0, plural)
+                settings_editor.group_names_listctrl.SetStringItem(index, 1, singular)
+
+        def on_group_names_remove_button_clicked(event):
+            """
+            Remove selected element from group_names_listbox.
+
+            """
+            index = settings_editor.group_names_listctrl.GetFirstSelected()
+            settings_editor.group_names_listctrl.DeleteItem(index)
+
         settings_editor = gui.SettingsDialog(self)
+        # Events general
         settings_editor.auto_groups_checklistbox.Bind(wx.EVT_LISTBOX, on_auto_groups_checklistbox_selected)
         settings_editor.auto_groups_checklistbox.Bind(wx.EVT_LISTBOX_DCLICK, on_auto_groups_edit_button_clicked)
         settings_editor.auto_groups_add_button.Bind(wx.EVT_BUTTON, on_auto_groups_add_button_clicked)
         settings_editor.auto_groups_edit_button.Bind(wx.EVT_BUTTON, on_auto_groups_edit_button_clicked)
         settings_editor.auto_groups_remove_button.Bind(wx.EVT_BUTTON, on_auto_groups_remove_button_clicked)
+        # Events group_names
+        settings_editor.group_names_listctrl.Bind(wx.EVT_LIST_ITEM_SELECTED, on_group_names_listctrl_selected)
+        settings_editor.group_names_listctrl.Bind(wx.EVT_LIST_ITEM_DESELECTED, on_group_names_listctrl_unselected)
+        settings_editor.group_names_listctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, on_group_names_edit_button_clicked)
+        settings_editor.group_names_add_button.Bind(wx.EVT_BUTTON, on_group_names_add_button_clicked)
+        settings_editor.group_names_edit_button.Bind(wx.EVT_BUTTON, on_group_names_edit_button_clicked)
+        settings_editor.group_names_remove_button.Bind(wx.EVT_BUTTON, on_group_names_remove_button_clicked)
 
         field_names = (
             u'группа',
@@ -2658,6 +2774,15 @@ class Window(gui.MainFrame):
             value = u'{} - "{}"'.format(suffix, value[1:])
             index = settings_editor.auto_groups_checklistbox.Append(value)
             settings_editor.auto_groups_checklistbox.Check(index, checked)
+
+        settings_editor.group_names_listctrl.InsertColumn(0, u'В множественном числе')
+        settings_editor.group_names_listctrl.InsertColumn(1, u'В единственном числе')
+        listctrl_width = settings_editor.group_names_listctrl.GetSize().GetWidth()
+        settings_editor.group_names_listctrl.SetColumnWidth(0, listctrl_width / 2)
+        settings_editor.group_names_listctrl.SetColumnWidth(1, listctrl_width / 2)
+        for plural in self.group_names_dict.keys():
+            singular = self.group_names_dict[plural]
+            settings_editor.group_names_listctrl.Append((plural, singular))
 
         result = settings_editor.ShowModal()
         if result == wx.ID_OK:
@@ -2725,8 +2850,14 @@ class Window(gui.MainFrame):
                 parts = split_auto_groups_item(text)
                 if parts:
                     self.auto_groups_dict[parts[0]] = value + parts[1]
-            self.Refresh()
 
+            self.group_names_dict = {}
+            for i in range(settings_editor.group_names_listctrl.GetItemCount()):
+                singular = settings_editor.group_names_listctrl.GetItemText(i, 1)
+                plural = settings_editor.group_names_listctrl.GetItemText(i, 0)
+                self.group_names_dict[plural] = singular
+
+            self.Refresh()
 
     def on_settings_import(self, event):
         """

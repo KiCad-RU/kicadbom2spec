@@ -48,6 +48,10 @@ class CompList():
         self.components_array = None
         self.complist_pages = []
 
+        # Callback
+        # This will be called for getting group name in singular
+        self.get_singular_group_name = None
+
         # Stamp fields
         self.developer = u''
         self.verifier = u''
@@ -59,16 +63,16 @@ class CompList():
 
         # Options
         self.file_format = u'.ods' # u'.odt', u'.csv'
+        self.empty_rows_after_group = 1
+        self.underline_group_name = False
+        self.center_group_name = False
+        self.singular_group_name = True
+        self.gost_in_group_name = True
         self.add_first_usage = False
         self.fill_first_usage = False
         self.add_customer_fields = False
         self.add_changes_sheet = False
         self.italic = False
-        self.underline_group_name = True
-        self.empty_rows_after_group = 1
-        self.empty_row_above_group_name = False
-        self.empty_row_below_group_name = False
-        self.gost_in_group_name = False
 
         # Current state of filling list of the components
         self._cur_line = 1
@@ -116,7 +120,10 @@ class CompList():
                                         if self.file_format == u'.odt':
                                             new_p.setAttribute(u'stylename', p_style)
                                         cell.addElement(new_p)
-                                if group == True:
+                                if group == True and ( \
+                                        self.underline_group_name == True or \
+                                        self.center_group_name == True
+                                        ):
                                     # Set center align and underline for group name
                                     if self.file_format == u'.ods':
                                         # If used ODS format the text properties stored
@@ -142,9 +149,12 @@ class CompList():
                                             groupStyle.setAttribute(u'name', groupStyleName)
                                         elif self.file_format == u'.odt':
                                             groupStyle.setAttribute(u'name', u'group-name')
-                                        groupStyle.addElement(
-                                            ParagraphProperties(textalign=u'center')
-                                            )
+                                        if self.center_group_name == True:
+                                            groupStyle.addElement(
+                                                ParagraphProperties(
+                                                    textalign=u'center'
+                                                    )
+                                                )
                                         if self.underline_group_name == True:
                                             groupStyle.addElement(
                                                 TextProperties(
@@ -210,58 +220,111 @@ class CompList():
             self._cur_line = 1
             self._lines_on_page = 32
 
-    def _get_final_values(self, element):
+    def _get_final_values(self, element, with_group=False):
         """
         Get list with final fields values of component.
         """
         values = []
         # Reference
         ref = u''
-        if int(element[9]) > 1:
+        if int(element[10]) > 1:
             # Reference number: '5, 6'; '25-28' etc.
-            ref = re.search(r'(\d+)(-|,\s?)(\d+)', element[1]).groups()
-            if element[2]:
+            ref = re.search(r'(\d+)(-|,\s?)(\d+)', element[2]).groups()
+            if element[3]:
                 # Reference: 'VD1*, VD2*'; 'C8*-C11*' etc.
-                ref = (element[0] + u'%s*%s' + element[0] + u'%s*') % ref
+                ref = (element[1] + u'%s*%s' + element[1] + u'%s*') % ref
             else:
                 # Reference: 'VD1, VD2'; 'C8-C11' etc.
-                ref = (element[0] + u'%s%s' + element[0] + u'%s') % ref
+                ref = (element[1] + u'%s%s' + element[1] + u'%s') % ref
         else:
             # Reference: 'R5'; 'VT13' etc.
-            ref = element[0] + element[1]
+            ref = element[1] + element[2]
             # Add "*" mark if component "needs adjusting"
-            if element[2]:
+            if element[3]:
                 ref = ref + '*'
         values.append(ref)
         # Name
-        if self.gost_in_group_name == True and element[3] != '':
-            # GOST placed in name of the group and don't needed here
-            values.append(''.join(element[3:7]))
+        if self.gost_in_group_name == True \
+                and element[4] != '' \
+                and element[8] != '':
+            values.append(''.join(element[4:8]))
         else:
-            values.append(''.join(element[3:8]))
+            values.append(''.join(element[4:9]))
+        if with_group == True:
+            singular_group_name = self.get_singular_group_name(element[0])
+            values[-1] = singular_group_name + ' ' + values[-1]
         # Count
-        values.append(element[9])
+        values.append(element[10])
         # Comment
-        values.append(element[8])
+        values.append(element[9])
         return values
 
     def _get_group_names_with_gost(self, group):
         """
         Get list of group names with GOST for every mark of components.
         """
-        group_names = []
-        for comp in group[1]:
-            if comp[3] != '' and comp[7] != '':
-                # Format: "Groupname Mark GOST"
-                group_names.append(u' '.join([group[0], comp[3], comp[7]]))
-        return list(set(group_names))
+        group_copy = deepcopy(group)
 
-    def _set_line(self, element):
+        # Split Mark into parts by non-alphabetical chars
+        for comp in group_copy:
+            mark_string = comp[4]
+            mark_parts = []
+            # First part without prefix
+            res = re.search('[^A-Za-zА-Яа-я0-9_]*([A-Za-zА-Яа-я0-9_]+)($|[^A-Za-zА-Яа-я0-9_].*)', mark_string)
+            if res == None:
+                comp[4] = [comp[4]]
+                continue
+            mark_parts.append(res.groups()[0])
+            mark_string = res.groups()[1]
+            # Other parts with delimiters as prefix
+            while True:
+                res = re.search('([^A-Za-zА-Яа-я0-9_\.,]+[A-Za-zА-Яа-я0-9_\.,]+)($|[^A-Za-zА-Яа-я0-9_\.,].*)', mark_string)
+                if res != None:
+                    mark_parts.append(res.groups()[0])
+                    mark_string = res.groups()[1]
+                else:
+                    break
+            comp[4] = mark_parts
+
+        group_names = []
+        for comp in group_copy:
+            mark_parts = comp[4]
+            gost = comp[8].strip()
+            if mark_parts[0] != '' and gost != '':
+                for group_name in group_names:
+                    if group_name[2] == gost and group_name[1][0] == mark_parts[0]:
+                        # Leave only common parts of Mark
+                        list_len = len(mark_parts)
+                        if list_len > len(group_name[1]):
+                            list_len = len(group_name[1])
+                        for i in range(list_len):
+                            if group_name[1][i] != mark_parts[i]:
+                                group_name[1] = mark_parts[:i]
+                        break
+                else:
+                    # Format: [Groupname, [Markparts, ...], GOST]
+                    group_names.append([comp[0], mark_parts[:], gost])
+
+        # Concatenate parts of name together
+        final_group_names = []
+        for group_name in group_names:
+            group_name[1] = ''.join(group_name[1])
+            name = ' '.join(group_name)
+            name = name.strip()
+            final_group_names.append(name)
+
+        # If GOST not present - use default group name
+        if final_group_names == []:
+            final_group_names = [group_copy[0][0]]
+
+        return final_group_names
+
+    def _set_line(self, element, with_group=False):
         """
         Fill the line in list of the components using element's fields.
 
         """
-        for index, value in enumerate(self._get_final_values(element)):
+        for index, value in enumerate(self._get_final_values(element, with_group)):
             self._replace_text(
                 self._cur_page,
                 u'#{}:{}'.format(index + 1, self._cur_line),
@@ -407,7 +470,7 @@ class CompList():
             comp = get_comp_by_ref(comp_array[i][1] + comp_array[i][2])
             for ii in range(len(comp_array[i])):
                 # Skip for ref_type, ref_num, need_adjust_flag and count
-                if ii in (1, 2, 3, 9):
+                if ii in (1, 2, 3, 10):
                     continue
                 field_value = comp_array[i][ii]
                 new_field_value = apply_substitution(
@@ -417,87 +480,85 @@ class CompList():
                     )
                 comp_array[i][ii] = new_field_value
 
-        comp_array = sorted(comp_array, key=itemgetter(0))
+        # Sort all components by ref_type
+        comp_array = sorted(comp_array, key=itemgetter(1))
 
-        # Split elements into groups
-        # output - [['group',[[ref_type, ref_number, need_adjust_flag, mark, value, accuracy, type, GOST, comment, count], ... ]], ... ]
-        temp_name = comp_array[0][0]
-        temp_array = None
-        comp_lines = None
-        for array in comp_array:
-            if temp_name == array[0]:
-                if temp_array == None:
-                    temp_array = [array[1:],]
-                else:
-                    temp_array.append(array[1:])
+        # Split elements into groups based on ref_type
+        # input: list of components;
+        # every component represent as [group, ref_type, ref_number, need_adjust_flag, mark, value, accuracy, type, GOST, comment, count];
+        # output: list of groups;
+        # every group represent as list of components.
+        group_array = []
+        grouped_comp_array = []
+        cur_ref = None
+        for comp in comp_array:
+            if cur_ref == None:
+                # First component
+                group_array.append(comp)
+                cur_ref = comp[1]
+            elif comp[1] == cur_ref:
+                # The same type
+                group_array.append(comp)
             else:
-                if comp_lines == None:
-                    comp_lines = [[temp_name, temp_array],]
-                else:
-                    comp_lines.append([temp_name, temp_array])
-                temp_array = [array[1:],]
-                temp_name = array[0]
-            if comp_array.index(array) == len(comp_array) - 1:
-                if comp_lines == None:
-                    comp_lines = [[temp_name, temp_array],]
-                else:
-                    comp_lines.append([temp_name, temp_array])
+                # Next group
+                grouped_comp_array.append(group_array)
+                group_array = [comp]
+                cur_ref = comp[1]
+        # Append last group
+        grouped_comp_array.append(group_array)
 
         # Sort components into every group by ref_num
-        for group in comp_lines:
-            group[1].sort(key=lambda num: int(num[1]))
-            group[1].sort(key=lambda ref: ref[0])
-        # Split noname group into subgroups by type (ref)
-        noname_group = None
-        named_groups = []
-        for group in comp_lines:
-            if group[0] == u'':
-                noname_group = group
-            else:
-                named_groups.append(group)
-        comp_lines = named_groups
-        if noname_group != None:
-            prev_comp_type = None
-            temp_noname_group = [u'', []]
-            for comp in noname_group[1]:
-                if prev_comp_type == None or comp[0] == prev_comp_type:
-                    temp_noname_group[1].append(comp)
+        for group in grouped_comp_array:
+            group.sort(key=lambda num: int(num[2]))
+
+        # Split every group by group name
+        # (may have different name with same ref_type)
+        comp_array = grouped_comp_array[:]
+        grouped_comp_array = []
+        for group in comp_array:
+            cur_name = None
+            group_array = []
+            for comp in group:
+                if cur_name == None:
+                    # First component
+                    group_array.append(comp)
+                    cur_name = comp[0]
+                elif comp[0] == cur_name:
+                    # The same type
+                    group_array.append(comp)
                 else:
-                    comp_lines.append(temp_noname_group)
-                    temp_noname_group = [u'', []]
-                    temp_noname_group[1].append(comp)
-                prev_comp_type = comp[0]
-            else:
-                if len(temp_noname_group[1]) > 0:
-                    comp_lines.append(temp_noname_group)
-        # Sort groups by reference (ref & num) of first element
-        comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][1])
-        comp_lines = sorted(comp_lines, key=lambda ref: ref[1][0][0])
+                    # Next group
+                    grouped_comp_array.append(group_array)
+                    group_array = [comp]
+                    cur_name = comp[0]
+            # Append last group
+            grouped_comp_array.append(group_array)
+
         # Combining the identical elements in one line
         temp_array = []
-        for group in comp_lines:
+        for group in grouped_comp_array:
             first = u''
             last = u''
-            prev = []
+            prev = None
             first_index = 0
             last_index = 0
-            temp_group = [group[0], []]
-            for element in group[1]:
-                if group[1].index(element) == 0:
+            temp_group = []
+            for element in group:
+                if group.index(element) == 0:
                     # first element
-                    first = last = element[1]
+                    first = last = element[2]
                     prev = element[:]
-                    if len(group[1]) == 1:
-                        temp_group[1].append(element)
+                    if len(group) == 1:
+                        temp_group.append(element)
                         temp_array.append(temp_group)
                     continue
 
-                if element[0] == prev[0] and \
-                        int(element[1]) - 1 == int(prev[1]) and \
-                        element[2:] == prev[2:]:
+                if element[:2] == prev[:2] and \
+                        int(element[2]) - 1 == int(prev[2]) and \
+                        element[3:] == prev[3:]:
                     # equal elements
-                    last = element[1]
-                    last_index = group[1].index(element)
+                    last = element[2]
+                    last_index = group.index(element)
                 else:
                     # different elements
                     if int(last) - int(first) > 0:
@@ -506,17 +567,17 @@ class CompList():
                         separator = u', '
                         if count > 2:
                             separator = u'-'
-                        temp_element = group[1][last_index]
-                        temp_element[1] = first + separator + last
-                        temp_element[9] = str(count)
-                        temp_group[1].append(temp_element)
+                        temp_element = group[last_index]
+                        temp_element[2] = first + separator + last
+                        temp_element[10] = str(count)
+                        temp_group.append(temp_element)
                     else:
                         # next different element
-                        temp_group[1].append(prev)
-                    first = last = element[1]
-                    first_index = last_index = group[1].index(element)
+                        temp_group.append(prev)
+                    first = last = element[2]
+                    first_index = last_index = group.index(element)
 
-                if group[1].index(element) == len(group[1]) - 1:
+                if group.index(element) == len(group) - 1:
                     # last element in the group
                     if int(last) - int(first) > 0:
                         # finish processing of several identical elements
@@ -524,12 +585,12 @@ class CompList():
                         separator = u', '
                         if count > 2:
                             separator = u'-'
-                        temp_element = group[1][last_index]
-                        temp_element[1] = first + separator + last
-                        temp_element[9] = str(count)
-                        temp_group[1].append(temp_element)
+                        temp_element = group[last_index]
+                        temp_element[2] = first + separator + last
+                        temp_element[10] = str(count)
+                        temp_group.append(temp_element)
                     else:
-                        temp_group[1].append(element)
+                        temp_group.append(element)
                     temp_array.append(temp_group)
                 prev = element[:]
         self.components_array = temp_array
@@ -549,25 +610,33 @@ class CompList():
                 csv_writer = csv.writer(csv_file)
                 csv_writer.writerow(headers_row)
                 # Fill list of the components
+                prev_ref_type = self.components_array[0][0][1]
                 for group in self.components_array:
-                    if group[0] != u'':
-                        # New group title
-                        if self.empty_row_above_group_name == True:
+                    group_name = group[0][0]
+                    ref_type = group[0][1]
+                    # Empty rows between groups
+                    if prev_ref_type != ref_type:
+                        for _ in range(self.empty_rows_after_group):
                             csv_writer.writerow(empty_row)
-                        group_names = self._get_group_names_with_gost(group)
-                        if self.gost_in_group_name == True and group_names != []:
-                            for name in group_names:
-                                csv_writer.writerow(['', name, '', ''])
+                    prev_ref_type = ref_type
+
+                    if group_name != '':
+                        if len(group) == 1 and self.singular_group_name == True:
+                            # Place group name with name of component
+                            comp_values = self._get_final_values(group[0], True)
+                            csv_writer.writerow(comp_values)
+                            continue
                         else:
-                            csv_writer.writerow(['', group[0], '', ''])
-                        if self.empty_row_below_group_name == True:
-                            csv_writer.writerow(empty_row)
-                    # Write all components of the group into list
-                    for comp in group[1]:
+                            # New group title
+                            if self.gost_in_group_name == True:
+                                for group_name_with_gost in self._get_group_names_with_gost(group):
+                                    csv_writer.writerow(['', group_name_with_gost, '', ''])
+                            else:
+                                csv_writer.writerow(['', group_name, '', ''])
+
+                    for comp in group:
+                        # Write component into list
                         csv_writer.writerow(self._get_final_values(comp))
-                    # Empty rows after group
-                    for _ in range(self.empty_rows_after_group):
-                        csv_writer.writerow(empty_row)
             return
         elif self.file_format == u'.ods':
             # Load the pattern
@@ -640,31 +709,36 @@ class CompList():
             self.complist = self._cur_page
 
         # Fill list of the components
+        prev_ref_type = self.components_array[0][0][1]
         for group in self.components_array:
-            if group[0] != u'':
-                # New group title
-                if self.empty_row_above_group_name == True:
-                        self._next_line()
-                if self._cur_line == self._lines_on_page:
-                    # If name of group at bottom of table without elements, go to beginning of a new table
-                    while self._cur_line != 1:
-                        self._next_line()
-                group_names = self._get_group_names_with_gost(group)
-                if self.gost_in_group_name == True and group_names != []:
-                    for name in group_names:
-                        self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, name, group=True)
-                        self._next_line()
-                else:
-                    self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, group[0], group=True)
+            group_name = group[0][0]
+            ref_type = group[0][1]
+            # Empty rows between groups
+            if prev_ref_type != ref_type:
+                for _ in range(self.empty_rows_after_group):
                     self._next_line()
-                if self.empty_row_below_group_name == True:
+            prev_ref_type = ref_type
+
+            if group_name != '':
+                if len(group) == 1 and self.singular_group_name == True:
+                    # Place group name with name of component
+                    self._set_line(group[0], True)
+                    self._next_line()
+                    continue
+                else:
+                    # New group title
+                    if self.gost_in_group_name == True:
+                        for group_name_with_gost in self._get_group_names_with_gost(group):
+                            self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, group_name_with_gost, group=True)
+                            self._next_line()
+
+                    else:
+                        self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, group_name, group=True)
                         self._next_line()
-            # Place all components of the group into list
-            for comp in group[1]:
+
+            for comp in group:
+                # Write component into list
                 self._set_line(comp)
-                self._next_line()
-            # Empty rows after group
-            for _ in range(self.empty_rows_after_group):
                 self._next_line()
 
         # Current table not empty - save it
