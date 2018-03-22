@@ -2230,10 +2230,10 @@ class Window(gui.MainFrame):
                 complist.file_format = self.settings.get('complist', 'file_format')
             if self.settings.has_option('complist', 'empty_rows_after_group'):
                 complist.empty_rows_after_group = self.settings.getint('complist', 'empty_rows_after_group')
-            if self.settings.has_option('complist', 'underline_group_name'):
-                complist.underline_group_name = self.settings.getboolean('complist', 'underline_group_name')
-            if self.settings.has_option('complist', 'center_group_name'):
-                complist.center_group_name = self.settings.getboolean('complist', 'center_group_name')
+            if self.settings.has_option('complist', 'empty_rows_everywhere'):
+                complist.empty_rows_everywhere = self.settings.getboolean('complist', 'empty_rows_everywhere')
+            if self.settings.has_option('complist', 'prohibit_empty_rows_on_top'):
+                complist.prohibit_empty_rows_on_top = self.settings.getboolean('complist', 'prohibit_empty_rows_on_top')
             if self.settings.has_option('complist', 'gost_in_group_name'):
                 complist.gost_in_group_name = self.settings.getboolean('complist', 'gost_in_group_name')
             if self.settings.has_option('complist', 'singular_group_name'):
@@ -2248,6 +2248,12 @@ class Window(gui.MainFrame):
                 complist.add_changes_sheet = self.settings.getboolean('complist', 'changes_sheet')
             if self.settings.has_option('complist', 'italic'):
                 complist.italic = self.settings.getboolean('complist', 'italic')
+            if self.settings.has_option('complist', 'underline_group_name'):
+                complist.underline_group_name = self.settings.getboolean('complist', 'underline_group_name')
+            if self.settings.has_option('complist', 'center_group_name'):
+                complist.center_group_name = self.settings.getboolean('complist', 'center_group_name')
+            if self.settings.has_option('complist', 'center_reference'):
+                complist.center_reference = self.settings.getboolean('complist', 'center_reference')
 
         # Options
         complist_dialog.filepicker_complist.SetPath(self.complist_file)
@@ -2262,8 +2268,8 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_open.SetValue(open_complist)
 
         complist_dialog.choice_after_groups.SetSelection(complist.empty_rows_after_group)
-        complist_dialog.checkbox_underline.SetValue(complist.underline_group_name)
-        complist_dialog.checkbox_center.SetValue(complist.center_group_name)
+        complist_dialog.checkbox_empty_rows_everywhere.SetValue(complist.empty_rows_everywhere)
+        complist_dialog.checkbox_prohibit_empty_rows_on_top.SetValue(complist.prohibit_empty_rows_on_top)
         complist_dialog.checkbox_gost_in_group_name.SetValue(complist.gost_in_group_name)
         complist_dialog.checkbox_singular_group_name.SetValue(complist.singular_group_name)
         complist_dialog.checkbox_first_usage.SetValue(complist.add_first_usage)
@@ -2272,6 +2278,9 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_customer_fields.SetValue(complist.add_customer_fields)
         complist_dialog.checkbox_changes_sheet.SetValue(complist.add_changes_sheet)
         complist_dialog.checkbox_italic.SetValue(complist.italic)
+        complist_dialog.checkbox_underline_group.SetValue(complist.underline_group_name)
+        complist_dialog.checkbox_center_group.SetValue(complist.center_group_name)
+        complist_dialog.checkbox_center_ref.SetValue(complist.center_reference)
 
         # Stamp
         for field in self.stamp_dict.keys():
@@ -2313,8 +2322,8 @@ class Window(gui.MainFrame):
             open_complist = complist_dialog.checkbox_open.GetValue()
 
             complist.empty_rows_after_group = complist_dialog.choice_after_groups.GetSelection()
-            complist.underline_group_name = complist_dialog.checkbox_underline.GetValue()
-            complist.center_group_name = complist_dialog.checkbox_center.GetValue()
+            complist.empty_rows_everywhere = complist_dialog.checkbox_empty_rows_everywhere.GetValue()
+            complist.prohibit_empty_rows_on_top = complist_dialog.checkbox_prohibit_empty_rows_on_top.GetValue()
             complist.gost_in_group_name = complist_dialog.checkbox_gost_in_group_name.GetValue()
             complist.singular_group_name = complist_dialog.checkbox_singular_group_name.GetValue()
             complist.add_first_usage = complist_dialog.checkbox_first_usage.IsChecked()
@@ -2322,6 +2331,9 @@ class Window(gui.MainFrame):
             complist.add_customer_fields = complist_dialog.checkbox_customer_fields.IsChecked()
             complist.add_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
             complist.italic = complist_dialog.checkbox_italic.GetValue()
+            complist.underline_group_name = complist_dialog.checkbox_underline_group.GetValue()
+            complist.center_group_name = complist_dialog.checkbox_center_group.GetValue()
+            complist.center_reference = complist_dialog.checkbox_center_ref.GetValue()
 
             # Stamp
             for field in self.stamp_dict.keys():
@@ -2345,8 +2357,8 @@ class Window(gui.MainFrame):
 
             self.settings.set('complist', 'file_format', complist.file_format)
             self.settings.set('complist', 'empty_rows_after_group', str(complist.empty_rows_after_group))
-            self.settings.set('complist', 'underline_group_name', str(complist.underline_group_name))
-            self.settings.set('complist', 'center_group_name', str(complist.center_group_name))
+            self.settings.set('complist', 'empty_rows_everywhere', str(complist.empty_rows_everywhere))
+            self.settings.set('complist', 'prohibit_empty_rows_on_top', str(complist.prohibit_empty_rows_on_top))
             self.settings.set('complist', 'gost_in_group_name', str(complist.gost_in_group_name))
             self.settings.set('complist', 'singular_group_name', str(complist.singular_group_name))
             self.settings.set('complist', 'first_usage', str(complist.add_first_usage))
@@ -2354,6 +2366,9 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'customer_fields', str(complist.add_customer_fields))
             self.settings.set('complist', 'changes_sheet', str(complist.add_changes_sheet))
             self.settings.set('complist', 'italic', str(complist.italic))
+            self.settings.set('complist', 'underline_group_name', str(complist.underline_group_name))
+            self.settings.set('complist', 'center_group_name', str(complist.center_group_name))
+            self.settings.set('complist', 'center_reference', str(complist.center_reference))
 
             comp_fields = []
             grid_values = self.grid.get_values()

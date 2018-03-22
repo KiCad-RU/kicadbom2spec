@@ -64,15 +64,18 @@ class CompList():
         # Options
         self.file_format = u'.ods' # u'.odt', u'.csv'
         self.empty_rows_after_group = 1
-        self.underline_group_name = False
-        self.center_group_name = False
+        self.empty_rows_everywhere = False
+        self.prohibit_empty_rows_on_top = False
+        self.gost_in_group_name = False
         self.singular_group_name = True
-        self.gost_in_group_name = True
         self.add_first_usage = False
         self.fill_first_usage = False
         self.add_customer_fields = False
         self.add_changes_sheet = False
         self.italic = False
+        self.underline_group_name = False
+        self.center_group_name = False
+        self.center_reference = False
 
         # Current state of filling list of the components
         self._cur_line = 1
@@ -80,22 +83,24 @@ class CompList():
         self._cur_page = None
         self._lines_on_page = 0
 
-    def _replace_text(self, page, label, text, group=False):
+    def _replace_text(self, page, label, text, center=False, underline=False):
         """
-        Replace 'label' (like #1:1) to 'text' in 'page'.
-        If 'group' is set to 'True' will be used special formatting.
+        Replace 'label' (like #1:1) to 'text' in every table on 'page'.
+        If 'center' is set to 'True' text will be aligned by center of the cell.
+        If 'underline' is set to 'True' text will be underlined.
 
         """
         if self.file_format == u'.ods':
-            self._replace_text_in_table(page, label, text, group)
+            self._replace_text_in_table(page, label, text, center, underline)
         elif self.file_format == u'.odt':
             for table in page.body.getElementsByType(Table):
-                self._replace_text_in_table(table, label, text, group)
+                self._replace_text_in_table(table, label, text, center, underline)
 
-    def _replace_text_in_table(self, table, label, text, group=False):
+    def _replace_text_in_table(self, table, label, text, center=False, underline=False):
         """
         Replace 'label' (like #1:1) to 'text' in 'table'.
-        If 'group' is set to 'True' will be used special formatting.
+        If 'center' is set to 'True' text will be aligned by center of the cell.
+        If 'underline' is set to 'True' text will be underlined.
 
         """
         for row in table.getElementsByType(TableRow):
@@ -120,19 +125,21 @@ class CompList():
                                         if self.file_format == u'.odt':
                                             new_p.setAttribute(u'stylename', p_style)
                                         cell.addElement(new_p)
-                                if group == True and ( \
-                                        self.underline_group_name == True or \
-                                        self.center_group_name == True
-                                        ):
-                                    # Set center align and underline for group name
+                                if center == True or underline == True:
+                                    suffix = u''
+                                    if center == True:
+                                        suffix += u'_c'
+                                    if underline == True:
+                                        suffix += u'_u'
+                                    # Set center align and/or underline
                                     if self.file_format == u'.ods':
                                         # If used ODS format the text properties stored
                                         # in cell style.
-                                        groupStyleName = cell.getAttribute(u'stylename') + u'g'
+                                        groupStyleName = cell.getAttribute(u'stylename') + suffix
                                     elif self.file_format == u'.odt':
                                         # But if used ODT format the text properties stored
                                         # in paragraph style inside cell.
-                                        groupStyleName = u'group-name'
+                                        groupStyleName = suffix
                                     try:
                                         groupStyle = self.complist.getStyleByName(groupStyleName)
                                         # Needed for backwards compatibility
@@ -145,17 +152,17 @@ class CompList():
                                             groupStyleName = p.getAttribute(u'stylename')
                                         groupStyle = deepcopy(self.complist.getStyleByName(groupStyleName))
                                         if self.file_format == u'.ods':
-                                            groupStyleName += u'g'
+                                            groupStyleName += suffix
                                             groupStyle.setAttribute(u'name', groupStyleName)
                                         elif self.file_format == u'.odt':
-                                            groupStyle.setAttribute(u'name', u'group-name')
-                                        if self.center_group_name == True:
+                                            groupStyle.setAttribute(u'name', suffix)
+                                        if center == True:
                                             groupStyle.addElement(
                                                 ParagraphProperties(
                                                     textalign=u'center'
                                                     )
                                                 )
-                                        if self.underline_group_name == True:
+                                        if underline == True:
                                             groupStyle.addElement(
                                                 TextProperties(
                                                     textunderlinetype=u'single',
@@ -166,7 +173,7 @@ class CompList():
                                     if self.file_format == u'.ods':
                                         cell.setAttribute(u'stylename', groupStyleName)
                                     elif self.file_format == u'.odt':
-                                        p.setAttribute(u'stylename', u'group-name')
+                                        p.setAttribute(u'stylename', suffix)
                                 return
 
     def _clear_page(self, page):
@@ -325,10 +332,16 @@ class CompList():
 
         """
         for index, value in enumerate(self._get_final_values(element, with_group)):
+            center = False
+            # Reference column
+            if index == 0:
+                center = self.center_reference
+
             self._replace_text(
                 self._cur_page,
                 u'#{}:{}'.format(index + 1, self._cur_line),
-                value
+                value,
+                center=center
                 )
 
     def load(self, sch_file_name, comp_fields=None):
@@ -609,13 +622,23 @@ class CompList():
             with open(file_name, 'wb') as csv_file:
                 csv_writer = csv.writer(csv_file)
                 csv_writer.writerow(headers_row)
+
                 # Fill list of the components
                 prev_ref_type = self.components_array[0][0][1]
                 for group in self.components_array:
                     group_name = group[0][0]
                     ref_type = group[0][1]
+
                     # Empty rows between groups
-                    if prev_ref_type != ref_type:
+                    add_empty_rows = True
+                    if self.components_array.index(group) == 0:
+                        # Before first group not needed
+                        add_empty_rows = False
+                    if self.empty_rows_everywhere == False \
+                            and prev_ref_type == ref_type:
+                        # Between elements of the same type not needed
+                        add_empty_rows = False
+                    if add_empty_rows == True:
                         for _ in range(self.empty_rows_after_group):
                             csv_writer.writerow(empty_row)
                     prev_ref_type = ref_type
@@ -713,27 +736,51 @@ class CompList():
         for group in self.components_array:
             group_name = group[0][0]
             ref_type = group[0][1]
+
             # Empty rows between groups
-            if prev_ref_type != ref_type:
+            add_empty_rows = True
+            if self.components_array.index(group) == 0:
+                # Before first group not needed
+                add_empty_rows = False
+            if self.empty_rows_everywhere == False \
+                    and prev_ref_type == ref_type:
+                # Between elements of the same type not needed
+                add_empty_rows = False
+            if add_empty_rows == True:
                 for _ in range(self.empty_rows_after_group):
+                    if self.prohibit_empty_rows_on_top == True and \
+                            self._cur_line == 1:
+                        break
                     self._next_line()
             prev_ref_type = ref_type
 
             if group_name != '':
                 if len(group) == 1 and self.singular_group_name == True:
                     # Place group name with name of component
-                    self._set_line(group[0], True)
+                    self._set_line(group[0], with_group=True)
                     self._next_line()
                     continue
                 else:
                     # New group title
                     if self.gost_in_group_name == True:
                         for group_name_with_gost in self._get_group_names_with_gost(group):
-                            self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, group_name_with_gost, group=True)
+                            self._replace_text(
+                                self._cur_page,
+                                u'#2:%d' % self._cur_line,
+                                group_name_with_gost,
+                                center=self.center_group_name,
+                                underline=self.underline_group_name
+                                )
                             self._next_line()
 
                     else:
-                        self._replace_text(self._cur_page, u'#2:%d' % self._cur_line, group_name, group=True)
+                        self._replace_text(
+                            self._cur_page,
+                            u'#2:%d' % self._cur_line,
+                            group_name,
+                            center=self.center_group_name,
+                            underline=self.underline_group_name
+                            )
                         self._next_line()
 
             for comp in group:

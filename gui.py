@@ -833,7 +833,7 @@ class CompListDialog ( wx.Dialog ):
 		self.panel_file.SetSizer( sizer_file )
 		self.panel_file.Layout()
 		sizer_file.Fit( self.panel_file )
-		self.complist_notebook.AddPage( self.panel_file, u"Файл", True )
+		self.complist_notebook.AddPage( self.panel_file, u"Файл", False )
 		self.panel_options = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_options_panel = wx.BoxSizer( wx.VERTICAL )
 		
@@ -874,20 +874,20 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_groups.Add( sizer_empty_rows_groups, 1, wx.EXPAND, 5 )
 		
-		self.checkbox_underline = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Подчёркивать наименования групп", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_underline.SetToolTipString( u"Если параметр отмечен, то наименование группы элементов будет подчёркнуто сплошной линией." )
+		self.checkbox_empty_rows_everywhere = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Вставлять пустые строки между разными группами", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_empty_rows_everywhere.SetToolTipString( u"Если параметр отмечен, то пустые строки будут вставлены не только между разными типами элементов, но и между элементами, которые имеют разное наименование группы." )
 		
-		sizer_groups.Add( self.checkbox_underline, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		sizer_groups.Add( self.checkbox_empty_rows_everywhere, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
-		self.checkbox_center = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Наименование группы по центру", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_center.SetToolTipString( u"Если параметр отмечен, то наименование группы элементов будет расположено по центру ячейки таблицы." )
+		self.checkbox_prohibit_empty_rows_on_top = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Запретить пустые строки в начале страницы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_prohibit_empty_rows_on_top.SetToolTipString( u"Если при вставке пустых строк выполняется переход на новую страницу и этот параметр активен, то оставшиеся пустые строки опускаются и страница начинается со следующей группы элементов." )
 		
-		sizer_groups.Add( self.checkbox_center, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		sizer_groups.Add( self.checkbox_prohibit_empty_rows_on_top, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		self.checkbox_gost_in_group_name = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Указывать ГОСТ в наименовании группы", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_gost_in_group_name.SetToolTipString( u"Если параметр отмечен, то ГОСТ для каждой марки компонентов будет указан в заголовке группы, а не в строке компонента." )
 		
-		sizer_groups.Add( self.checkbox_gost_in_group_name, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_groups.Add( self.checkbox_gost_in_group_name, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		self.checkbox_singular_group_name = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Указывать наименование группы единственного\nэлемента в строке компонента", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_singular_group_name.SetToolTipString( u"По умолчанию, для каждой группы наименование указывается в виде заголовка на отдельной строке.\nЕсли параметр отмечен, то наименование группы состоящей из одного элемента будет указано в наименовании этого элемента, а не отдельно." )
@@ -932,6 +932,21 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_options_format.Add( self.checkbox_italic, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
+		self.checkbox_underline_group = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Подчёркивать наименования групп", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_underline_group.SetToolTipString( u"Если параметр отмечен, то наименование группы элементов будет подчёркнуто сплошной линией." )
+		
+		sizer_options_format.Add( self.checkbox_underline_group, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		self.checkbox_center_group = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Наименование группы по центру", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_center_group.SetToolTipString( u"Если параметр отмечен, то наименования групп элементов будут выравнены по центру ячейки таблицы, а не по её левому краю." )
+		
+		sizer_options_format.Add( self.checkbox_center_group, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		self.checkbox_center_ref = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Поз. обозначение по центру", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_center_ref.SetToolTipString( u"Если параметр отмечен, то позиционные обозначения элементов будут выровнены по центру ячейки таблицы, а не по её левому краю." )
+		
+		sizer_options_format.Add( self.checkbox_center_ref, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
 		
 		sizer_options.Add( sizer_options_format, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
@@ -955,7 +970,7 @@ class CompListDialog ( wx.Dialog ):
 		self.panel_options.SetSizer( sizer_options_panel )
 		self.panel_options.Layout()
 		sizer_options_panel.Fit( self.panel_options )
-		self.complist_notebook.AddPage( self.panel_options, u"Параметры", False )
+		self.complist_notebook.AddPage( self.panel_options, u"Параметры", True )
 		self.panel_stamp = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_stamp = wx.BoxSizer( wx.VERTICAL )
 		
