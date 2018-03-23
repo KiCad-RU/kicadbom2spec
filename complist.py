@@ -252,6 +252,7 @@ class CompList():
         values.append(ref)
         # Name
         if self.gost_in_group_name == True \
+                and element[0] != '' \
                 and element[4] != '' \
                 and element[8] != '':
             values.append(''.join(element[4:8]))
@@ -270,16 +271,26 @@ class CompList():
         """
         Get list of group names with GOST for every mark of components.
         """
-        group_copy = deepcopy(group)
+        group_name = group[0][0]
 
-        # Split Mark into parts by non-alphabetical chars
-        for comp in group_copy:
-            mark_string = comp[4]
+        # Create collection of unique set of groupname, mark and gost
+        group_names_parts_with_gost = []
+        for comp in group:
+            mark = comp[4]
+            gost = comp[8]
+            if mark != '' and gost != '':
+                group_name_parts = [group_name, mark, gost]
+                if not group_name_parts in group_names_parts_with_gost:
+                    group_names_parts_with_gost.append(group_name_parts)
+
+        # Split mark into parts by non-alphabetical chars
+        for group_name_parts in group_names_parts_with_gost:
+            mark_string = group_name_parts[1]
             mark_parts = []
             # First part without prefix
             res = re.search('[^A-Za-zА-Яа-я0-9_]*([A-Za-zА-Яа-я0-9_]+)($|[^A-Za-zА-Яа-я0-9_].*)', mark_string)
             if res == None:
-                comp[4] = [comp[4]]
+                group_name_parts[1] = [mark_string]
                 continue
             mark_parts.append(res.groups()[0])
             mark_string = res.groups()[1]
@@ -291,40 +302,41 @@ class CompList():
                     mark_string = res.groups()[1]
                 else:
                     break
-            comp[4] = mark_parts
+            group_name_parts[1] = mark_parts
 
+        # Create set of groupname, mark and gost with unique GOST
+        # and common part of Mark
+        group_names_parts_with_unique_gost = []
+        for group_name_parts in group_names_parts_with_gost:
+            group, mark_parts, gost = group_name_parts
+            for group_name_unique_parts in group_names_parts_with_unique_gost:
+                if group_name_unique_parts[2] == gost \
+                        and group_name_unique_parts[1][0] == mark_parts[0]:
+                    # Leave only common parts of Mark
+                    list_len = len(mark_parts)
+                    if list_len > len(group_name_unique_parts[1]):
+                        list_len = len(group_name_unique_parts[1])
+                    for i in range(list_len):
+                        if group_name_unique_parts[1][i] != mark_parts[i]:
+                            group_name_unique_parts[1] = mark_parts[:i]
+                            break
+                    break
+            else:
+                # Format: [Groupname, [Markparts, ...], GOST]
+                group_names_parts_with_unique_gost.append([group, mark_parts[:], gost])
+
+        # Concatenate parts of names together
         group_names = []
-        for comp in group_copy:
-            mark_parts = comp[4]
-            gost = comp[8].strip()
-            if mark_parts[0] != '' and gost != '':
-                for group_name in group_names:
-                    if group_name[2] == gost and group_name[1][0] == mark_parts[0]:
-                        # Leave only common parts of Mark
-                        list_len = len(mark_parts)
-                        if list_len > len(group_name[1]):
-                            list_len = len(group_name[1])
-                        for i in range(list_len):
-                            if group_name[1][i] != mark_parts[i]:
-                                group_name[1] = mark_parts[:i]
-                        break
-                else:
-                    # Format: [Groupname, [Markparts, ...], GOST]
-                    group_names.append([comp[0], mark_parts[:], gost])
+        for group_name_parts in group_names_parts_with_unique_gost:
+            group_name_parts[1] = ''.join(group_name_parts[1])
+            name = ' '.join(group_name_parts)
+            group_names.append(name)
 
-        # Concatenate parts of name together
-        final_group_names = []
-        for group_name in group_names:
-            group_name[1] = ''.join(group_name[1])
-            name = ' '.join(group_name)
-            name = name.strip()
-            final_group_names.append(name)
+        # If GOST or Mark not present - use default group name
+        if group_names == []:
+            group_names = [group_name]
 
-        # If GOST not present - use default group name
-        if final_group_names == []:
-            final_group_names = [group_copy[0][0]]
-
-        return final_group_names
+        return group_names
 
     def _set_line(self, element, with_group=False):
         """
