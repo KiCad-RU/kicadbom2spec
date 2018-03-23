@@ -259,7 +259,10 @@ class CompList():
         else:
             values.append(''.join(element[4:9]))
         if with_group == True:
-            singular_group_name = self.get_singular_group_name(element[0])
+            try:
+                singular_group_name = self.get_singular_group_name(element[0])
+            except:
+                singular_group_name = element[0]
             values[-1] = singular_group_name + ' ' + values[-1]
         # Count
         values.append(element[10])
