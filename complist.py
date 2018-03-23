@@ -63,6 +63,8 @@ class CompList():
 
         # Options
         self.file_format = u'.ods' # u'.odt', u'.csv'
+        self.all_components = False
+        self.add_units = False
         self.empty_rows_after_group = 1
         self.empty_rows_everywhere = False
         self.prohibit_empty_rows_on_top = False
@@ -77,7 +79,25 @@ class CompList():
         self.center_group_name = False
         self.center_reference = False
 
-        # Current state of filling list of the components
+        # Additional data
+        self.separators_dict = {
+            u'марка':['',''],
+            u'значение':['',''],
+            u'класс точности':['',''],
+            u'тип':['',''],
+            u'стандарт':['','']
+            }
+        self.aliases_dict = {
+            u'группа':u'Группа',
+            u'марка':u'Марка',
+            u'значение':u'',
+            u'класс точности':u'Класс точности',
+            u'тип':u'Тип',
+            u'стандарт':u'Стандарт',
+            u'примечание':u'Примечание'
+            }
+
+        # Current state of filling the list of components
         self._cur_line = 1
         self._cur_page_num = 1
         self._cur_page = None
@@ -232,42 +252,106 @@ class CompList():
         Get list with final fields values of component.
         """
         values = []
+
+        group, \
+        ref_type, \
+        ref_num, \
+        need_adjust_flag, \
+        mark, \
+        value, \
+        accuracy, \
+        type_, \
+        gost, \
+        comment, \
+        count = element
+
         # Reference
         ref = u''
-        if int(element[10]) > 1:
+        if int(count) > 1:
             # Reference number: '5, 6'; '25-28' etc.
-            ref = re.search(r'(\d+)(-|,\s?)(\d+)', element[2]).groups()
-            if element[3]:
+            ref = re.search(r'(\d+)(-|,\s?)(\d+)', ref_num).groups()
+            if need_adjust_flag == True:
                 # Reference: 'VD1*, VD2*'; 'C8*-C11*' etc.
-                ref = (element[1] + u'%s*%s' + element[1] + u'%s*') % ref
+                ref = (ref_type + u'%s*%s' + ref_type + u'%s*') % ref
             else:
                 # Reference: 'VD1, VD2'; 'C8-C11' etc.
-                ref = (element[1] + u'%s%s' + element[1] + u'%s') % ref
+                ref = (ref_type + u'%s%s' + ref_type + u'%s') % ref
         else:
             # Reference: 'R5'; 'VT13' etc.
-            ref = element[1] + element[2]
+            ref = ref_type + ref_num
             # Add "*" mark if component "needs adjusting"
-            if element[3]:
-                ref = ref + '*'
+            if need_adjust_flag == True:
+                ref = ref + u'*'
         values.append(ref)
+
         # Name
-        if self.gost_in_group_name == True \
-                and element[0] != '' \
-                and element[4] != '' \
-                and element[8] != '':
-            values.append(''.join(element[4:8]))
-        else:
-            values.append(''.join(element[4:9]))
+        name = u''
+        # Adding separators
+        if mark != u'':
+            name += "{prefix}{value}{suffix}".format(
+                    prefix = self.separators_dict[u'марка'][0],
+                    value = mark,
+                    suffix = self.separators_dict[u'марка'][1]
+                    )
+        if value != u'':
+            # Automatically units addition
+            if self.add_units == True:
+                if ref_type.startswith(u'C') and not value.endswith(u'Ф'):
+                    if value.isdigit():
+                        value += u'п'
+                    else:
+                        # If value is real number
+                        try:
+                            f = float(value.replace(',', '.'))
+                            value += u'мк'
+                        except:
+                            pass
+                    value += u'Ф'
+                elif ref_type.startswith(u'L') and not value.endswith(u'Гн'):
+                    value += u'Гн'
+                elif ref_type.startswith(u'R') and not value.endswith(u'Ом'):
+                    value += u'Ом'
+            name += "{prefix}{value}{suffix}".format(
+                    prefix = self.separators_dict[u'значение'][0],
+                    value = value,
+                    suffix = self.separators_dict[u'значение'][1]
+                    )
+        if accuracy != u'':
+            name += "{prefix}{value}{suffix}".format(
+                    prefix = self.separators_dict[u'класс точности'][0],
+                    value = accuracy,
+                    suffix = self.separators_dict[u'класс точности'][1]
+                    )
+        if type_ != u'':
+            name += "{prefix}{value}{suffix}".format(
+                    prefix = self.separators_dict[u'тип'][0],
+                    value = type_,
+                    suffix = self.separators_dict[u'тип'][1]
+                    )
+        if self.gost_in_group_name == False \
+                or group == u'' \
+                or mark == u'' \
+                or gost == u'':
+            if gost != u'':
+                name += "{prefix}{value}{suffix}".format(
+                        prefix = self.separators_dict[u'стандарт'][0],
+                        value = gost,
+                        suffix = self.separators_dict[u'стандарт'][1]
+                                )
         if with_group == True:
             try:
-                singular_group_name = self.get_singular_group_name(element[0])
+                singular_group_name = self.get_singular_group_name(group)
             except:
-                singular_group_name = element[0]
-            values[-1] = singular_group_name + ' ' + values[-1]
+                singular_group_name = group
+            name = singular_group_name + u' ' + name
+        values.append(name)
+
         # Count
-        values.append(element[10])
+        values.append(count)
+
         # Comment
-        values.append(element[9])
+        values.append(comment)
+
         return values
 
     def _get_group_names_with_gost(self, group):
@@ -281,7 +365,7 @@ class CompList():
         for comp in group:
             mark = comp[4]
             gost = comp[8]
-            if mark != '' and gost != '':
+            if mark != u'' and gost != u'':
                 group_name_parts = [group_name, mark, gost]
                 if not group_name_parts in group_names_parts_with_gost:
                     group_names_parts_with_gost.append(group_name_parts)
@@ -291,7 +375,7 @@ class CompList():
             mark_string = group_name_parts[1]
             mark_parts = []
             # First part without prefix
-            res = re.search('[^A-Za-zА-Яа-я0-9_]*([A-Za-zА-Яа-я0-9_]+)($|[^A-Za-zА-Яа-я0-9_].*)', mark_string)
+            res = re.search(u'[^A-Za-zА-Яа-я0-9]*([A-Za-zА-Яа-я0-9]+)($|[^A-Za-zА-Яа-я0-9].*)', mark_string)
             if res == None:
                 group_name_parts[1] = [mark_string]
                 continue
@@ -299,7 +383,7 @@ class CompList():
             mark_string = res.groups()[1]
             # Other parts with delimiters as prefix
             while True:
-                res = re.search('([^A-Za-zА-Яа-я0-9_\.,]+[A-Za-zА-Яа-я0-9_\.,]+)($|[^A-Za-zА-Яа-я0-9_\.,].*)', mark_string)
+                res = re.search(u'([^A-Za-zА-Яа-я0-9]+[A-Za-zА-Яа-я0-9_\.,]+)($|[^A-Za-zА-Яа-я0-9].*)', mark_string)
                 if res != None:
                     mark_parts.append(res.groups()[0])
                     mark_string = res.groups()[1]
@@ -331,8 +415,8 @@ class CompList():
         # Concatenate parts of names together
         group_names = []
         for group_name_parts in group_names_parts_with_unique_gost:
-            group_name_parts[1] = ''.join(group_name_parts[1])
-            name = ' '.join(group_name_parts)
+            group_name_parts[1] = u''.join(group_name_parts[1])
+            name = u' '.join(group_name_parts)
             group_names.append(name)
 
         # If GOST or Mark not present - use default group name
@@ -359,11 +443,10 @@ class CompList():
                 center=center
                 )
 
-    def load(self, sch_file_name, comp_fields=None):
+    def load(self, sch_file_name):
         """
-        Load all components from KiCad Schematic file
-        or get fields of the components directly
-        and then fills the list.
+        Load values of the fields from all components of
+        KiCad Schematic file.
 
         """
 
@@ -375,7 +458,7 @@ class CompList():
             for field in comp.fields:
                 if hasattr(field, u'name'):
                     if field.name == field_name:
-                        return field.text
+                        return field.text.decode('utf-8')
             return u''
 
         def apply_substitution(comp, ref, field_value):
@@ -416,7 +499,7 @@ class CompList():
                 if comp.fields[0].text == ref:
                     return comp
                 else:
-                    if hasattr(comp, 'path_and_ref'):
+                    if hasattr(comp, u'path_and_ref'):
                         for path_and_ref in comp.path_and_ref:
                             if path_and_ref[1] == ref:
                                 return comp
@@ -431,67 +514,91 @@ class CompList():
         self.title = self.convert_title(sch.descr.title)
         self.company = sch.descr.comp.decode('utf-8')
 
+        # Load all fields
         components = self.get_components(sch_file_name)
         comp_array = []
-        if comp_fields:
-            # Copy prepared fields
-            comp_array = comp_fields[:]
-        else:
-            # Load all fields
-            for comp in components:
-                # Skip unannotated components
-                if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
-                    continue
-                # Skip components with not supported ref type
-                if not re.match(REF_REGEXP, comp.fields[0].text):
-                    continue
-                # Skip components excluded manually
-                for field in comp.fields:
-                    if hasattr(field, u'name'):
-                        if field.name == u'Исключён из ПЭ':
-                            continue
-                # Skip parts of the same component
-                for row in comp_array:
-                    if comp.fields[0].text == (row[1] + row[2]):
-                        break
-                else:
-                    temp = []
-                    temp.append(get_text_from_field(comp, u'Группа'))
-                    ref_type = re.search(REF_REGEXP, comp.fields[0].text).group(1)
-                    temp.append(ref_type)
-                    ref_num = re.search(REF_REGEXP, comp.fields[0].text).group(2)
-                    temp.append(ref_num)
+        for comp in components:
+            # Skip unannotated components
+            if not comp.fields[0].text or comp.fields[0].text.endswith(u'?'):
+                continue
+            # Skip components with not supported ref type
+            if not re.match(REF_REGEXP, comp.fields[0].text):
+                continue
+            # Skip components excluded manually
+            if self.all_components == False:
+                try:
                     for field in comp.fields:
                         if hasattr(field, u'name'):
-                            if field.name == u'Подбирают при регулировании':
-                                temp.append(True)
-                                break
-                    else:
-                        temp.append(False)
-                    temp.append(get_text_from_field(comp, u'Марка'))
+                            if field.name == u'Исключён из ПЭ':
+                                raise
+                except:
+                    continue
+            # Skip parts of the same component
+            for row in comp_array:
+                if comp.fields[0].text == (row[1] + row[2]):
+                    break
+            else:
+                temp = []
+                temp.append(get_text_from_field(
+                    comp,
+                    self.aliases_dict[u'группа']
+                    ))
+                ref_type = re.search(REF_REGEXP, comp.fields[0].text).group(1)
+                temp.append(ref_type)
+                ref_num = re.search(REF_REGEXP, comp.fields[0].text).group(2)
+                temp.append(ref_num)
+                for field in comp.fields:
+                    if hasattr(field, u'name'):
+                        if field.name == u'Подбирают при регулировании':
+                            temp.append(True)
+                            break
+                else:
+                    temp.append(False)
+                temp.append(get_text_from_field(
+                    comp,
+                    self.aliases_dict[u'марка']
+                    ))
+                if self.aliases_dict[u'значение'] == u'':
                     temp.append(comp.fields[1].text)
-                    temp.append(get_text_from_field(comp, u'Класс точности'))
-                    temp.append(get_text_from_field(comp, u'Тип'))
-                    temp.append(get_text_from_field(comp, u'Стандарт'))
-                    temp.append(get_text_from_field(comp, u'Примечание'))
-                    temp.append(u'1')
-                    if hasattr(comp, 'path_and_ref'):
-                        for ref in comp.path_and_ref:
-                            # Skip unannotated components
-                            if not ref[1] or ref[1].endswith('?'):
-                                continue
-                            # Skip parts of the same comp from different sheets
-                            for value in comp_array:
-                                tmp_ref = value[1] + value[2]
-                                if tmp_ref == ref[1]:
-                                    break
-                            else:
-                                new_temp = list(temp)
-                                new_temp[1] = re.search(REF_REGEXP, ref[1]).group(1)
-                                new_temp[2] = re.search(REF_REGEXP, ref[1]).group(2)
-                                comp_array.append(new_temp)
-                    else:
-                        comp_array.append(temp)
+                else:
+                    temp.append(get_text_from_field(
+                        comp,
+                        self.aliases_dict[u'значение']
+                        ))
+                temp.append(get_text_from_field(
+                    comp,
+                    self.aliases_dict[u'класс точности']
+                    ))
+                temp.append(get_text_from_field(
+                    comp,
+                    self.aliases_dict[u'тип']
+                    ))
+                temp.append(get_text_from_field(
+                    comp,
+                    self.aliases_dict [u'стандарт']
+                    ))
+                temp.append(get_text_from_field(
+                    comp,
+                    self.aliases_dict [u'примечание']
+                    ))
+                temp.append(u'1')
+                if hasattr(comp, u'path_and_ref'):
+                    for ref in comp.path_and_ref:
+                        # Skip unannotated components
+                        if not ref[1] or ref[1].endswith(u'?'):
+                            continue
+                        # Skip parts of the same comp from different sheets
+                        for value in comp_array:
+                            tmp_ref = value[1] + value[2]
+                            if tmp_ref == ref[1]:
+                                break
+                        else:
+                            new_temp = list(temp)
+                            new_temp[1] = re.search(REF_REGEXP, ref[1]).group(1)
+                            new_temp[2] = re.search(REF_REGEXP, ref[1]).group(2)
+                            comp_array.append(new_temp)
+                else:
+                    comp_array.append(temp)
 
         # Apply substitution
         for i in range(len(comp_array)):
@@ -658,7 +765,7 @@ class CompList():
                             csv_writer.writerow(empty_row)
                     prev_ref_type = ref_type
 
-                    if group_name != '':
+                    if group_name != u'':
                         if len(group) == 1 and self.singular_group_name == True:
                             # Place group name with name of component
                             comp_values = self._get_final_values(group[0], True)
@@ -668,9 +775,9 @@ class CompList():
                             # New group title
                             if self.gost_in_group_name == True:
                                 for group_name_with_gost in self._get_group_names_with_gost(group):
-                                    csv_writer.writerow(['', group_name_with_gost, '', ''])
+                                    csv_writer.writerow([u'', group_name_with_gost, u'', u''])
                             else:
-                                csv_writer.writerow(['', group_name, '', ''])
+                                csv_writer.writerow([u'', group_name, u'', u''])
 
                     for comp in group:
                         # Write component into list
@@ -769,7 +876,7 @@ class CompList():
                     self._next_line()
             prev_ref_type = ref_type
 
-            if group_name != '':
+            if group_name != u'':
                 if len(group) == 1 and self.singular_group_name == True:
                     # Place group name with name of component
                     self._set_line(group[0], with_group=True)
@@ -836,7 +943,7 @@ class CompList():
                 if self.fill_first_usage:
                     first_usage = re.search(NUM_REGEXP, self.decimal_num)
                     if first_usage != None:
-                        self._replace_text(page, u'#6:1', first_usage.group(1).rstrip(' '))
+                        self._replace_text(page, u'#6:1', first_usage.group(1).strip())
 
             # Other pages - small stamp
             else:
@@ -903,7 +1010,7 @@ class CompList():
         version = version.replace('\n', '')
         version_file.close()
         creation_time = time.localtime()
-        creation_time_str = '{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{min:02d}:{sec:02d}'.format(
+        creation_time_str = u'{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{min:02d}:{sec:02d}'.format(
                 year = creation_time.tm_year,
                 month = creation_time.tm_mon,
                 day = creation_time.tm_mday,

@@ -15,13 +15,14 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-import os
-import sys
-import subprocess
-import shutil
-import re
-import codecs
 import argparse
+import codecs
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
 import webbrowser
 from operator import itemgetter
 from ConfigParser import SafeConfigParser
@@ -35,9 +36,9 @@ EXEC_PATH = os.getcwd()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 import gui
+from complist import *
 from controls import *
 from kicadsch import *
-from complist import *
 
 # Set default encoding
 reload(sys)
@@ -1275,17 +1276,6 @@ class Window(gui.MainFrame):
                     selected_cols.append(i)
         return selected_cols
 
-    def isreal(self, s):
-        """
-        Return true if string contain real number.
-
-        """
-        try:
-            float(s.replace(',', '.'))
-            return True
-        except:
-            return False
-
     def on_recent_sch(self, event):
         """
         Open recent schematic file.
@@ -1792,7 +1782,7 @@ class Window(gui.MainFrame):
         self.set_schematic_values(comp_values)
         for schematic in self.schematics:
             if schematic.sch_name == self.schematic_file:
-                # Stamp fields
+                # Stamp fields only for root sheet
                 schematic.descr.comment1 = self.stamp_dict['decimal_num']
                 schematic.descr.comment2 = self.stamp_dict['developer']
                 schematic.descr.comment3 = self.stamp_dict['verifier']
@@ -1810,7 +1800,8 @@ class Window(gui.MainFrame):
                 self.menuitem_save_sch.Enable(False)
                 self.update_comp_fields_panel()
             except:
-                if os.path.exists(schematic.sch_name + '.tmp'):
+                if os.path.exists(schematic.sch_name + '.tmp') \
+                        and os.path.exists(schematic.sch_name):
                     os.remove(schematic.sch_name + '.tmp')
                 wx.MessageBox(
                     u'При сохранении файла схемы:\n' +
@@ -1822,7 +1813,7 @@ class Window(gui.MainFrame):
                     wx.ICON_ERROR|wx.OK, self
                     )
 
-    def on_save_sch_as(self, event):
+    def on_save_sch_as(self, event, file_name=None):
         """
         Save changes in the fields of the components to the separate
         schematic file(s).
@@ -1830,44 +1821,57 @@ class Window(gui.MainFrame):
         """
         comp_values = self.grid.get_values()
         self.set_schematic_values(comp_values)
-        new_schematic_file = ''
+
+        if file_name == None:
+            save_sch_dialog = wx.FileDialog(
+                self,
+                u'Сохранить схему как...',
+                os.path.dirname(self.schematic_file),
+                os.path.basename(self.schematic_file),
+                u'Схема (*.sch)|*.sch|Все файлы (*.*)|*.*',
+                wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
+                )
+            if save_sch_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            file_name = save_sch_dialog.GetPath()
+
+        base_dir = os.path.dirname(self.schematic_file)
+        new_dir, new_file = os.path.split(file_name)
+
         for schematic in self.schematics:
+            sch_dir, sch_file = os.path.split(schematic.sch_name)
+            sch_reldir = os.path.relpath(sch_dir, base_dir)
+
             if schematic.sch_name == self.schematic_file:
-                # Stamp fields
+                # Stamp fields only for root sheet
                 schematic.descr.comment1 = self.stamp_dict['decimal_num']
                 schematic.descr.comment2 = self.stamp_dict['developer']
                 schematic.descr.comment3 = self.stamp_dict['verifier']
                 schematic.descr.comment4 = self.stamp_dict['approver']
                 schematic.descr.comp = self.stamp_dict['comp']
                 schematic.descr.title = self.stamp_dict['title']
+                # New name for root sheet only
+                sch_file = new_file
+
+            new_dir = os.path.join(new_dir, sch_reldir)
+            new_path = os.path.join(new_dir, sch_file)
 
             try:
-                save_sch_dialog = wx.FileDialog(
-                    self,
-                    u'Сохранить схему как...',
-                    os.path.dirname(schematic.sch_name),
-                    os.path.basename(schematic.sch_name),
-                    u'Схема (*.sch)|*.sch|Все файлы (*.*)|*.*',
-                    wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
-                    )
-                if save_sch_dialog.ShowModal() == wx.ID_CANCEL:
-                    return
-                new_schematic_file = save_sch_dialog.GetPath()
-                if os.path.exists(new_schematic_file  + '.tmp'):
-                    os.remove(new_schematic_file + '.tmp')
-                schematic.save(new_schematic_file + '.tmp')
-                if os.path.exists(new_schematic_file):
-                    os.remove(new_schematic_file)
-                os.rename(new_schematic_file + '.tmp', new_schematic_file)
-                if new_schematic_file == schematic.sch_name:
-                    self.saved = True
-                    self.menuitem_save_sch.Enable(False)
+                if not os.path.exists(new_dir):
+                    os.makedirs(new_dir)
+                if os.path.exists(new_path  + '.tmp'):
+                    os.remove(new_path + '.tmp')
+                schematic.save(new_path + '.tmp')
+                if os.path.exists(new_path):
+                    os.remove(new_path)
+                os.rename(new_path + '.tmp', new_path)
             except:
-                if os.path.exists(new_schematic_file + '.tmp'):
-                    os.remove(new_schematic_file + '.tmp')
+                if os.path.exists(new_path + '.tmp') \
+                        and os.path.exists(new_path):
+                    os.remove(new_path + '.tmp')
                 wx.MessageBox(
                     u'При сохранении файла схемы:\n' +
-                    new_schematic_file + '\n' \
+                    new_path + '\n' \
                     u'возникла ошибка:\n' +
                     str(sys.exc_info()[1]) + '\n' \
                     u'Файл не сохранен.',
@@ -2003,7 +2007,8 @@ class Window(gui.MainFrame):
             self.menuitem_save_lib.Enable(False)
             self.update_comp_fields_panel()
         except:
-            if os.path.exists(self.library_file + '.tmp'):
+            if os.path.exists(self.library_file + '.tmp') \
+                    and os.path.exists(self.library_file):
                 os.remove(self.library_file + '.tmp')
             wx.MessageBox(
                 u'При сохранении файла библиотеки:\n' +
@@ -2023,29 +2028,29 @@ class Window(gui.MainFrame):
         """
         comp_values = self.grid.get_values()
         self.set_library_values(comp_values)
-        new_library_file = ''
+
+        save_lib_dialog = wx.FileDialog(
+            self,
+            u'Сохранить библиотеку как...',
+            os.path.dirname(self.library_file),
+            os.path.basename(self.library_file),
+            u'Библиотека (*.lib)|*.lib|Все файлы (*.*)|*.*',
+            wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
+            )
+        if save_lib_dialog.ShowModal() == wx.ID_CANCEL:
+            return
+        new_library_file = save_lib_dialog.GetPath()
+
         try:
-            save_lib_dialog = wx.FileDialog(
-                self,
-                u'Сохранить библиотеку как...',
-                os.path.dirname(self.library_file),
-                os.path.basename(self.library_file),
-                u'Библиотека (*.lib)|*.lib|Все файлы (*.*)|*.*',
-                wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
-                )
-            if save_lib_dialog.ShowModal() == wx.ID_CANCEL:
-                return
-            new_library_file = save_lib_dialog.GetPath()
             if os.path.exists(new_library_file + '.tmp'):
                 os.remove(new_library_file + '.tmp')
             self.library.save(new_library_file + '.tmp')
             if os.path.exists(new_library_file):
                 os.remove(new_library_file)
             os.rename(new_library_file + '.tmp', new_library_file)
-            self.saved = True
-            self.menuitem_save_lib.Enable(False)
         except:
-            if os.path.exists(new_library_file + '.tmp'):
+            if os.path.exists(new_library_file + '.tmp') \
+                    and os.path.exists(new_library_file):
                 os.remove(new_library_file + '.tmp')
             wx.MessageBox(
                 u'При сохранении файла библиотеки:\n' +
@@ -2071,7 +2076,7 @@ class Window(gui.MainFrame):
             request_dialog.group_name_text.Enable(False)
             result = request_dialog.ShowModal()
             singular = request_dialog.singular_group_name_text.GetValue()
-            if result == wx.ID_OK and singular != '':
+            if result == wx.ID_OK and singular != u'':
                 self.group_names_dict[group_name] = singular
                 return singular
             else:
@@ -2203,8 +2208,6 @@ class Window(gui.MainFrame):
         complist_dialog.rbutton_csv.Bind(wx.EVT_RADIOBUTTON, on_rbutton_csv)
 
         # Load settings
-        all_components = False
-        add_units = False
         open_complist = False
 
         if self.settings.has_section('complist'):
@@ -2216,16 +2219,12 @@ class Window(gui.MainFrame):
                         )
                     )
                complist_dialog.CentreOnParent()
-
             if self.settings.has_option('complist', 'all'):
-                all_components = self.settings.getboolean('complist', 'all')
+                complist.all_components = self.settings.getboolean('complist', 'all')
             if self.settings.has_option('complist', 'units'):
-                add_units = self.settings.getboolean('complist', 'units')
-            if self.settings.has_option('complist', 'open'):
-                open_complist = self.settings.getboolean('complist', 'open')
+                complist.add_units = self.settings.getboolean('complist', 'units')
             if self.settings.has_option('complist', 'inspector'):
                 self.stamp_dict['inspector'] = self.settings.get('complist', 'inspector')
-
             if self.settings.has_option('complist', 'file_format'):
                 complist.file_format = self.settings.get('complist', 'file_format')
             if self.settings.has_option('complist', 'empty_rows_after_group'):
@@ -2255,6 +2254,9 @@ class Window(gui.MainFrame):
             if self.settings.has_option('complist', 'center_reference'):
                 complist.center_reference = self.settings.getboolean('complist', 'center_reference')
 
+            if self.settings.has_option('complist', 'open'):
+                open_complist = self.settings.getboolean('complist', 'open')
+
         # Options
         complist_dialog.filepicker_complist.SetPath(self.complist_file)
         if complist.file_format == u'.odt':
@@ -2263,10 +2265,8 @@ class Window(gui.MainFrame):
             complist_dialog.rbutton_ods.SetValue(True)
         elif complist.file_format == u'.csv':
             complist_dialog.rbutton_csv.SetValue(True)
-        complist_dialog.checkbox_all_components.SetValue(all_components)
-        complist_dialog.checkbox_add_units.SetValue(add_units)
-        complist_dialog.checkbox_open.SetValue(open_complist)
-
+        complist_dialog.checkbox_all_components.SetValue(complist.all_components)
+        complist_dialog.checkbox_add_units.SetValue(complist.add_units)
         complist_dialog.choice_after_groups.SetSelection(complist.empty_rows_after_group)
         complist_dialog.checkbox_empty_rows_everywhere.SetValue(complist.empty_rows_everywhere)
         complist_dialog.checkbox_prohibit_empty_rows_on_top.SetValue(complist.prohibit_empty_rows_on_top)
@@ -2281,6 +2281,8 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_underline_group.SetValue(complist.underline_group_name)
         complist_dialog.checkbox_center_group.SetValue(complist.center_group_name)
         complist_dialog.checkbox_center_ref.SetValue(complist.center_reference)
+
+        complist_dialog.checkbox_open.SetValue(open_complist)
 
         # Stamp
         for field in self.stamp_dict.keys():
@@ -2317,10 +2319,8 @@ class Window(gui.MainFrame):
             self.complist_file = os.path.splitext(self.complist_file)[0] + complist.file_format
 
             # Save settings from complist dialog
-            all_components = complist_dialog.checkbox_all_components.IsChecked()
-            add_units = complist_dialog.checkbox_add_units.IsChecked()
-            open_complist = complist_dialog.checkbox_open.GetValue()
-
+            complist.all_components = complist_dialog.checkbox_all_components.IsChecked()
+            complist.add_units = complist_dialog.checkbox_add_units.IsChecked()
             complist.empty_rows_after_group = complist_dialog.choice_after_groups.GetSelection()
             complist.empty_rows_everywhere = complist_dialog.checkbox_empty_rows_everywhere.GetValue()
             complist.prohibit_empty_rows_on_top = complist_dialog.checkbox_prohibit_empty_rows_on_top.GetValue()
@@ -2334,6 +2334,8 @@ class Window(gui.MainFrame):
             complist.underline_group_name = complist_dialog.checkbox_underline_group.GetValue()
             complist.center_group_name = complist_dialog.checkbox_center_group.GetValue()
             complist.center_reference = complist_dialog.checkbox_center_ref.GetValue()
+
+            open_complist = complist_dialog.checkbox_open.GetValue()
 
             # Stamp
             for field in self.stamp_dict.keys():
@@ -2350,11 +2352,8 @@ class Window(gui.MainFrame):
             # Save settings
             if not self.settings.has_section('complist'):
                 self.settings.add_section('complist')
-            self.settings.set('complist', 'all', str(all_components))
-            self.settings.set('complist', 'units', str(add_units))
-            self.settings.set('complist', 'open', str(open_complist))
-            self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
-
+            self.settings.set('complist', 'all', str(complist.all_components))
+            self.settings.set('complist', 'units', str(complist.add_units))
             self.settings.set('complist', 'file_format', complist.file_format)
             self.settings.set('complist', 'empty_rows_after_group', str(complist.empty_rows_after_group))
             self.settings.set('complist', 'empty_rows_everywhere', str(complist.empty_rows_everywhere))
@@ -2370,70 +2369,18 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'center_group_name', str(complist.center_group_name))
             self.settings.set('complist', 'center_reference', str(complist.center_reference))
 
-            comp_fields = []
-            grid_values = self.grid.get_values()
-            for row in grid_values:
-                if (row[0] == u'1') | all_components:
-                    fields = row[1:-1]
-                    # Remove extra data from ref in comp like '(R321)R123' or 'R321*'
-                    fields[1] = self.grid.get_pure_ref(fields[1])
-                    # Split reference on index and number
-                    fields.insert(1, re.search(REF_REGEXP, fields[1]).group(1))
-                    fields[2] = re.search(REF_REGEXP, fields[2]).group(2)
-                    # Automatically units addition
-                    if add_units and fields[4] != '':
-                        if fields[1] == u'C' and fields[4][-1:] != u'Ф':
-                            if fields[4].isdigit():
-                                fields[4] += u'п'
-                            elif self.isreal(fields[4]):
-                                fields[4] += u'мк'
-                            fields[4] += u'Ф'
-                        elif fields[1] == u'L' and fields[4][-2:] != u'Гн':
-                            fields[4] += u'Гн'
-                        elif fields[1] == u'R' and fields[4][-2:] != u'Ом':
-                            fields[4] += u'Ом'
-                    # Adding separators
-                    if fields[3]:
-                        fields[3] = "{prefix}{value}{suffix}".format(
-                                prefix = self.separators_dict[u'марка'][0],
-                                value = fields[3],
-                                suffix = self.separators_dict[u'марка'][1]
-                                )
-                    if fields[4]:
-                        fields[4] = "{prefix}{value}{suffix}".format(
-                                prefix = self.separators_dict[u'значение'][0],
-                                value = fields[4],
-                                suffix = self.separators_dict[u'значение'][1]
-                                )
-                    if fields[5]:
-                        fields[5] = "{prefix}{value}{suffix}".format(
-                                prefix = self.separators_dict[u'класс точности'][0],
-                                value = fields[5],
-                                suffix = self.separators_dict[u'класс точности'][1]
-                                )
-                    if fields[6]:
-                        fields[6] = "{prefix}{value}{suffix}".format(
-                                prefix = self.separators_dict[u'тип'][0],
-                                value = fields[6],
-                                suffix = self.separators_dict[u'тип'][1]
-                                )
-                    if fields[7]:
-                        fields[7] = "{prefix}{value}{suffix}".format(
-                                prefix = self.separators_dict[u'стандарт'][0],
-                                value = fields[7],
-                                suffix = self.separators_dict[u'стандарт'][1]
-                                )
-                    fields.append('1')
-                    # Insert "need adjust" flag
-                    if row[2].endswith('*'):
-                        fields.insert(3, True)
-                    else:
-                        fields.insert(3, False)
-                    # Add prepared fields of an component
-                    comp_fields.append(fields)
+            self.settings.set('complist', 'open', str(open_complist))
+            self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
+
             try:
-                # Load components
-                complist.load(self.schematic_file, comp_fields)
+                # Save entire schematic with current changes to temporary directory
+                temp_dir = tempfile.mkdtemp(prefix='kicadbom2spec_')
+                sch_file = os.path.basename(self.schematic_file)
+                temp_file = os.path.join(temp_dir, sch_file)
+                self.on_save_sch_as(None, file_name=temp_file)
+                # Options
+                complist.aliases_dict = self.aliases_dict
+                complist.separators_dict = self.separators_dict
                 # Stamp
                 complist.decimal_num = complist.convert_decimal_num(self.stamp_dict['decimal_num'])
                 complist.developer = self.stamp_dict['developer']
@@ -2442,8 +2389,12 @@ class Window(gui.MainFrame):
                 complist.approver = self.stamp_dict['approver']
                 complist.comp = self.stamp_dict['comp']
                 complist.title = complist.convert_title(self.stamp_dict['title'])
+                # Load components
+                complist.load(temp_file)
                 # Save comp list
                 complist.save(self.complist_file)
+                # Remove temporary directory
+                shutil.rmtree(temp_dir, ignore_errors=True)
             except:
                 wx.MessageBox(
                     u'При создании перечня элементов:\n' +
