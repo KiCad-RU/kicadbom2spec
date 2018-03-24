@@ -70,6 +70,7 @@ class CompList():
         self.prohibit_empty_rows_on_top = False
         self.gost_in_group_name = False
         self.singular_group_name = True
+        self.prohibit_group_name_at_bottom = False
         self.add_first_usage = False
         self.fill_first_usage = False
         self.add_customer_fields = False
@@ -787,6 +788,7 @@ class CompList():
                         # Write component into list
                         csv_writer.writerow(self._get_final_values(comp))
             return
+
         elif self.file_format == u'.ods':
             # Load the pattern
             pattern = odf.opendocument.load(os.path.join(
@@ -889,7 +891,13 @@ class CompList():
                 else:
                     # New group title
                     if self.gost_in_group_name == True:
-                        for group_name_with_gost in self._get_group_names_with_gost(group):
+                        group_names_with_gost = self._get_group_names_with_gost(group)
+                        # If name of group at bottom of page - move it to next page
+                        if self.prohibit_group_name_at_bottom == True \
+                                and (self._cur_line + len(group_names_with_gost)) >= self._lines_on_page:
+                            while self._cur_line != 1:
+                                self._next_line()
+                        for group_name_with_gost in group_names_with_gost:
                             self._replace_text(
                                 self._cur_page,
                                 u'#2:%d' % self._cur_line,
@@ -900,6 +908,10 @@ class CompList():
                             self._next_line()
 
                     else:
+                        # If name of group at bottom of page - move it to next page
+                        if self.prohibit_group_name_at_bottom == True \
+                                and self._cur_line == self._lines_on_page:
+                            self._next_line()
                         self._replace_text(
                             self._cur_page,
                             u'#2:%d' % self._cur_line,

@@ -2239,6 +2239,8 @@ class Window(gui.MainFrame):
                 complist.singular_group_name = self.settings.getboolean('complist', 'singular_group_name')
             if self.settings.has_option('complist', 'first_usage'):
                 complist.add_first_usage = self.settings.getboolean('complist', 'first_usage')
+            if self.settings.has_option('complist', 'prohibit_group_name_at_bottom'):
+                complist.prohibit_group_name_at_bottom = self.settings.getboolean('complist', 'prohibit_group_name_at_bottom')
             if self.settings.has_option('complist', 'fill_first_usage'):
                 complist.fill_first_usage = self.settings.getboolean('complist', 'fill_first_usage')
             if self.settings.has_option('complist', 'customer_fields'):
@@ -2272,6 +2274,7 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_prohibit_empty_rows_on_top.SetValue(complist.prohibit_empty_rows_on_top)
         complist_dialog.checkbox_gost_in_group_name.SetValue(complist.gost_in_group_name)
         complist_dialog.checkbox_singular_group_name.SetValue(complist.singular_group_name)
+        complist_dialog.checkbox_prohibit_group_name_at_bottom.SetValue(complist.prohibit_group_name_at_bottom)
         complist_dialog.checkbox_first_usage.SetValue(complist.add_first_usage)
         complist_dialog.checkbox_first_usage_fill.SetValue(complist.fill_first_usage)
         complist_dialog.checkbox_first_usage_fill.Enable(complist.add_first_usage)
@@ -2326,6 +2329,7 @@ class Window(gui.MainFrame):
             complist.prohibit_empty_rows_on_top = complist_dialog.checkbox_prohibit_empty_rows_on_top.GetValue()
             complist.gost_in_group_name = complist_dialog.checkbox_gost_in_group_name.GetValue()
             complist.singular_group_name = complist_dialog.checkbox_singular_group_name.GetValue()
+            complist.prohibit_group_name_at_bottom = complist_dialog.checkbox_prohibit_group_name_at_bottom.GetValue()
             complist.add_first_usage = complist_dialog.checkbox_first_usage.IsChecked()
             complist.fill_first_usage = complist_dialog.checkbox_first_usage_fill.IsChecked()
             complist.add_customer_fields = complist_dialog.checkbox_customer_fields.IsChecked()
@@ -2360,6 +2364,7 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'prohibit_empty_rows_on_top', str(complist.prohibit_empty_rows_on_top))
             self.settings.set('complist', 'gost_in_group_name', str(complist.gost_in_group_name))
             self.settings.set('complist', 'singular_group_name', str(complist.singular_group_name))
+            self.settings.set('complist', 'prohibit_group_name_at_bottom', str(complist.prohibit_group_name_at_bottom))
             self.settings.set('complist', 'first_usage', str(complist.add_first_usage))
             self.settings.set('complist', 'fill_first_usage', str(complist.fill_first_usage))
             self.settings.set('complist', 'customer_fields', str(complist.add_customer_fields))

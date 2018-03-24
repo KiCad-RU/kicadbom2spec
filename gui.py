@@ -894,6 +894,11 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_groups.Add( self.checkbox_singular_group_name, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
+		self.checkbox_prohibit_group_name_at_bottom = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Запретить наименования групп в конце страницы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_prohibit_group_name_at_bottom.SetToolTipString( u"Если при заполнении перечня внизу страницы оказывается наименование группы без элементов, то с помощью этого параметра можно указать программе переносить его на следующую страницу, к эелементам." )
+		
+		sizer_groups.Add( self.checkbox_prohibit_group_name_at_bottom, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
 		
 		sizer_options.Add( sizer_groups, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
