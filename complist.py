@@ -329,16 +329,11 @@ class CompList():
                     value = type_,
                     suffix = self.separators_dict[u'тип'][1]
                     )
-        if self.gost_in_group_name == False \
-                or group == u'' \
-                or (mark == u'' and value == u'') \
-                or gost == u'' \
-                or with_group == True:
-            if gost != u'':
-                name += "{prefix}{value}{suffix}".format(
-                        prefix = self.separators_dict[u'стандарт'][0],
-                        value = gost,
-                        suffix = self.separators_dict[u'стандарт'][1]
+        if gost != u'':
+            name += "{prefix}{value}{suffix}".format(
+                    prefix = self.separators_dict[u'стандарт'][0],
+                    value = gost,
+                    suffix = self.separators_dict[u'стандарт'][1]
                                 )
         if with_group == True:
             try:
@@ -358,22 +353,34 @@ class CompList():
 
     def _get_group_names_with_gost(self, group):
         """
-        Get list of group names with GOST for every mark of components.
+        Get list of group names with GOST for every mark of components
+        and prepared components (without GOST).
         """
         group_name = group[0][0]
+        gost = group[0][8]
+        components = deepcopy(group)
+
+        # Check if GOST is equal in components with empty mark field
+        for comp in components:
+            if comp[8] != gost or comp[4] != u'':
+                break
+        else:
+            # Clear GOST in every component
+            for comp in components:
+                comp[8] = u''
+            # Group title is Groupname + GOST (without Mark)
+            return [' '.join([group_name, gost])], components
 
         # Create collection of unique set of groupname, mark and gost
         group_names_parts_with_gost = []
-        for comp in group:
+        for comp in components:
             mark = comp[4]
-            if mark == u'':
-                # If mark is empty to use Value instead
-                mark = comp[5]
             gost = comp[8]
             if mark != u'' and gost != u'':
                 group_name_parts = [group_name, mark, gost]
                 if not group_name_parts in group_names_parts_with_gost:
                     group_names_parts_with_gost.append(group_name_parts)
+                comp[8] = u''
 
         # Split mark into parts by non-alphabetical chars
         for group_name_parts in group_names_parts_with_gost:
@@ -400,7 +407,7 @@ class CompList():
         # and common part of Mark
         group_names_parts_with_unique_gost = []
         for group_name_parts in group_names_parts_with_gost:
-            group, mark_parts, gost = group_name_parts
+            group_name, mark_parts, gost = group_name_parts
             for group_name_unique_parts in group_names_parts_with_unique_gost:
                 if group_name_unique_parts[2] == gost \
                         and group_name_unique_parts[1][0] == mark_parts[0]:
@@ -415,7 +422,7 @@ class CompList():
                     break
             else:
                 # Format: [Groupname, [Markparts, ...], GOST]
-                group_names_parts_with_unique_gost.append([group, mark_parts[:], gost])
+                group_names_parts_with_unique_gost.append([group_name, mark_parts[:], gost])
 
         # Concatenate parts of names together
         group_names = []
@@ -428,7 +435,7 @@ class CompList():
         if group_names == []:
             group_names = [group_name]
 
-        return group_names
+        return group_names, components
 
     def _set_line(self, element, with_group=False):
         """
@@ -779,8 +786,15 @@ class CompList():
                         else:
                             # New group title
                             if self.gost_in_group_name == True:
-                                for group_name_with_gost in self._get_group_names_with_gost(group):
+                                group_names_with_gost, components = self._get_group_names_with_gost(group)
+                                # Write group names with GOST
+                                for group_name_with_gost in group_names_with_gost:
                                     csv_writer.writerow([u'', group_name_with_gost, u'', u''])
+                                # Write to table prepared components
+                                for comp in components:
+                                    # Write component into list
+                                    csv_writer.writerow(self._get_final_values(comp))
+                                continue
                             else:
                                 csv_writer.writerow([u'', group_name, u'', u''])
 
@@ -891,12 +905,13 @@ class CompList():
                 else:
                     # New group title
                     if self.gost_in_group_name == True:
-                        group_names_with_gost = self._get_group_names_with_gost(group)
+                        group_names_with_gost, components = self._get_group_names_with_gost(group)
                         # If name of group at bottom of page - move it to next page
                         if self.prohibit_group_name_at_bottom == True \
                                 and (self._cur_line + len(group_names_with_gost)) >= self._lines_on_page:
                             while self._cur_line != 1:
                                 self._next_line()
+                        # Write group names with GOST
                         for group_name_with_gost in group_names_with_gost:
                             self._replace_text(
                                 self._cur_page,
@@ -906,6 +921,12 @@ class CompList():
                                 underline=self.underline_group_name
                                 )
                             self._next_line()
+                        # Write to table prepared components
+                        for comp in components:
+                            # Write component into list
+                            self._set_line(comp)
+                            self._next_line()
+                        continue
 
                     else:
                         # If name of group at bottom of page - move it to next page
