@@ -330,8 +330,9 @@ class CompList():
                     )
         if self.gost_in_group_name == False \
                 or group == u'' \
-                or mark == u'' \
-                or gost == u'':
+                or (mark == u'' and value == u'') \
+                or gost == u'' \
+                or with_group == True:
             if gost != u'':
                 name += "{prefix}{value}{suffix}".format(
                         prefix = self.separators_dict[u'стандарт'][0],
@@ -364,6 +365,9 @@ class CompList():
         group_names_parts_with_gost = []
         for comp in group:
             mark = comp[4]
+            if mark == u'':
+                # If mark is empty to use Value instead
+                mark = comp[5]
             gost = comp[8]
             if mark != u'' and gost != u'':
                 group_name_parts = [group_name, mark, gost]
@@ -529,7 +533,7 @@ class CompList():
                 try:
                     for field in comp.fields:
                         if hasattr(field, u'name'):
-                            if field.name == u'Исключён из ПЭ':
+                            if field.name.decode('utf-8') == u'Исключён из ПЭ':
                                 raise
                 except:
                     continue
@@ -549,7 +553,7 @@ class CompList():
                 temp.append(ref_num)
                 for field in comp.fields:
                     if hasattr(field, u'name'):
-                        if field.name == u'Подбирают при регулировании':
+                        if field.name.decode('utf-8') == u'Подбирают при регулировании':
                             temp.append(True)
                             break
                 else:
@@ -559,7 +563,7 @@ class CompList():
                     self.aliases_dict[u'марка']
                     ))
                 if self.aliases_dict[u'значение'] == u'':
-                    temp.append(comp.fields[1].text)
+                    temp.append(comp.fields[1].text.decode('utf-8'))
                 else:
                     temp.append(get_text_from_field(
                         comp,
