@@ -375,6 +375,9 @@ class CompList():
         group_names_parts_with_gost = []
         for comp in components:
             mark = comp[4]
+            if mark == u'':
+                # If Mark field is empty to use Value instead
+                mark = comp[5]
             gost = comp[8]
             if mark != u'' and gost != u'':
                 group_name_parts = [group_name, mark, gost]
