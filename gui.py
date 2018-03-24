@@ -833,7 +833,7 @@ class CompListDialog ( wx.Dialog ):
 		self.panel_file.SetSizer( sizer_file )
 		self.panel_file.Layout()
 		sizer_file.Fit( self.panel_file )
-		self.complist_notebook.AddPage( self.panel_file, u"Файл", False )
+		self.complist_notebook.AddPage( self.panel_file, u"Файл", True )
 		self.panel_options = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_options_panel = wx.BoxSizer( wx.VERTICAL )
 		
@@ -970,7 +970,7 @@ class CompListDialog ( wx.Dialog ):
 		self.panel_options.SetSizer( sizer_options_panel )
 		self.panel_options.Layout()
 		sizer_options_panel.Fit( self.panel_options )
-		self.complist_notebook.AddPage( self.panel_options, u"Параметры", True )
+		self.complist_notebook.AddPage( self.panel_options, u"Параметры", False )
 		self.panel_stamp = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_stamp = wx.BoxSizer( wx.VERTICAL )
 		

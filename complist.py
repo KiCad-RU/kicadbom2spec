@@ -31,7 +31,7 @@ from odf import dc, meta
 
 from kicadsch import *
 
-REF_REGEXP = r'(.*[^0-9])([0-9]+)'
+REF_REGEXP = u'(.*[^0-9])([0-9]+)'
 NUM_REGEXP = u'([А-ЯA-Z0-9]+(?:[^А-ЯA-Z0-9][0-9\.\-\s]+)?)(Э[1-7])?'
 
 class CompList():
@@ -219,7 +219,7 @@ class CompList():
                 for p in cell.getElementsByType(P):
                     for p_data in p.childNodes:
                         if p_data.tagName == u'Text':
-                            if re.search(r'#\d+:\d+', p_data.data) != None:
+                            if re.search(u'#\d+:\d+', p_data.data) != None:
                                 p_data.data = u''
 
 
@@ -269,7 +269,7 @@ class CompList():
         ref = u''
         if int(count) > 1:
             # Reference number: '5, 6'; '25-28' etc.
-            ref = re.search(r'(\d+)(-|,\s?)(\d+)', ref_num).groups()
+            ref = re.search(u'(\d+)(-|,\s?)(\d+)', ref_num).groups()
             if need_adjust_flag == True:
                 # Reference: 'VD1*, VD2*'; 'C8*-C11*' etc.
                 ref = (ref_type + u'%s*%s' + ref_type + u'%s*') % ref
@@ -466,7 +466,7 @@ class CompList():
             Replace ${field_name} with value from field with name "field_name".
 
             """
-            match = re.search(r'\$\{([^{}]*)\}', field_value)
+            match = re.search(u'\$\{([^{}]*)\}', field_value)
             if match == None:
                 return field_value
             else:
@@ -510,8 +510,8 @@ class CompList():
         self.developer = sch.descr.comment2.decode('utf-8')
         self.verifier = sch.descr.comment3.decode('utf-8')
         self.approver = sch.descr.comment4.decode('utf-8')
-        self.decimal_num = self.convert_decimal_num(sch.descr.comment1)
-        self.title = self.convert_title(sch.descr.title)
+        self.decimal_num = self.convert_decimal_num(sch.descr.comment1.decode('utf-8'))
+        self.title = self.convert_title(sch.descr.title.decode('utf-8'))
         self.company = sch.descr.comp.decode('utf-8')
 
         # Load all fields
