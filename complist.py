@@ -360,9 +360,9 @@ class CompList():
         gost = group[0][8]
         components = deepcopy(group)
 
-        # Check if GOST is equal in components with empty mark field
+        # Check if GOST is equal in components
         for comp in components:
-            if comp[8] != gost or comp[4] != u'':
+            if comp[8] != gost:
                 break
         else:
             # Clear GOST in every component

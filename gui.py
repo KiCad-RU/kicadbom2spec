@@ -884,8 +884,8 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_groups.Add( self.checkbox_prohibit_empty_rows_on_top, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
-		self.checkbox_gost_in_group_name = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Указывать ГОСТ в наименовании группы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_gost_in_group_name.SetToolTipString( u"Если параметр отмечен, то ГОСТ для каждой марки компонентов будет указан в заголовке группы, а не в строке компонента." )
+		self.checkbox_gost_in_group_name = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Указывать стандарт в наименовании группы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_gost_in_group_name.SetToolTipString( u"Если параметр отмечен, то для каждой марки компонентов, стандарт будет указан в заголовке группы, а не в строке компонента." )
 		
 		sizer_groups.Add( self.checkbox_gost_in_group_name, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
