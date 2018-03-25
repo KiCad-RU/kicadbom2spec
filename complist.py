@@ -373,6 +373,7 @@ class CompList():
 
         # Create collection of unique set of groupname, mark and gost
         group_names_parts_with_gost = []
+        multi_components_in_group = False
         for comp in components:
             mark = comp[4]
             if mark == u'':
@@ -383,6 +384,11 @@ class CompList():
                 group_name_parts = [group_name, mark, gost]
                 if not group_name_parts in group_names_parts_with_gost:
                     group_names_parts_with_gost.append(group_name_parts)
+                else:
+                    multi_components_in_group = True
+
+        if multi_components_in_group:
+            for comp in components:
                 comp[8] = u''
 
         # Split mark into parts by non-alphabetical chars
@@ -429,10 +435,18 @@ class CompList():
 
         # Concatenate parts of names together
         group_names = []
-        for group_name_parts in group_names_parts_with_unique_gost:
-            group_name_parts[1] = u''.join(group_name_parts[1])
-            name = u' '.join(group_name_parts)
+        if len(group_names_parts_with_unique_gost) == 1:
+            name = group_names_parts_with_unique_gost[0][0] + u' ' + \
+                   group_names_parts_with_unique_gost[0][2]
             group_names.append(name)
+        elif not multi_components_in_group:
+            name = group_names_parts_with_unique_gost[0][0]
+            group_names.append(name)
+        else:
+            for group_name_parts in group_names_parts_with_unique_gost:
+                group_name_parts[1] = u''.join(group_name_parts[1])
+                name = u' '.join(group_name_parts)
+                group_names.append(name)
 
         # If GOST or Mark not present - use default group name
         if group_names == []:
