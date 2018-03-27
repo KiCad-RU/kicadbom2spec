@@ -15,18 +15,20 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
+import csv
 import os
 import re
 import time
-import csv
+import Tkinter as tk
+import tkFont
 from copy import deepcopy
 from operator import itemgetter
 
 import odf.opendocument
 from odf.draw import Frame
-from odf.text import P, LineBreak
-from odf.table import *
 from odf.style import Style, ParagraphProperties, TextProperties
+from odf.table import *
+from odf.text import P, LineBreak
 from odf import dc, meta
 
 from kicadsch import *
@@ -103,6 +105,70 @@ class CompList():
         self._cur_page_num = 1
         self._cur_page = None
         self._lines_on_page = 0
+
+    def _get_width_factor(self, label, text):
+        """
+        Returns width factor in % if text is not fit in table column.
+
+        """
+        if len(text) == 0:
+            return 100
+        elif label.startswith('#1:'):
+            # Size of text that fits in any case
+            if len(text) <= 6:
+                return 100
+            font_size = 14 # pt
+            column_width = 18 # mm
+        elif label.startswith('#2:'):
+            # Size of text that fits in any case
+            if len(text) <= 37:
+                return 100
+            font_size = 14 # pt
+            column_width = 108 # mm
+        elif label.startswith('#3:'):
+            # Size of text that fits in any case
+            if len(text) <= 3:
+                return 100
+            font_size = 14 # pt
+            column_width = 10 # mm
+        elif label.startswith('#4:'):
+            # Size of text that fits in any case
+            if len(text) <= 14:
+                return 100
+            font_size = 14 # pt
+            column_width = 42 # mm
+        elif label in ('#5:1', '#5:2', '#5:3', '#5:4'):
+            # Size of text that fits in any case
+            if len(text) <= 8:
+                return 100
+            font_size = 12 # pt
+            column_width = 21 # mm
+        else:
+            return 100
+
+        tk_widget = tk.Tk()
+        pixel_per_mm = tk_widget.winfo_fpixels('1m')
+
+        font_slant = 'roman'
+        if self.italic == True:
+            font_slant = 'italic'
+
+        font = tkFont.Font(
+            family='OpenGost Type B TT',
+            slant=font_slant,
+            size=font_size
+            )
+
+        text_width = font.measure(text)
+        text_width_mm = text_width / pixel_per_mm
+
+        width_factor_float = 100 * column_width / text_width_mm
+        width_factor_int = int(width_factor_float)
+        if (width_factor_float % 1) > 0 \
+                and width_factor_int > 1:
+            width_factor_int -= 1
+
+        return width_factor_int
 
     def _replace_text(self, page, label, text, center=False, underline=False):
         """
@@ -195,11 +261,35 @@ class CompList():
                                         cell.setAttribute(u'stylename', groupStyleName)
                                     elif self.file_format == u'.odt':
                                         p.setAttribute(u'stylename', suffix)
+
+                                # Fit text to cell in *.odt (*.ods does it automatically)
+                                if self.file_format == u'.odt':
+                                    width_factor = self._get_width_factor(label, text)
+                                    if width_factor < 100:
+                                        suffix = u'_%d' % width_factor
+                                        curStyleName = p.getAttribute(u'stylename')
+                                        newStyleName = curStyleName + suffix
+                                        try:
+                                            newStyle = self.complist.getStyleByName(newStyleName)
+                                            # Needed for backwards compatibility
+                                            if newStyle == None:
+                                                raise
+                                        except:
+                                            newStyle = deepcopy(self.complist.getStyleByName(curStyleName))
+                                            newStyle.setAttribute(u'name', newStyleName)
+                                            newStyle.addElement(
+                                                TextProperties(
+                                                    textscale=u'%d%%' % width_factor
+                                                    )
+                                                )
+                                            self.complist.automaticstyles.addElement(newStyle)
+                                        p.setAttribute(u'stylename', newStyleName)
+
                                 return
 
     def _clear_page(self, page):
         """
-        Clear 'page' of labels.
+        Clear every table on 'page' of labels.
 
         """
         if self.file_format == u'.ods':
@@ -222,7 +312,6 @@ class CompList():
                         if p_data.tagName == u'Text':
                             if re.search(u'#\d+:\d+', p_data.data) != None:
                                 p_data.data = u''
-
 
     def _next_line(self):
         """
@@ -984,6 +1073,10 @@ class CompList():
             # First page - big stamp
             if index == 0:
 
+                if self.file_format == u'.odt':
+                    # Needed for getting styles in _replace_text_in_table
+                    self.complist = page
+
                 self._replace_text(page, u'#5:1', self.developer)
                 self._replace_text(page, u'#5:2', self.verifier)
                 self._replace_text(page, u'#5:3', self.inspector)
@@ -1001,8 +1094,8 @@ class CompList():
 
             # Other pages - small stamp
             else:
-                self._replace_text(page, u'#5:1', self.decimal_num)
-                self._replace_text(page, u'#5:2', str(index + 1))
+                self._replace_text(page, u'#5:10', self.decimal_num)
+                self._replace_text(page, u'#5:11', str(index + 1))
 
         # Clear tables from labels
         for page in self.complist_pages:
