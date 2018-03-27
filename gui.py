@@ -428,10 +428,6 @@ class EditorDialog ( wx.Dialog ):
 		self.panel_editor = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_fields = wx.BoxSizer( wx.VERTICAL )
 		
-		self.checkbox = wx.CheckBox( self.panel_editor, wx.ID_ANY, u"Включить в перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox.SetValue(True) 
-		sizer_fields.Add( self.checkbox, 1, wx.ALL, 5 )
-		
 		sizer_field_1 = wx.BoxSizer( wx.HORIZONTAL )
 		
 		self.statictext_1 = wx.StaticText( self.panel_editor, wx.ID_ANY, u"Группа:", wx.DefaultPosition, wx.Size( 120,-1 ), wx.ALIGN_LEFT )
@@ -515,6 +511,10 @@ class EditorDialog ( wx.Dialog ):
 		
 		
 		sizer_fields.Add( sizer_field_8, 0, wx.EXPAND, 5 )
+		
+		self.checkbox = wx.CheckBox( self.panel_editor, wx.ID_ANY, u"Включить в перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox.SetValue(True) 
+		sizer_fields.Add( self.checkbox, 1, wx.ALL, 5 )
 		
 		
 		self.panel_editor.SetSizer( sizer_fields )

@@ -300,6 +300,7 @@ class Window(gui.MainFrame):
                     ))
 
                 selector = gui.SettingsSelector(self)
+                selector.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
                 if temp_settings.has_section('window'):
                     selector.checkbox_size_position.SetValue(True)
                 else:
@@ -353,6 +354,7 @@ class Window(gui.MainFrame):
                 selector.Layout()
                 selector.Fit()
                 selector.CentreOnParent()
+                selector.dialog_buttonOK.SetFocus()
                 result = selector.ShowModal()
                 if result == wx.ID_OK:
                     for key in import_settings.keys():
@@ -1563,6 +1565,7 @@ class Window(gui.MainFrame):
         if len(self.grid.GetSelectedRows()) >= 1:
 
             editor = gui.EditorDialog(self)
+            editor.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
             editor.SetTitle(u'Вставка полей')
             editor.checkbox.Hide()
             editor.space_as_dot = self.grid.space_as_dot
@@ -2070,6 +2073,7 @@ class Window(gui.MainFrame):
             return self.group_names_dict[group_name]
         else:
             request_dialog = gui.SingularGroupNameDialog(self)
+            request_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
             request_dialog.group_name_text.SetValue(group_name)
             request_dialog.singular_group_name_text.SetValue(group_name)
             request_dialog.group_name_text.SetEditable(False)
@@ -2199,6 +2203,7 @@ class Window(gui.MainFrame):
             )
 
         # Events
+        complist_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
         complist_dialog.filepicker_complist.Bind(wx.EVT_FILEPICKER_CHANGED, on_file_name_changed)
         complist_dialog.stamp_decimal_num_text.Bind(wx.EVT_TEXT, on_decimal_num_changed)
         complist_dialog.stamp_title_text.Bind(wx.EVT_TEXT, on_title_changed)
@@ -2295,6 +2300,7 @@ class Window(gui.MainFrame):
             value = value.replace('\\"', '"')
             field_text.SetValue(value)
 
+        complist_dialog.dialog_buttonsOK.SetFocus()
         result = complist_dialog.ShowModal()
 
         # Save dialog width
@@ -2471,6 +2477,7 @@ class Window(gui.MainFrame):
             event.Skip()
 
         editor = gui.EditorDialog(self)
+        editor.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
         editor.space_as_dot = self.grid.space_as_dot
         selected_rows = self.grid.GetSelectedRows()
         col_num = self.grid.GetNumberCols()
@@ -2557,6 +2564,7 @@ class Window(gui.MainFrame):
 
             """
             add_dialog = gui.EditAutoGroupsDialog(self)
+            add_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
             add_dialog.SetTitle(u'Добавить элемент списка')
             result = add_dialog.ShowModal()
             if result == wx.ID_OK:
@@ -2571,6 +2579,7 @@ class Window(gui.MainFrame):
 
             """
             edit_dialog = gui.EditAutoGroupsDialog(self)
+            edit_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
             edit_dialog.SetTitle(u'Изменить элемент списка')
             index = settings_editor.auto_groups_checklistbox.GetSelections()[0]
             text = settings_editor.auto_groups_checklistbox.GetString(index)
@@ -2645,6 +2654,7 @@ class Window(gui.MainFrame):
 
             """
             add_dialog = gui.SingularGroupNameDialog(self)
+            add_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
             result = add_dialog.ShowModal()
             if result == wx.ID_OK:
                 singular = add_dialog.singular_group_name_text.GetValue()
@@ -2657,6 +2667,7 @@ class Window(gui.MainFrame):
 
             """
             edit_dialog = gui.SingularGroupNameDialog(self)
+            edit_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
             index = settings_editor.group_names_listctrl.GetFirstSelected()
             singular = settings_editor.group_names_listctrl.GetItemText(index, 1)
             plural = settings_editor.group_names_listctrl.GetItemText(index, 0)
@@ -2678,6 +2689,8 @@ class Window(gui.MainFrame):
             settings_editor.group_names_listctrl.DeleteItem(index)
 
         settings_editor = gui.SettingsDialog(self)
+        # Events
+        settings_editor.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
         # Events general
         settings_editor.auto_groups_checklistbox.Bind(wx.EVT_LISTBOX, on_auto_groups_checklistbox_selected)
         settings_editor.auto_groups_checklistbox.Bind(wx.EVT_LISTBOX_DCLICK, on_auto_groups_edit_button_clicked)
@@ -2755,6 +2768,7 @@ class Window(gui.MainFrame):
             singular = self.group_names_dict[plural]
             settings_editor.group_names_listctrl.Append((plural, singular))
 
+        settings_editor.dialog_buttonsOK.SetFocus()
         result = settings_editor.ShowModal()
         if result == wx.ID_OK:
             for i in range(len(field_names)):
@@ -3053,22 +3067,11 @@ class Window(gui.MainFrame):
             self.menuitem_replace.Enable(True)
             event.Skip()
 
-        def on_esc_key(event):
-            """
-            Close find/replace dialog if ESC key pressed.
-
-            """
-            key_code = event.GetKeyCode()
-            if key_code == wx.WXK_ESCAPE:
-                find_dialog.Close()
-            else:
-                event.Skip()
-
         self.menuitem_find.Enable(False)
         self.menuitem_replace.Enable(False)
         find_dialog = gui.FindReplaceDialog(self)
+        find_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
         find_dialog.Bind(wx.EVT_CLOSE, on_find_replace_close)
-        find_dialog.Bind(wx.EVT_CHAR_HOOK, on_esc_key)
         find_dialog.button_find_next.Bind(wx.EVT_BUTTON, on_find_next)
         find_dialog.textctrl_find.Bind(wx.EVT_TEXT_ENTER, on_find_next)
         find_dialog.button_find_prev.Bind(wx.EVT_BUTTON, on_find_prev)
@@ -3088,6 +3091,7 @@ class Window(gui.MainFrame):
 
         """
         about_dialog = gui.AboutDialog(self)
+        about_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
         about_dialog.statictext_version.SetLabel(
                 about_dialog.statictext_version.GetLabel() + \
                 str(version) + '\n' + \
@@ -3120,6 +3124,23 @@ class Window(gui.MainFrame):
         exec_dir = os.path.dirname(os.path.abspath(__file__))
         help_file = os.path.join(exec_dir, 'doc', 'user_manual.html')
         webbrowser.open_new(help_file)
+
+    def on_esc_key(self, event):
+        """
+        Close  dialog if ESC key pressed.
+
+        """
+        key_code = event.GetKeyCode()
+        if key_code == wx.WXK_ESCAPE:
+            event_object = event.GetEventObject()
+            while event_object != None:
+                class_name = event_object.GetClassName()
+                if class_name == 'wxDialog':
+                    event_object.Close()
+                    break
+                event_object = event_object.GetParent()
+        else:
+            event.Skip()
 
 
 def main():
