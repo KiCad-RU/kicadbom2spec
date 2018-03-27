@@ -170,6 +170,19 @@ class CompList():
 
         return width_factor_int
 
+    def _get_unescaped_text(self, text):
+        """
+        Remove any escapes in text.
+
+        """
+        pure_text = text.encode('utf-8')
+        # Decoding internal escapes
+        pure_text = pure_text.decode('string_escape')
+        # Decoding escapes from KiCad
+        pure_text = pure_text.decode('string_escape')
+        pure_text = pure_text.decode('utf-8')
+        return pure_text
+
     def _replace_text(self, page, label, text, center=False, underline=False):
         """
         Replace 'label' (like #1:1) to 'text' in every table on 'page'.
@@ -196,12 +209,7 @@ class CompList():
                     for p_data in p.childNodes:
                         if p_data.tagName == u'Text':
                             if p_data.data == label:
-                                text = text.encode('utf-8')
-                                # Decoding internal escapes
-                                text = text.decode('string_escape')
-                                # Decoding escapes from KiCad
-                                text = text.decode('string_escape')
-                                text = text.decode('utf-8')
+                                text = self._get_unescaped_text(text)
                                 text_lines = text.split(u'\n')
                                 p_data.data = text_lines[0]
                                 # Line breaks
@@ -887,6 +895,8 @@ class CompList():
                         if len(group) == 1 and self.singular_group_name == True:
                             # Place group name with name of component
                             comp_values = self._get_final_values(group[0], True)
+                            for value in comp_values:
+                                value = self._get_unescaped_text(value)
                             csv_writer.writerow(comp_values)
                             continue
                         else:
@@ -895,18 +905,25 @@ class CompList():
                                 group_names_with_gost, components = self._get_group_names_with_gost(group)
                                 # Write group names with GOST
                                 for group_name_with_gost in group_names_with_gost:
+                                    group_name_with_gost = self._get_unescaped_text(group_name_with_gost)
                                     csv_writer.writerow([u'', group_name_with_gost, u'', u''])
                                 # Write to table prepared components
                                 for comp in components:
                                     # Write component into list
-                                    csv_writer.writerow(self._get_final_values(comp))
+                                    comp_values = self._get_final_values(comp)
+                                    for value in comp_values:
+                                        value = self._get_unescaped_text(value)
+                                    csv_writer.writerow(comp_values)
                                 continue
                             else:
                                 csv_writer.writerow([u'', group_name, u'', u''])
 
                     for comp in group:
                         # Write component into list
-                        csv_writer.writerow(self._get_final_values(comp))
+                        comp_values = self._get_final_values(comp)
+                        for value in comp_values:
+                            value = self._get_unescaped_text(value)
+                        csv_writer.writerow(comp_values)
             return
 
         elif self.file_format == u'.ods':
