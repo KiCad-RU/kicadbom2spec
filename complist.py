@@ -67,6 +67,7 @@ class CompList():
         self.file_format = u'.ods' # u'.odt', u'.csv'
         self.all_components = False
         self.add_units = False
+        self.space_before_units = False
         self.empty_rows_after_group = 1
         self.empty_rows_everywhere = False
         self.prohibit_empty_rows_on_top = False
@@ -98,6 +99,17 @@ class CompList():
             u'тип':u'Тип',
             u'стандарт':u'Стандарт',
             u'примечание':u'Примечание'
+            }
+        self.multipliers_dict = {
+            u'G': u'Г',
+            u'M': u'М',
+            u'k': u'к',
+            u'm': u'м',
+            u'μ': u'мк',
+            u'u': u'мк',
+            u'U': u'мк',
+            u'n': u'н',
+            u'p': u'п'
             }
 
         # Current state of filling the list of components
@@ -394,21 +406,84 @@ class CompList():
         if value != u'':
             # Automatically units addition
             if self.add_units == True:
+                num_value = u''
+                multiplier = u''
+                units = u''
+                mult_keys, mult_values = zip(*self.multipliers_dict.items())
+                multipliers = mult_keys + mult_values
+                multipliers = list(set(multipliers))
+                # 2u7, 2н7, 4m7, 5k1 etc.
+                regexp_1= u'^(\d+)({})(\d+)$'.format(u'|'.join(multipliers))
+                # 2.7 u, 2700p, 4.7 m, 470u, 5.1 k, 510 etc.
+                regexp_2= u'^(\d+(?:[\.,]\d+)?)\s*({})?$'.format(u'|'.join(multipliers))
                 if ref_type.startswith(u'C') and not value.endswith(u'Ф'):
-                    if value.isdigit():
-                        value += u'п'
+                    units = u'Ф'
+                    if re.match(u'^\d+$', value):
+                        num_value = value
+                        multiplier = u'п'
+                    elif re.match(u'^\d+[\.,]\d+$', value):
+                        num_value = value
+                        multiplier = u'мк'
                     else:
-                        # If value is real number
-                        try:
-                            f = float(value.replace(',', '.'))
-                            value += u'мк'
-                        except:
-                            pass
-                    value += u'Ф'
+                        num_value = value.rstrip(u'F')
+                        num_value = num_value.strip()
+                        if re.match(regexp_1, num_value):
+                            search_res = re.search(regexp_1, num_value).groups()
+                            num_value = search_res[0] + ',' + search_res[2]
+                            multiplier = search_res[1]
+                        elif re.match(regexp_2, num_value):
+                            search_res = re.search(regexp_2, num_value).groups()
+                            num_value = search_res[0]
+                            multiplier = search_res[1]
+                        else:
+                            num_value = u''
                 elif ref_type.startswith(u'L') and not value.endswith(u'Гн'):
-                    value += u'Гн'
+                    units = u'Гн'
+                    num_value = value.rstrip(u'H')
+                    num_value = num_value.strip()
+                    if re.match(regexp_1, num_value):
+                        search_res = re.search(regexp_1, num_value).groups()
+                        num_value = search_res[0] + ',' + search_res[2]
+                        multiplier = search_res[1]
+                    elif re.match(regexp_2, num_value):
+                        search_res = re.search(regexp_2, num_value).groups()
+                        num_value = search_res[0]
+                        if search_res[1] == None:
+                            multiplier = u'мк'
+                        else:
+                            multiplier = search_res[1]
+                    else:
+                        num_value = u''
                 elif ref_type.startswith(u'R') and not value.endswith(u'Ом'):
-                    value += u'Ом'
+                    units = u'Ом'
+                    num_value = value.rstrip(u'Ω')
+                    if num_value.endswith(u'Ohm') or num_value.endswith(u'ohm'):
+                        num_value = num_value[:-3]
+                    num_value = num_value.strip()
+                    if re.match(u'R\d+', num_value):
+                        num_value = num_value.replace(u'R', u'0,')
+                    elif re.match(u'\d+R\d+', num_value):
+                        num_value = num_value.replace(u'R', u',')
+                    elif re.match(regexp_1, num_value):
+                        search_res = re.search(regexp_1, num_value).groups()
+                        num_value = search_res[0] + ',' + search_res[2]
+                        multiplier = search_res[1]
+                    elif re.match(regexp_2, num_value):
+                        search_res = re.search(regexp_2, num_value).groups()
+                        num_value = search_res[0]
+                        if search_res[1] != None:
+                            multiplier = search_res[1]
+                    else:
+                        num_value = u''
+                if num_value != u'':
+                    # Translate multiplier
+                    if multiplier in self.multipliers_dict.keys():
+                        multiplier = self.multipliers_dict[multiplier]
+                    value = num_value.replace(u'.', u',')
+                    if self.space_before_units == True:
+                        value += u' '
+                    value += multiplier
+                    value += units
             name += "{prefix}{value}{suffix}".format(
                     prefix = self.separators_dict[u'значение'][0],
                     value = value,

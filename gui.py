@@ -853,6 +853,19 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_options_comp.Add( self.checkbox_add_units, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
+		sizer_space_before_units = wx.BoxSizer( wx.HORIZONTAL )
+		
+		
+		sizer_space_before_units.AddSpacer( ( 20, 0), 0, wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.checkbox_space_before_units = wx.CheckBox( sizer_options_comp.GetStaticBox(), wx.ID_ANY, u"Вставить пробел перед единицами измерения", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_space_before_units.SetToolTipString( u"Если данная опция включена, то между цифровой частью значения и единицами измерения (включая множитель) будет вставлен пробел." )
+		
+		sizer_space_before_units.Add( self.checkbox_space_before_units, 1, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		
+		sizer_options_comp.Add( sizer_space_before_units, 1, wx.EXPAND, 5 )
+		
 		
 		sizer_options.Add( sizer_options_comp, 0, wx.EXPAND|wx.ALL, 5 )
 		

@@ -2151,6 +2151,16 @@ class Window(gui.MainFrame):
             else:
                 complist_dialog.checkbox_first_usage_fill.Enable(False)
 
+        def on_add_units_checked(event):
+            """
+            Enable or disable child checkbox.
+
+            """
+            if event.IsChecked():
+                complist_dialog.checkbox_space_before_units.Enable(True)
+            else:
+                complist_dialog.checkbox_space_before_units.Enable(False)
+
         def set_file_ext(ext):
             """
             Set file extension in filepicker.
@@ -2208,6 +2218,7 @@ class Window(gui.MainFrame):
         complist_dialog.stamp_decimal_num_text.Bind(wx.EVT_TEXT, on_decimal_num_changed)
         complist_dialog.stamp_title_text.Bind(wx.EVT_TEXT, on_title_changed)
         complist_dialog.checkbox_first_usage.Bind(wx.EVT_CHECKBOX, on_first_usage_checked)
+        complist_dialog.checkbox_add_units.Bind(wx.EVT_CHECKBOX, on_first_usage_checked)
         complist_dialog.rbutton_odt.Bind(wx.EVT_RADIOBUTTON, on_rbutton_odt)
         complist_dialog.rbutton_ods.Bind(wx.EVT_RADIOBUTTON, on_rbutton_ods)
         complist_dialog.rbutton_csv.Bind(wx.EVT_RADIOBUTTON, on_rbutton_csv)
@@ -2228,6 +2239,8 @@ class Window(gui.MainFrame):
                 complist.all_components = self.settings.getboolean('complist', 'all')
             if self.settings.has_option('complist', 'units'):
                 complist.add_units = self.settings.getboolean('complist', 'units')
+            if self.settings.has_option('complist', 'space_before_units'):
+                complist.space_before_units = self.settings.getboolean('complist', 'space_before_units')
             if self.settings.has_option('complist', 'inspector'):
                 self.stamp_dict['inspector'] = self.settings.get('complist', 'inspector')
             if self.settings.has_option('complist', 'file_format'):
@@ -2274,6 +2287,7 @@ class Window(gui.MainFrame):
             complist_dialog.rbutton_csv.SetValue(True)
         complist_dialog.checkbox_all_components.SetValue(complist.all_components)
         complist_dialog.checkbox_add_units.SetValue(complist.add_units)
+        complist_dialog.checkbox_space_before_units.SetValue(complist.space_before_units)
         complist_dialog.choice_after_groups.SetSelection(complist.empty_rows_after_group)
         complist_dialog.checkbox_empty_rows_everywhere.SetValue(complist.empty_rows_everywhere)
         complist_dialog.checkbox_prohibit_empty_rows_on_top.SetValue(complist.prohibit_empty_rows_on_top)
@@ -2330,6 +2344,7 @@ class Window(gui.MainFrame):
             # Save settings from complist dialog
             complist.all_components = complist_dialog.checkbox_all_components.IsChecked()
             complist.add_units = complist_dialog.checkbox_add_units.IsChecked()
+            complist.space_before_units = complist_dialog.checkbox_space_before_units.IsChecked()
             complist.empty_rows_after_group = complist_dialog.choice_after_groups.GetSelection()
             complist.empty_rows_everywhere = complist_dialog.checkbox_empty_rows_everywhere.GetValue()
             complist.prohibit_empty_rows_on_top = complist_dialog.checkbox_prohibit_empty_rows_on_top.GetValue()
@@ -2364,6 +2379,7 @@ class Window(gui.MainFrame):
                 self.settings.add_section('complist')
             self.settings.set('complist', 'all', str(complist.all_components))
             self.settings.set('complist', 'units', str(complist.add_units))
+            self.settings.set('complist', 'space_before_units', str(complist.space_before_units))
             self.settings.set('complist', 'file_format', complist.file_format)
             self.settings.set('complist', 'empty_rows_after_group', str(complist.empty_rows_after_group))
             self.settings.set('complist', 'empty_rows_everywhere', str(complist.empty_rows_everywhere))
