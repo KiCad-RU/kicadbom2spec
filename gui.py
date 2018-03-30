@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Mar 15 2018)
+## Python code generated with wxFormBuilder (version Mar 30 2018)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -824,7 +824,7 @@ class CompListDialog ( wx.Dialog ):
 		sizer_format.Add( self.rbutton_ods, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.rbutton_csv = wx.RadioButton( sizer_format.GetStaticBox(), wx.ID_ANY, u"Табличные данные (*.csv)", wx.DefaultPosition, wx.DefaultSize, 0 )
-		sizer_format.Add( self.rbutton_csv, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_format.Add( self.rbutton_csv, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		
 		sizer_file.Add( sizer_format, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
@@ -910,7 +910,7 @@ class CompListDialog ( wx.Dialog ):
 		self.checkbox_prohibit_group_name_at_bottom = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Запретить наименования групп в конце страницы", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_prohibit_group_name_at_bottom.SetToolTipString( u"Если при заполнении перечня внизу страницы оказывается наименование группы без элементов, то с помощью этого параметра можно указать программе переносить его на следующую страницу, к эелементам." )
 		
-		sizer_groups.Add( self.checkbox_prohibit_group_name_at_bottom, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_groups.Add( self.checkbox_prohibit_group_name_at_bottom, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		
 		sizer_options.Add( sizer_groups, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
@@ -1392,35 +1392,27 @@ class SettingsDialog ( wx.Dialog ):
 		
 		alias_header_sizer = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.alias_field_header_panel = wx.Panel( self.aliases_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		alias_field_header_sizer = wx.BoxSizer( wx.VERTICAL )
-		
-		self.alias_field_header_label = wx.StaticText( self.alias_field_header_panel, wx.ID_ANY, u"Поле", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.alias_field_header_label.Wrap( -1 )
-		self.alias_field_header_label.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
-		
-		alias_field_header_sizer.Add( self.alias_field_header_label, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
-		
-		
-		self.alias_field_header_panel.SetSizer( alias_field_header_sizer )
-		self.alias_field_header_panel.Layout()
-		alias_field_header_sizer.Fit( self.alias_field_header_panel )
-		alias_header_sizer.Add( self.alias_field_header_panel, 1, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
-		
-		self.alias_value_header_panel = wx.Panel( self.aliases_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		alias_value_header_sizer = wx.BoxSizer( wx.VERTICAL )
 		
-		self.alias_value_header_label = wx.StaticText( self.alias_value_header_panel, wx.ID_ANY, u"Псевдоним", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias_value_header_label = wx.StaticText( self.aliases_panel, wx.ID_ANY, u"Псевдоним", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.alias_value_header_label.Wrap( -1 )
 		self.alias_value_header_label.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
 		
 		alias_value_header_sizer.Add( self.alias_value_header_label, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
 		
 		
-		self.alias_value_header_panel.SetSizer( alias_value_header_sizer )
-		self.alias_value_header_panel.Layout()
-		alias_value_header_sizer.Fit( self.alias_value_header_panel )
-		alias_header_sizer.Add( self.alias_value_header_panel, 2, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
+		alias_header_sizer.Add( alias_value_header_sizer, 1, wx.EXPAND, 5 )
+		
+		alias_field_header_sizer = wx.BoxSizer( wx.VERTICAL )
+		
+		self.alias_field_header_label = wx.StaticText( self.aliases_panel, wx.ID_ANY, u"Поле", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.alias_field_header_label.Wrap( -1 )
+		self.alias_field_header_label.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		
+		alias_field_header_sizer.Add( self.alias_field_header_label, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		
+		
+		alias_header_sizer.Add( alias_field_header_sizer, 2, wx.EXPAND, 5 )
 		
 		
 		alias_sizer.Add( alias_header_sizer, 0, wx.EXPAND, 5 )
@@ -1662,7 +1654,7 @@ class SettingsSelector ( wx.Dialog ):
 		
 		sizer_settings.Add( self.checkbox_aliases, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
-		self.checkbox_group_names = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Словарь наименований полей", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_group_names = wx.CheckBox( self.panel_settings_selector, wx.ID_ANY, u"Словарь наименований групп", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_group_names.SetToolTipString( u"Наименования групп в множественном и единственном числе." )
 		
 		sizer_settings.Add( self.checkbox_group_names, 0, wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )

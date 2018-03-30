@@ -2218,7 +2218,7 @@ class Window(gui.MainFrame):
         complist_dialog.stamp_decimal_num_text.Bind(wx.EVT_TEXT, on_decimal_num_changed)
         complist_dialog.stamp_title_text.Bind(wx.EVT_TEXT, on_title_changed)
         complist_dialog.checkbox_first_usage.Bind(wx.EVT_CHECKBOX, on_first_usage_checked)
-        complist_dialog.checkbox_add_units.Bind(wx.EVT_CHECKBOX, on_first_usage_checked)
+        complist_dialog.checkbox_add_units.Bind(wx.EVT_CHECKBOX, on_add_units_checked)
         complist_dialog.rbutton_odt.Bind(wx.EVT_RADIOBUTTON, on_rbutton_odt)
         complist_dialog.rbutton_ods.Bind(wx.EVT_RADIOBUTTON, on_rbutton_ods)
         complist_dialog.rbutton_csv.Bind(wx.EVT_RADIOBUTTON, on_rbutton_csv)

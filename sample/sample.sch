@@ -9,7 +9,7 @@ Title "Однокаскадный транзисторный усилитель.
 Date "13 may 2013"
 Rev ""
 Comp "\"kicadbom2spec\""
-Comment1 "АБВГ.0000.0001 Э3"
+Comment1 "АБВГ.112345.001 Э3"
 Comment2 "Иванова А.М."
 Comment3 "Петров Н.Г."
 Comment4 "Смирнов С.Н."

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 1.5.6.1">
+<meta name="generator" content="Asciidoctor 1.5.6.2">
 <meta name="author" content="Барановский Константин">
 <title>kicadbom2spec</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
@@ -478,7 +478,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_метка_подбирают_при_регулировании">2.2.9. Метка "Подбирают при регулировании"</a></li>
 </ul>
 </li>
-<li><a href="#_создание_перечня_элементов">2.3. Создание перечня элементов</a></li>
+<li><a href="#_создание_перечня_элементов">2.3. Создание перечня элементов</a>
+<ul class="sectlevel3">
+<li><a href="#_файл_2">2.3.1. Файл</a></li>
+<li><a href="#_параметры">2.3.2. Параметры</a></li>
+<li><a href="#_основная_надпись">2.3.3. Основная надпись</a></li>
+<li><a href="#_примечания">2.3.4. Примечания</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#_настройка_программы">3. Настройка программы</a>
@@ -487,7 +494,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_значения_полей">3.2. Значения полей</a></li>
 <li><a href="#_разделители">3.3. Разделители</a></li>
 <li><a href="#_псевдонимы">3.4. Псевдонимы</a></li>
-<li><a href="#_импорт_экспорт_параметров">3.5. Импорт/экспорт параметров</a></li>
+<li><a href="#_словарь">3.5. Словарь</a></li>
+<li><a href="#_импорт_экспорт_параметров">3.6. Импорт/экспорт параметров</a></li>
 </ul>
 </li>
 <li><a href="#_параметры_командной_строки">4. Параметры командной строки</a>
@@ -525,8 +533,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 выполненных в <strong>KiCad</strong>.</p>
 </div>
 <div class="paragraph">
-<p>Перечень создается в виде таблицы <em>*.ods</em> в формате <em>Open Document Format</em>
-и оформляется в соответствии с требованиями <em>ЕСКД</em>.</p>
+<p>Перечень оформляется в соответствии с требованиями <em>ЕСКД</em> и сохраняется в
+виде текстового документа <em>*.odt</em> или электронной таблицы <em>*.ods</em>. Также,
+существует возможность сохранить перечень элементов без оформления (только
+данные) в формате <em>*.csv</em>, для дальнейшего использования в других документах.</p>
 </div>
 <div class="paragraph">
 <p>Кроме создания перечня элементов, с помощью данной программы можно
@@ -594,7 +604,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </dl>
 </div>
 <div class="paragraph">
-<p>В результате в таблицу <strong>kicadbom2spec</strong> будут загружены элементы схемы и
+<p>В результате, в таблицу <strong>kicadbom2spec</strong> будут загружены элементы схемы и
 станет доступной команда <em>Файл&#8594;Создать перечень элементов&#8230;&#8203;</em> (и
 соответствующая кнопка на панели инструментов):</p>
 </div>
@@ -612,7 +622,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="images/dialog_complist_for_sample.png" alt="dialog complist for sample">
+<img src="images/dialog_complist_file.png" alt="dialog complist file">
 </div>
 <div class="title">Диалог создания перечня элементов</div>
 </div>
@@ -623,12 +633,31 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 него. Нужно изменить место сохранения перечня, нажав кнопку справа от
 текстового поля&#8201;&#8212;&#8201;откроется диалог выбора файла. В нём нужно указать каталог,
 к которому пользователь может легко получить доступ, например&#8201;&#8212;&#8201;<em>"Рабочий
-стол"</em>. Имя файла перечня элементов оставить без изменений&#8201;&#8212;&#8201;<em>"sample.ods"</em>.</p>
+стол"</em>. Имя файла перечня элементов оставить без изменений&#8201;&#8212;&#8201;<em>"sample.odt"</em>.</p>
 </div>
 <div class="paragraph">
-<p>Из параметров нужно оставить отметки только для опций <em>Добавить единицы
-измерения</em>, <em>Курсив</em> и завершить создание перечня нажав кнопку <em>Ок</em>. После
-завершения генерации перечня элементов будет показано сообщение:</p>
+<p>Для этого примера параметры нужно оставить со значениями по умолчанию, а
+именно:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>формат файла <em>"*.odt"</em></p>
+</li>
+<li>
+<p>опция <em>"Добавить единицы измерения"</em> включена</p>
+</li>
+<li>
+<p>опция <em>"Вставить пробел перед единицами измерения"</em> включена</p>
+</li>
+<li>
+<p>остальные опции отключены</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Теперь, когда все подготовлено, можно нажать кнопку <em>Ок</em>. После завершения
+генерации перечня элементов будет показано сообщение:</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -638,7 +667,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="paragraph">
 <p>В указанном ранее каталоге (на <em>Рабочем столе</em>) появится новый файл
-<em>sample.ods</em>:</p>
+<em>sample.odt</em>:</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -755,7 +784,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="диалог_создания_перечня_элементов" class="imageblock">
 <div class="content">
-<img src="images/dialog_complist.png" alt="dialog complist">
+<img src="images/dialog_complist_file.png" alt="dialog complist file">
 </div>
 <div class="title">Диалог создания перечня элементов</div>
 </div>
@@ -1379,7 +1408,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <td class="tableblock halign-left valign-top"><p class="tableblock">Обозначение</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">МЛТ-0,25-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">МЛТ-0,25</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Марка<sup>1</sup></p></td>
 </tr>
 <tr>
@@ -1387,15 +1416,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <td class="tableblock halign-left valign-top"><p class="tableblock">Значение<sup>2</sup></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#160;±5%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">±5%</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Класс точности<sup>1</sup></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">-В</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">В</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Тип<sup>1</sup></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#160;ОЖ0.467.18</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ОЖ0.467.18</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Стандарт<sup>1</sup></p></td>
 </tr>
 <tr>
@@ -1771,34 +1800,277 @@ Unicode, поэтому там используются символы <strong>&
 <div class="sect2">
 <h3 id="_создание_перечня_элементов">2.3. Создание перечня элементов</h3>
 <div class="paragraph">
-<p>Когда в <strong>kicadbom2spec</strong> загружен файл схемы и все необходимые поля
+<p>Если в <strong>kicadbom2spec</strong> загружен файл схемы и все необходимые поля
 заполнены&#8201;&#8212;&#8201;можно приступить к созданию перечня элементов. Для этого
-нужно выполнить команду <em>Файл&#8594;Создать перечень элементов&#8230;&#8203;</em>. Откроется
-<a href="#диалог_создания_перечня_элементов">диалог создания перечня элементов</a>, в
-котором нужно указать имя файла перечня элементов. По умолчанию, это имя
-образуется из имени файла схемы путём замены расширения на <em>*.ods</em>.  Если же
-данный вариант не устраивает, можно исправить имя в текстовом поле или с
-помощью диалога выбора файлов, нажав кнопку справа от текстового поля.</p>
+нужно выполнить команду <em>Файл&#8594;Создать перечень элементов&#8230;&#8203;</em>, откроется
+диалог создания перечня элементов.</p>
+</div>
+<div class="sect3">
+<h4 id="_файл_2">2.3.1. Файл</h4>
+<div class="imageblock">
+<div class="content">
+<img src="images/dialog_complist_file.png" alt="dialog complist file">
+</div>
+<div class="title">Диалог создания перечня элементов</div>
 </div>
 <div class="paragraph">
-<p>В диалоговом окне доступны следующие параметры:</p>
+<p>На первой вкладке <em>Файл</em> можно указать расположение и имя файла для перечня
+элементов, а также выбрать формат файла. По умолчанию, имя образуется из имени
+файла схемы путём замены расширения <em>*.sch</em> на расширение, соответствующее
+текущему формату. Если же данный вариант не устраивает, можно исправить имя в
+текстовом поле или с помощью диалога выбора файлов, нажав кнопку справа от
+текстового поля.</p>
+</div>
+<div class="paragraph">
+<p>Перечень элементов может быть сохранён в одном из доступных форматов:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong><em>Добавить единицы измерения</em></strong>&#8201;&#8212;&#8201;если этот параметр отмечен и в значениях
-резисторов/конденсаторов/индуктивностей (определяется по литерам обозначения
-<em>R</em>, <em>C</em>, <em>L</em>) отсутствуют единицы измерения (например, <em>10к</em>, <em>1мк</em>,
-<em>2.2н</em>), то они будут добавлены автоматически (<em>10кОм</em>, <em>1мкФ</em>,
-<em>2.2нГн</em>).<br>
-Дополнительно, к значению ёмкости конденсаторов добавляется приставка
-множителя, если оно представлено в виде целого числа&#8201;&#8212;&#8201;<em>п</em> (пико), а если в
-виде десятичной дроби&#8201;&#8212;&#8201;<em>мк</em> (микро).</p>
+<p><strong><em>Текстовый документ (*.odt)</em></strong></p>
 </li>
+<li>
+<p><strong><em>Электронная таблица (*.ods)</em></strong></p>
+</li>
+<li>
+<p><strong><em>Табличные данные (*.csv)</em></strong></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><em>Текстовый докумен</em>, по сравнению с <em>электронной таблицей</em>, имеет больший
+размер, дольше генерируется, но с ним удобнее работать, так как все страницы
+представлены единым документом, в то время как в <em>электронной таблице</em> каждая
+страница представлена в виде отдельной таблицы.</p>
+</div>
+<div class="paragraph">
+<p>Также нужно заметить, что в <em>электронной таблице</em> для текста, который
+превышает длину ячейки, автоматически уменьшается <strong>размер шрифта</strong> средствами
+LibreOffice Calc. А вот LibreOffice Writer такой функциональности не имеет,
+поэтому в подобной ситуации kicadbom2spec уменьшает <strong>ширину текста</strong> (сохраняя
+размер шрифта).</p>
+</div>
+<div class="paragraph">
+<p>Формат <em>*.csv</em> используется для экспорта данных перечня элементов. Файл
+является обычным текстовым документом и имеет стандартные, для этого формата,
+параметры:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>разделитель</em>&#8201;&#8212;&#8201;запятая (,)</p>
+</li>
+<li>
+<p><em>разделитель текста</em>&#8201;&#8212;&#8201;кавычки(")</p>
+</li>
+<li>
+<p><em>кодировка</em>&#8201;&#8212;&#8201;Юникод (UTF-8)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Перечень элементов в формате <em>*.csv</em> можно открыть в LibreOffice Calc, он
+будет показан в виде простой таблицы без форматирования. В первой строке
+указаны заголовки столбцов, а далее, все компоненты в том же виде, что и в
+обычном перечне, включая пустые строки и заголовки групп элементов.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_параметры">2.3.2. Параметры</h4>
+<div class="imageblock">
+<div class="content">
+<img src="images/dialog_complist_settings.png" alt="dialog complist settings">
+</div>
+<div class="title">Параметры создания перечня элементов</div>
+</div>
+<div class="paragraph">
+<p>Конечный вид перечня элементов можно настроить с помощью следующих параметров:</p>
+</div>
+<div class="ulist">
+<ul>
 <li>
 <p><strong><em>Все элементы</em></strong>&#8201;&#8212;&#8201;если этот параметр отмечен, то перечень будет
 составлен из всех элементов схемы, т.е. состояние флажка в таблице будет
 проигнорировано.</p>
+</li>
+<li>
+<p><strong><em>Добавить единицы измерения</em></strong>&#8201;&#8212;&#8201;если этот параметр отмечен и в
+значениях резисторов/конденсаторов/индуктивностей (определяется по первым
+литерам обозначения <em>R</em>, <em>C</em>, <em>L</em>) отсутствуют единицы измерения
+(например, <em>10к</em>, <em>1мк</em>, <em>2.2м</em>), то они будут добавлены автоматически
+(<em>10кОм</em>, <em>1мкФ</em>, <em>2.2мГн</em>).<br>
+<br>
+Дополнительно, к значению ёмкости конденсаторов добавляется приставка
+множителя, если оно представлено в виде целого числа&#8201;&#8212;&#8201;<em>п</em> (пико), а если в
+виде десятичной дроби&#8201;&#8212;&#8201;<em>мк</em> (микро).<br>
+<br>
+Работает данная функция следующим образом, <strong>kicadbom2spec</strong> пытается
+определить цифровую часть значения и множитель. В случае удачного определения,
+значение будет приведено в нормальный вид и будут добавлены единицы изменения.
+В противном случае, значение останется без изменений. В качестве десятичного
+разделителя используется запятая. Единицы изменения и множители, указанные в
+международном формате, будут переведены.<br>
+<br>
+<em>Примеры:</em></p>
+</li>
+</ul>
+</div>
+<table class="tableblock frame-all grid-all" style="width: 40%;">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">На схеме</th>
+<th class="tableblock halign-left valign-top">В перечне</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-center valign-top" colspan="2"><p class="tableblock"><strong>Конденсаторы</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1,2мкФ</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1200пФ</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1н2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1,2нФ</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">12 μF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">12мкФ</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">120u</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">120мкФ</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top" colspan="2"><p class="tableblock"><strong>Резисторы</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4.7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4,7Ом</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4R7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4,7Ом</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R47</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0,47Ом</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">470</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">470Ом</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4,7k</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4,7кОм</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4.7 kOhm</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4,7кОм</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4,7 kΩ</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4,7кОм</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4M7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4,7МОм</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top" colspan="2"><p class="tableblock"><strong>Дроссели</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">910</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">910мкГн</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">910u</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">910мкГн</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">910мк</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">910мкГн</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9m1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9,1мГн</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">910 uH</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">910мкГн</p></td>
+</tr>
+</tbody>
+</table>
+<div class="ulist">
+<ul>
+<li>
+<p><strong><em>Вставить пробел перед единицами измерения</em></strong>&#8201;&#8212;&#8201;этот параметр становится
+доступным, если предыдущий установлен. По умолчанию единицы измерения
+добавляются к значению слитно, но данный этот параметр установлен то цифровая
+часть значения будет отделена пробелом от единиц измерения с множителем.</p>
+</li>
+<li>
+<p><strong><em>0..9 пустых строк между разными типами элементов</em></strong>&#8201;&#8212;&#8201;все компоненты в
+перечне группируются и сортируются по их обозначению. Между группами элементов
+с разным обозначением будет вставлено указанное число пустых строк.</p>
+</li>
+<li>
+<p><strong><em>Вставлять пустые строки между разными группами</em></strong>&#8201;&#8212;&#8201;если этот параметр
+установлен, то указанное в предыдущем параметре число пустых строк будет
+вставлено и между элементами с однотипным обозначением, но разным значением
+поля "Группа".</p>
+</li>
+<li>
+<p><strong><em>Запретить пустые строки в начале страницы</em></strong>&#8201;&#8212;&#8201;при вставке пустых
+строк, может случиться так, что они окажутся в начале следующей страницы. Если
+этот параметр установлен, то пустые строки будут вставляться только до конца
+текущей страницы. Таким образом, каждая страница будет начинаться с компонента
+или наименования группы.</p>
+</li>
+<li>
+<p><strong><em>Указывать стандарт в наименовании группы</em></strong>&#8201;&#8212;&#8201;по умолчанию, в
+наименовании группы указывается только содержимое поля "Группа". Если этот
+параметр установлен, то в наименовании группы будет также указан стандарт и
+марка компонентов, к которому он применим. Если все элементы в группе имеют
+единый стандарт, то в наименовании группы указывается только имя группы и
+стандарт, без указания марки. Если же в группе имеются компоненты с разным
+значением поля стандарт, то будет сформировано несколько наименований группы
+для каждого стандарта с указанием марки. Эти наименования указываются подряд в
+начале группы. Если марка компонентов с одинаковым стандартом отличается
+(например, <em>МЛТ-0,125</em> и <em>МЛТ-0,25</em>), то будет указана общая часть марки
+(<em>МЛТ</em>).</p>
+</li>
+<li>
+<p><strong><em>Указывать наименование группы единственного элемента в строке
+компонента</em></strong>&#8201;&#8212;&#8201;если группа компонентов состоит из одного компонента
+(например, в схеме имеется одна микросхема, соответственно, в группе
+"Микросхемы" будет содержаться лишь один элемент), то, по умолчанию, для него в
+перечне будет создано две строки, в одной будет указано наименование группы, в
+другой&#8201;&#8212;&#8201;сам компонент. Если этот параметр включен, то такие компоненты будут
+записываться одной строкой, причём имя группы будет указано в начале
+наименования компонента в единственном числе.<br>
+Наименования групп в единственном числе берутся из словаря (см. раздел
+<a href="#настройка_словаря">Словарь</a>) и в случае отсутствия, в процессе создания
+перечня элементов, будет показано диалоговое окно с запросом на ввод варианта
+наименования группы в единственном числе, которое в последующем будет добавлено
+в словарь.</p>
+</li>
+<li>
+<p><strong><em>Запретить наименования групп в конце страницы</em></strong>&#8201;&#8212;&#8201;в процессе
+формирования перечня элементов может возникнуть ситуация, при которой внизу
+страницы окажется только наименование группы, а компоненты будут расположены на
+следующей странице. Если этот параметр отмечен, то в подобных ситуациях
+наименование будет перенесено на следующую страницу, а на его месте останется
+пустая строка.</p>
 </li>
 <li>
 <p><strong><em>Добавить графы первичной применяемости</em></strong>&#8201;&#8212;&#8201;если этот параметр отмечен,
@@ -1809,7 +2081,8 @@ Unicode, поэтому там используются символы <strong>&
 <li>
 <p><strong><em>Указать первичную применяемость</em></strong>&#8201;&#8212;&#8201;этот параметр становится
 доступным, если предыдущий установлен. Если отметка установлена, то в графу
-<em>Перв. примен.</em> будет помещено значение децимального номера без кода документа.</p>
+<em>Перв. примен.</em> будет помещено значение децимального номера без кода
+документа.</p>
 </li>
 <li>
 <p><strong><em>Добавить графы заказчика</em></strong>&#8201;&#8212;&#8201;если этот параметр отмечен, то над
@@ -1826,18 +2099,41 @@ Unicode, поэтому там используются символы <strong>&
 прямой шрифт.</p>
 </li>
 <li>
+<p><strong><em>Подчёркивать наименования групп</em></strong>&#8201;&#8212;&#8201;если параметр отмечен, то
+наименование группы будет подчёркнуто сплошной линией.</p>
+</li>
+<li>
+<p><strong><em>Наименование группы по центру</em></strong>&#8201;&#8212;&#8201;если параметр отмечен, то
+наименование группы будет выровнено по центру ячейки таблицы. По умолчанию, оно
+выравнивается по левому краю.</p>
+</li>
+<li>
+<p><strong><em>Поз. обозначение по центру</em></strong>&#8201;&#8212;&#8201;если параметр отмечен, то позиционное
+обозначение компонента будет выровнено по центру ячейки таблицы. По умолчанию,
+оно выравнивается по левому краю.</p>
+</li>
+<li>
 <p><strong><em>Открыть перечень элементов</em></strong>&#8201;&#8212;&#8201;если этот параметр установлен, то по
 завершении будет открыт созданный перечень элементов в редакторе по умолчанию
 (например, в <strong>LibreOffice</strong>).</p>
 </li>
 </ul>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_основная_надпись">2.3.3. Основная надпись</h4>
+<div class="imageblock">
+<div class="content">
+<img src="images/dialog_complist_stamp.png" alt="dialog complist stamp">
+</div>
+<div class="title">Содержимое основной надписи</div>
+</div>
 <div class="paragraph">
-<p>Помимо параметров, в диалоговом окне создания перечня элементов отображаются
-значения полей основной надписи. Эта информация загружается из файла схемы, за
-исключением поля <em>Нормоконтролер</em>, которое хранится в настройках программы.
-Все эти значения доступны для редактирования. Новые значения сохраняются
-вместе со значениями полей элементов при сохранении файла схемы.
+<p>Помимо параметров, в диалоговом окне создания перечня элементов имеется вкладка
+со значениями полей основной надписи. Эта информация загружается из файла
+схемы, за исключением поля <em>Нормоконтролер</em>, которое хранится в настройках
+программы.  Все эти значения доступны для редактирования. Новые значения
+сохраняются вместе со значениями полей элементов при сохранении файла схемы.
 Значения полей <em>Децимальный номер</em> и <em>Наименование</em> автоматически
 корректируются согласно ЕСКД перед помещением в основную надпись перечня
 элементов. Результат коррекции можно наблюдать рядом с полями ввода.</p>
@@ -1855,6 +2151,9 @@ Unicode, поэтому там используются символы <strong>&
 </tr>
 </table>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_примечания">2.3.4. Примечания</h4>
 <div class="paragraph">
 <p>Когда все параметры заданы, можно запустить создание перечня нажав кнопку
 <em>Ок</em>. После успешного завершения генерации перечня элементов будет показано
@@ -1871,21 +2170,13 @@ Unicode, поэтому там используются символы <strong>&
 элементов</em>, то сообщение о завершении не отображается, вместо него будет
 открыт созданный перечень элементов.</p>
 </div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Примечание</div>
-</td>
-<td class="content">
-При создании перечня элементов из <strong>Eeschema</strong> в директории фала схемы
+<div class="paragraph">
+<p>При создании перечня элементов из <strong>Eeschema</strong> в директории фала схемы
 автоматически создаются два новых файла: один с названием схемы и
 расширением <em>*.xml</em>, второй тоже с названием схемы, но без расширения. Они не
 используются программой <strong>kicadbom2spec</strong> и если в них нет необходимости, могут
-быть удалены.
-</td>
-</tr>
-</table>
+быть удалены.</p>
+</div>
 </div>
 </div>
 </div>
@@ -1899,7 +2190,7 @@ Unicode, поэтому там используются символы <strong>&
 </div>
 <div id="редактор_настроек" class="imageblock">
 <div class="content">
-<img src="images/settings_editor.png" alt="settings editor">
+<img src="images/settings_general.png" alt="settings general">
 </div>
 <div class="title">Внешний вид редактора настроек</div>
 </div>
@@ -2015,7 +2306,7 @@ Unicode, поэтому там используются символы <strong>&
 </div>
 <div id="редактор_стандартных_значений_для_полей" class="imageblock">
 <div class="content">
-<img src="images/editor_std_values.png" alt="editor std values">
+<img src="images/settings_std_values.png" alt="settings std values">
 </div>
 <div class="title">Редактор стандартных значений для полей</div>
 </div>
@@ -2064,7 +2355,7 @@ Unicode, поэтому там используются символы <strong>&
 </div>
 <div id="редактор_разделителей" class="imageblock">
 <div class="content">
-<img src="images/editor_separators.png" alt="editor separators">
+<img src="images/settings_separators.png" alt="settings separators">
 </div>
 <div class="title">Редактор разделителей</div>
 </div>
@@ -2109,7 +2400,7 @@ Unicode, поэтому там используются символы <strong>&
 </div>
 <div id="редактор_псевдонимов" class="imageblock">
 <div class="content">
-<img src="images/editor_aliases.png" alt="editor aliases">
+<img src="images/settings_aliases.png" alt="settings aliases">
 </div>
 <div class="title">Редактор псевдонимов</div>
 </div>
@@ -2130,7 +2421,52 @@ Unicode, поэтому там используются символы <strong>&
 </div>
 </div>
 <div class="sect2">
-<h3 id="_импорт_экспорт_параметров">3.5. Импорт/экспорт параметров</h3>
+<h3 id="_словарь">3.5. Словарь</h3>
+<div id="настройка_словаря" class="imageblock">
+<div class="content">
+<img src="images/settings_dict.png" alt="settings dict">
+</div>
+<div class="title">Редактор элементов словаря</div>
+</div>
+<div class="paragraph">
+<p>Если параметр <strong><em>Указывать наименование группы единственного элемента в строке
+компонента</em></strong> включен то при формировании перечня элементов потребуются
+наименования групп в единственном числе. Для их нахождения в программе
+<strong>kicadbom2spec</strong> используется <em>"словарь"</em>. Просмотреть и отредактировать его
+содержимое можно на вкладке <strong>Словарь</strong> редактора настроек. На ней расположена
+таблица, состоящая из двух колонок <em>В множественном числе</em> и <em>В единственном
+числе</em>. Каждая строка представляет собой элемент словаря.</p>
+</div>
+<div class="paragraph">
+<p>Элементы словаря можно добавлять, изменять и удалять с помощью кнопок,
+расположенных справа от таблицы.</p>
+</div>
+<div class="paragraph">
+<p>При добавлении или редактировании будет показано специальное диалоговое окно:</p>
+</div>
+<div id="диалог_редактирования_элемента_словаря" class="imageblock">
+<div class="content">
+<img src="images/dialog_add_edit_dict_item.png" alt="dialog add edit dict item">
+</div>
+<div class="title">Диалог редактирования элемента словаря</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Примечание</div>
+</td>
+<td class="content">
+Если при формировании перечня элементов потребуется наименование группы в
+единственном числе, которого нет в словаре, то будет показано данное диалоговое
+окно с последующим добавлением нового элемента в словарь.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_импорт_экспорт_параметров">3.6. Импорт/экспорт параметров</h3>
 <div class="paragraph">
 <p>Выполнить перенос параметров из одной копии программы в другую можно следующим
 образом.</p>
@@ -2217,8 +2553,8 @@ Unicode, поэтому там используются символы <strong>&
 <h3 id="_второй_позиционный_аргумент_em_strong_complist_strong_em">4.2. Второй позиционный аргумент <em><strong>complist</strong></em></h3>
 <div class="paragraph">
 <p>С помощью этого параметра в программу передаётся имя файла в который будет
-сохранен перечень элементов. Расширение файла автоматически заменяется на
-<em>*.ods</em>.</p>
+сохранен перечень элементов. Если указан не поддерживаемый формат файла, то
+расширение файла автоматически заменяется на <em>*.ods</em>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -2332,7 +2668,7 @@ Unicode, поэтому там используются символы <strong>&
 </div>
 <div id="footer">
 <div id="footer-text">
-Редакция от 2018-03-10 11:40:19 EET
+Редакция от 2018-03-30 10:19:16 EEST
 </div>
 </div>
 </body>
