@@ -19,10 +19,10 @@ import csv
 import os
 import re
 import time
-import Tkinter as tk
-import tkFont
 from copy import deepcopy
 from operator import itemgetter
+
+import wx
 
 import odf.opendocument
 from odf.draw import Frame
@@ -130,13 +130,13 @@ class CompList():
             if len(text) <= 6:
                 return 100
             font_size = 14 # pt
-            column_width = 18 # mm
+            column_width = 18.8 # mm
         elif label.startswith('#2:'):
             # Size of text that fits in any case
             if len(text) <= 37:
                 return 100
             font_size = 14 # pt
-            column_width = 108 # mm
+            column_width = 111 # mm
         elif label.startswith('#3:'):
             # Size of text that fits in any case
             if len(text) <= 3:
@@ -148,7 +148,7 @@ class CompList():
             if len(text) <= 14:
                 return 100
             font_size = 14 # pt
-            column_width = 42 # mm
+            column_width = 43 # mm
         elif label in ('#5:1', '#5:2', '#5:3', '#5:4'):
             # Size of text that fits in any case
             if len(text) <= 8:
@@ -158,20 +158,28 @@ class CompList():
         else:
             return 100
 
-        tk_widget = tk.Tk()
-        pixel_per_mm = tk_widget.winfo_fpixels('1m')
+        dc = wx.ScreenDC()
+        pixel_per_mm = dc.GetPPI()[0] / 25.4
+        # FIXME GTK3 has a bug and returns wrong PPI!
+        if 'gtk3' in wx.version():
+            pixel_per_mm = 96 / 25.4
 
-        font_slant = 'roman'
         if self.italic == True:
-            font_slant = 'italic'
+            font_style = wx.FONTSTYLE_ITALIC
+        else:
+            font_style = wx.FONTSTYLE_SLANT
 
-        font = tkFont.Font(
-            family='OpenGost Type B TT',
-            slant=font_slant,
-            size=font_size
+        font = wx.Font(
+            family=wx.FONTFAMILY_DEFAULT,
+            pointSize=font_size,
+            style=font_style,
+            weight=wx.FONTWEIGHT_NORMAL,
+            faceName='OpenGost Type B TT'
             )
 
-        text_width = font.measure(text)
+        dc.SetFont(font)
+
+        text_width, text_height = dc.GetTextExtent(text)
         text_width_mm = text_width / pixel_per_mm
 
         width_factor_float = 100 * column_width / text_width_mm
