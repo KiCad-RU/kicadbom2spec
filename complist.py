@@ -33,8 +33,8 @@ from odf import dc, meta
 
 from kicadsch import *
 
-REF_REGEXP = u'(.*[^0-9])([0-9]+)'
-NUM_REGEXP = u'([А-ЯA-Z0-9]+(?:[^А-ЯA-Z0-9][0-9\.\-\s]+)?)(Э[1-7])?'
+REF_REGEXP = re.compile(u'(.*[^0-9])([0-9]+)', re.U)
+NUM_REGEXP = re.compile(u'([А-ЯA-Z0-9]+(?:[^А-ЯA-Z0-9][0-9\.\-\s]+)?)(Э[1-7])?', re.U)
 
 class CompList():
     """
@@ -130,39 +130,39 @@ class CompList():
             if len(text) <= 6:
                 return 100
             font_size = 14 # pt
-            column_width = 18.8 # mm
+            column_width = 17.5 # mm
         elif label.startswith('#2:'):
             # Size of text that fits in any case
             if len(text) <= 37:
                 return 100
             font_size = 14 # pt
-            column_width = 111 # mm
+            column_width = 108 # mm
         elif label.startswith('#3:'):
             # Size of text that fits in any case
             if len(text) <= 3:
                 return 100
             font_size = 14 # pt
-            column_width = 10 # mm
+            column_width = 9 # mm
         elif label.startswith('#4:'):
             # Size of text that fits in any case
             if len(text) <= 14:
                 return 100
             font_size = 14 # pt
-            column_width = 43 # mm
+            column_width = 41.5 # mm
         elif label in ('#5:1', '#5:2', '#5:3', '#5:4'):
             # Size of text that fits in any case
             if len(text) <= 8:
                 return 100
             font_size = 12 # pt
-            column_width = 21 # mm
+            column_width = 20.5 # mm
         else:
             return 100
 
         dc = wx.ScreenDC()
         pixel_per_mm = dc.GetPPI()[0] / 25.4
-        # FIXME GTK3 has a bug and returns wrong PPI!
         if 'gtk3' in wx.version():
-            pixel_per_mm = 96 / 25.4
+            # FIXME GTK3 has a bug and returns wrong PPI!
+            pixel_per_mm = 3.78 # 96 / 25.4
 
         if self.italic == True:
             font_style = wx.FONTSTYLE_ITALIC
@@ -180,9 +180,10 @@ class CompList():
         dc.SetFont(font)
 
         text_width, text_height = dc.GetTextExtent(text)
-        text_width_mm = text_width / pixel_per_mm
+        # wx draws text differently than libreoffice, correction needed
+        text_width -= len(text) * 0.35
 
-        width_factor_float = 100 * column_width / text_width_mm
+        width_factor_float = (100 * column_width * pixel_per_mm) / text_width
         width_factor_int = int(width_factor_float)
         if (width_factor_float % 1) > 0 \
                 and width_factor_int > 1:
@@ -421,9 +422,9 @@ class CompList():
                 multipliers = mult_keys + mult_values
                 multipliers = list(set(multipliers))
                 # 2u7, 2н7, 4m7, 5k1 etc.
-                regexp_1= u'^(\d+)({})(\d+)$'.format(u'|'.join(multipliers))
+                regexp_1= re.compile(u'^(\d+)({})(\d+)$'.format(u'|'.join(multipliers)), re.U)
                 # 2.7 u, 2700p, 4.7 m, 470u, 5.1 k, 510 etc.
-                regexp_2= u'^(\d+(?:[\.,]\d+)?)\s*({})?$'.format(u'|'.join(multipliers))
+                regexp_2= re.compile(u'^(\d+(?:[\.,]\d+)?)\s*({})?$'.format(u'|'.join(multipliers)), re.U)
                 if ref_type.startswith(u'C') and not value.endswith(u'Ф'):
                     units = u'Ф'
                     if re.match(u'^\d+$', value):
