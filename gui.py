@@ -514,13 +514,13 @@ class EditorDialog ( wx.Dialog ):
 		
 		self.checkbox = wx.CheckBox( self.panel_editor, wx.ID_ANY, u"Включить в перечень элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox.SetValue(True) 
-		sizer_fields.Add( self.checkbox, 1, wx.ALL, 5 )
+		sizer_fields.Add( self.checkbox, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		
 		self.panel_editor.SetSizer( sizer_fields )
 		self.panel_editor.Layout()
 		sizer_fields.Fit( self.panel_editor )
-		sizer_editor.Add( self.panel_editor, 0, wx.EXPAND, 5 )
+		sizer_editor.Add( self.panel_editor, 1, wx.EXPAND, 5 )
 		
 		dialog_buttons = wx.StdDialogButtonSizer()
 		self.dialog_buttonsOK = wx.Button( self, wx.ID_OK )

@@ -2523,8 +2523,12 @@ class Window(gui.MainFrame):
             editor.checkbox.Hide()
             editor.statictext_4.Hide()
             editor.editor_ctrl_4.Hide()
-        min_size = editor.GetSizer().Fit(editor)
         editor.Layout()
+        editor.Fit()
+        if 'gtk' in wx.version():
+            min_size = editor.GetClientSize()
+        else:
+            min_size = editor.GetSize()
         editor.SetSizeHints(
             min_size.GetWidth(),
             min_size.GetHeight(),

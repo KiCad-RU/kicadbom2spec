@@ -342,21 +342,6 @@ class EditorCtrl(wx.Control):
         self.button.Enable(False)
         self.button.Bind(wx.EVT_BUTTON, self.on_button)
 
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(
-            self.text_ctrl,
-            1,
-            wx.EXPAND,
-            0
-            )
-        sizer.Add(
-            self.button,
-            0,
-            wx.FIXED_MINSIZE,
-            0
-            )
-        self.SetSizer(sizer)
-
         self.popup = None
 
         # Common and standard values is stored separate.
@@ -381,7 +366,23 @@ class EditorCtrl(wx.Control):
         self.datasheet_id = wx.NewId()
         self.another_id = wx.NewId()
 
+        # Layout
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(
+            self.text_ctrl,
+            1,
+            wx.EXPAND,
+            0
+            )
+        sizer.Add(
+            self.button,
+            0,
+            wx.FIXED_MINSIZE,
+            0
+            )
+        self.SetSizer(sizer)
         self.Layout()
+        sizer.Fit(self)
 
     def set_items(self, values=None, std_values=None, default_value=None):
         """
