@@ -2187,6 +2187,8 @@ class Window(gui.MainFrame):
         complist = CompList()
         # Specify callback
         complist.get_singular_group_name = self.get_singular_group_name
+
+        # Dialog
         complist_dialog = gui.CompListDialog(self)
 
         # Calculate and set min size for title text control
@@ -2259,6 +2261,8 @@ class Window(gui.MainFrame):
                 complist.add_customer_fields = self.settings.getboolean('complist', 'customer_fields')
             if self.settings.has_option('complist', 'changes_sheet'):
                 complist.add_changes_sheet = self.settings.getboolean('complist', 'changes_sheet')
+            if self.settings.has_option('complist', 'count_for_changes_sheet'):
+                complist.count_for_changes_sheet = self.settings.getint('complist', 'count_for_changes_sheet')
             if self.settings.has_option('complist', 'italic'):
                 complist.italic = self.settings.getboolean('complist', 'italic')
             if self.settings.has_option('complist', 'underline_group_name'):
@@ -2293,6 +2297,7 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_first_usage_fill.Enable(complist.add_first_usage)
         complist_dialog.checkbox_customer_fields.SetValue(complist.add_customer_fields)
         complist_dialog.checkbox_changes_sheet.SetValue(complist.add_changes_sheet)
+        complist_dialog.spinctrl_count_for_changes_sheet.SetValue(complist.count_for_changes_sheet)
         complist_dialog.checkbox_italic.SetValue(complist.italic)
         complist_dialog.checkbox_underline_group.SetValue(complist.underline_group_name)
         complist_dialog.checkbox_center_group.SetValue(complist.center_group_name)
@@ -2349,6 +2354,7 @@ class Window(gui.MainFrame):
             complist.fill_first_usage = complist_dialog.checkbox_first_usage_fill.IsChecked()
             complist.add_customer_fields = complist_dialog.checkbox_customer_fields.IsChecked()
             complist.add_changes_sheet = complist_dialog.checkbox_changes_sheet.IsChecked()
+            complist.count_for_changes_sheet = complist_dialog.spinctrl_count_for_changes_sheet.GetValue()
             complist.italic = complist_dialog.checkbox_italic.GetValue()
             complist.underline_group_name = complist_dialog.checkbox_underline_group.GetValue()
             complist.center_group_name = complist_dialog.checkbox_center_group.GetValue()
@@ -2385,6 +2391,7 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'fill_first_usage', str(complist.fill_first_usage))
             self.settings.set('complist', 'customer_fields', str(complist.add_customer_fields))
             self.settings.set('complist', 'changes_sheet', str(complist.add_changes_sheet))
+            self.settings.set('complist', 'count_for_changes_sheet', str(complist.count_for_changes_sheet))
             self.settings.set('complist', 'italic', str(complist.italic))
             self.settings.set('complist', 'underline_group_name', str(complist.underline_group_name))
             self.settings.set('complist', 'center_group_name', str(complist.center_group_name))

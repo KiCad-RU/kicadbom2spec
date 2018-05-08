@@ -940,10 +940,25 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_options_format.Add( self.checkbox_customer_fields, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.checkbox_changes_sheet = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Добавить лист регистрации изменений", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_changes_sheet.SetToolTipString( u"Если данная опция включена, то в конец перечня элементов будет добавлен лист регистрации изменений." )
+		self.checkbox_changes_sheet = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Добавить лист регистрации изменений,", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_changes_sheet.SetToolTipString( u"Если данная опция включена и количество листов перечня превышает указанное число, то в конец перечня элементов будет добавлен лист регистрации изменений." )
 		
 		sizer_options_format.Add( self.checkbox_changes_sheet, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		sizer_first_count_for_changes_sheet = wx.BoxSizer( wx.HORIZONTAL )
+		
+		
+		sizer_first_count_for_changes_sheet.AddSpacer( ( 25, 0), 0, wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.statictext_changes_sheet = wx.StaticText( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"если количество листов больше", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.statictext_changes_sheet.Wrap( -1 )
+		sizer_first_count_for_changes_sheet.Add( self.statictext_changes_sheet, 0, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.spinctrl_count_for_changes_sheet = wx.SpinCtrl( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"2", wx.DefaultPosition, wx.Size( -1,-1 ), wx.SP_ARROW_KEYS, 0, 9999, 0 )
+		sizer_first_count_for_changes_sheet.Add( self.spinctrl_count_for_changes_sheet, 0, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		
+		sizer_options_format.Add( sizer_first_count_for_changes_sheet, 1, wx.EXPAND, 5 )
 		
 		self.checkbox_italic = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Курсив", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_italic.SetToolTipString( u"Использовать курсив для оформления перечня элементов.\nЕсли отметка отсутствует, будет использован прямой шрифт." )

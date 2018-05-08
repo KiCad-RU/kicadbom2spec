@@ -78,6 +78,7 @@ class CompList():
         self.fill_first_usage = False
         self.add_customer_fields = False
         self.add_changes_sheet = False
+        self.count_for_changes_sheet = 0
         self.italic = False
         self.underline_group_name = False
         self.center_group_name = False
@@ -1162,7 +1163,9 @@ class CompList():
             self._next_line()
 
         # If the sheet of changes is needed - append it
-        if self.add_changes_sheet == True:
+        pg_cnt = len(self.complist_pages)
+        if self.add_changes_sheet == True \
+                and pg_cnt > self.count_for_changes_sheet:
             self._cur_page = self._lastPagePattern
             if self.file_format == u'.ods':
                 self._cur_page.setAttribute(u'name', u'стр. %d' % self._cur_page_num)
