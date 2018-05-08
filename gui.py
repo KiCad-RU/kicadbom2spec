@@ -1124,11 +1124,6 @@ class SettingsDialog ( wx.Dialog ):
 		
 		general_tab_sizer.Add( self.space_as_dot_checkbox, 0, wx.EXPAND|wx.ALL, 5 )
 		
-		self.remember_selection_checkbox = wx.CheckBox( self.general_panel, wx.ID_ANY, u"Запоминать выбор элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.remember_selection_checkbox.SetToolTipString( u"Если этот параметр установлен, то при сохранении схемы элементам, которые не отмечены для вывода в перечень элементов, будет добавлено поле \"Исключен из ПЭ\". \nПри открытии схемы для элементов с полем \"Исключен из ПЭ\" будет автоматически снята отметка о выводе в перечень элементов." )
-		
-		general_tab_sizer.Add( self.remember_selection_checkbox, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
-		
 		self.show_need_adjust_mark_checkbox = wx.CheckBox( self.general_panel, wx.ID_ANY, u"Показывать метку \"*\" возле обозначения на схеме", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.show_need_adjust_mark_checkbox.SetToolTipString( u"Если этот параметр установлен, то на схеме, возле обозначения компонента, номинал которого \"Подбирают при регулировании\", будет отображаться метка \"*\"." )
 		

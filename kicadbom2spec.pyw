@@ -105,7 +105,6 @@ class Window(gui.MainFrame):
         self.init_grid()
 
         # Default settings
-        self.save_selected_mark = False
         self.show_need_adjust_mark = False
         self.auto_groups_dict = {}
         self.values_dict = {
@@ -236,8 +235,6 @@ class Window(gui.MainFrame):
                 if self.settings.has_section('general'):
                     if self.settings.has_option('general', 'space as dot'):
                         self.grid.space_as_dot = self.settings.getboolean('general', 'space as dot')
-                    if self.settings.has_option('general', 'remember selection'):
-                        self.save_selected_mark = self.settings.getboolean('general', 'remember selection')
                     if self.settings.has_option('general', 'show need adjust mark'):
                         self.show_need_adjust_mark = self.settings.getboolean('general', 'show need adjust mark')
 
@@ -409,8 +406,6 @@ class Window(gui.MainFrame):
                     if import_settings['general']:
                         if temp_settings.has_option('general', 'space as dot'):
                             self.grid.space_as_dot = temp_settings.getboolean('general', 'space as dot')
-                        if temp_settings.has_option('general', 'remember selection'):
-                            self.save_selected_mark = temp_settings.getboolean('general', 'remember selection')
                         if temp_settings.has_option('general', 'show need adjust mark'):
                             self.show_need_adjust_mark = temp_settings.getboolean('general', 'show need adjust mark')
                     if import_settings['values']:
@@ -554,7 +549,6 @@ class Window(gui.MainFrame):
         if not self.settings.has_section('general'):
             self.settings.add_section('general')
         self.settings.set( 'general', 'space as dot', str(self.grid.space_as_dot))
-        self.settings.set( 'general', 'remember selection', str(self.save_selected_mark))
         self.settings.set( 'general', 'show need adjust mark', str(self.show_need_adjust_mark))
 
         self.settings.remove_section('recent sch')
@@ -1066,7 +1060,7 @@ class Window(gui.MainFrame):
                                                     del item.fields[field_index]
                                                     break
 
-                                if self.save_selected_mark and value[0] == '0':
+                                if value[0] == '0':
                                     # Check if field present
                                     for field in item.fields:
                                         if hasattr(field, 'name'):
@@ -2769,7 +2763,6 @@ class Window(gui.MainFrame):
             prefix_text.SetValue(prefix)
             suffix_text.SetValue(suffix)
 
-        settings_editor.remember_selection_checkbox.SetValue(self.save_selected_mark)
         settings_editor.space_as_dot_checkbox.SetValue(self.grid.space_as_dot)
         settings_editor.show_need_adjust_mark_checkbox.SetValue(self.show_need_adjust_mark)
 
@@ -2826,16 +2819,10 @@ class Window(gui.MainFrame):
                 if field_values:
                     self.settings.set('values', field, field_values)
 
-            self.save_selected_mark = settings_editor.remember_selection_checkbox.GetValue()
             self.grid.space_as_dot = settings_editor.space_as_dot_checkbox.GetValue()
             self.show_need_adjust_mark = settings_editor.show_need_adjust_mark_checkbox.GetValue()
             if not self.settings.has_section('general'):
                 self.settings.add_section('general')
-            self.settings.set(
-                'general',
-                'remember selection',
-                {True:'1', False:'0'}[self.save_selected_mark]
-                )
             self.settings.set(
                 'general',
                 'space as dot',
