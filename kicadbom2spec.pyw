@@ -2241,6 +2241,8 @@ class Window(gui.MainFrame):
                 self.stamp_dict['inspector'] = self.settings.get('complist', 'inspector')
             if self.settings.has_option('complist', 'file_format'):
                 complist.file_format = self.settings.get('complist', 'file_format')
+            if self.settings.has_option('complist', 'empty_row_after_name'):
+                complist.empty_row_after_name = self.settings.getboolean('complist', 'empty_row_after_name')
             if self.settings.has_option('complist', 'empty_rows_after_group'):
                 complist.empty_rows_after_group = self.settings.getint('complist', 'empty_rows_after_group')
             if self.settings.has_option('complist', 'empty_rows_everywhere'):
@@ -2286,6 +2288,7 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_all_components.SetValue(complist.all_components)
         complist_dialog.checkbox_add_units.SetValue(complist.add_units)
         complist_dialog.checkbox_space_before_units.SetValue(complist.space_before_units)
+        complist_dialog.checkbox_empty_row_after_name.SetValue(complist.empty_row_after_name)
         complist_dialog.choice_after_groups.SetSelection(complist.empty_rows_after_group)
         complist_dialog.checkbox_empty_rows_everywhere.SetValue(complist.empty_rows_everywhere)
         complist_dialog.checkbox_prohibit_empty_rows_on_top.SetValue(complist.prohibit_empty_rows_on_top)
@@ -2344,6 +2347,7 @@ class Window(gui.MainFrame):
             complist.all_components = complist_dialog.checkbox_all_components.IsChecked()
             complist.add_units = complist_dialog.checkbox_add_units.IsChecked()
             complist.space_before_units = complist_dialog.checkbox_space_before_units.IsChecked()
+            complist.empty_row_after_name = complist_dialog.checkbox_empty_row_after_name.GetValue()
             complist.empty_rows_after_group = complist_dialog.choice_after_groups.GetSelection()
             complist.empty_rows_everywhere = complist_dialog.checkbox_empty_rows_everywhere.GetValue()
             complist.prohibit_empty_rows_on_top = complist_dialog.checkbox_prohibit_empty_rows_on_top.GetValue()
@@ -2381,6 +2385,7 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'units', str(complist.add_units))
             self.settings.set('complist', 'space_before_units', str(complist.space_before_units))
             self.settings.set('complist', 'file_format', complist.file_format)
+            self.settings.set('complist', 'empty_row_after_name', str(complist.empty_row_after_name))
             self.settings.set('complist', 'empty_rows_after_group', str(complist.empty_rows_after_group))
             self.settings.set('complist', 'empty_rows_everywhere', str(complist.empty_rows_everywhere))
             self.settings.set('complist', 'prohibit_empty_rows_on_top', str(complist.prohibit_empty_rows_on_top))

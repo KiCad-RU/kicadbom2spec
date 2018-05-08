@@ -68,6 +68,7 @@ class CompList():
         self.all_components = False
         self.add_units = False
         self.space_before_units = False
+        self.empty_row_after_name = False
         self.empty_rows_after_group = 1
         self.empty_rows_everywhere = False
         self.prohibit_empty_rows_on_top = False
@@ -992,6 +993,9 @@ class CompList():
                                 for group_name_with_gost in group_names_with_gost:
                                     group_name_with_gost = self._get_unescaped_text(group_name_with_gost)
                                     csv_writer.writerow([u'', group_name_with_gost, u'', u''])
+                                # Empty row after group name
+                                if self.empty_row_after_name == True:
+                                    csv_writer.writerow(empty_row)
                                 # Write to table prepared components
                                 for comp in components:
                                     # Write component into list
@@ -1002,6 +1006,9 @@ class CompList():
                                 continue
                             else:
                                 csv_writer.writerow([u'', group_name, u'', u''])
+                                # Empty row after group name
+                                if self.empty_row_after_name == True:
+                                    csv_writer.writerow(empty_row)
 
                     for comp in group:
                         # Write component into list
@@ -1129,6 +1136,10 @@ class CompList():
                                 underline=self.underline_group_name
                                 )
                             self._next_line()
+                        # Empty row after group name
+                        if self.empty_row_after_name == True:
+                            if not (self.prohibit_empty_rows_on_top == True and self._cur_line == 1):
+                                self._next_line()
                         # Write to table prepared components
                         for comp in components:
                             # Write component into list
@@ -1149,6 +1160,10 @@ class CompList():
                             underline=self.underline_group_name
                             )
                         self._next_line()
+                        # Empty row after group name
+                        if self.empty_row_after_name == True:
+                            if not (self.prohibit_empty_rows_on_top == True and self._cur_line == 1):
+                                self._next_line()
 
             for comp in group:
                 # Write component into list

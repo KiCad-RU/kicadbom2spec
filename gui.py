@@ -871,18 +871,23 @@ class CompListDialog ( wx.Dialog ):
 		
 		sizer_groups = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Группы элементов" ), wx.VERTICAL )
 		
+		self.checkbox_empty_row_after_name = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Вставлять пустую строку после наименования группы", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_empty_row_after_name.SetToolTipString( u"Если параметр отмечен, то между наименованием группы и первы её элементом будет вставлена одна пустая строка." )
+		
+		sizer_groups.Add( self.checkbox_empty_row_after_name, 0, wx.ALL, 5 )
+		
 		sizer_empty_rows_groups = wx.BoxSizer( wx.HORIZONTAL )
 		
 		choice_after_groupsChoices = [ u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9" ]
 		self.choice_after_groups = wx.Choice( sizer_groups.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_after_groupsChoices, 0 )
 		self.choice_after_groups.SetSelection( 1 )
-		sizer_empty_rows_groups.Add( self.choice_after_groups, 0, wx.ALL, 5 )
+		sizer_empty_rows_groups.Add( self.choice_after_groups, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		self.empty_rows_groups_label = wx.StaticText( sizer_groups.GetStaticBox(), wx.ID_ANY, u"пустых строк между разными типами элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.empty_rows_groups_label.Wrap( -1 )
 		self.empty_rows_groups_label.SetToolTipString( u"Между элементами с разным обозначением будет вставлено указанное число пустых строк." )
 		
-		sizer_empty_rows_groups.Add( self.empty_rows_groups_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		sizer_empty_rows_groups.Add( self.empty_rows_groups_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
 		sizer_groups.Add( sizer_empty_rows_groups, 1, wx.EXPAND, 5 )
