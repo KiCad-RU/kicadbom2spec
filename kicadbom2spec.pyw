@@ -2405,7 +2405,8 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'open', str(open_complist))
             self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
 
-            try:
+            # try:
+            if 1:
                 # Save entire schematic with current changes to temporary directory
                 temp_dir = tempfile.mkdtemp(prefix='kicadbom2spec_')
                 sch_file = os.path.basename(self.schematic_file)
@@ -2428,7 +2429,8 @@ class Window(gui.MainFrame):
                 complist.save(self.complist_file)
                 # Remove temporary directory
                 shutil.rmtree(temp_dir, ignore_errors=True)
-            except:
+            # except:
+            else:
                 wx.MessageBox(
                     u'При создании перечня элементов:\n' +
                     self.complist_file + '\n' \

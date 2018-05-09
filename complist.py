@@ -389,14 +389,35 @@ class CompList():
         # Reference
         ref = u''
         if int(count) > 1:
-            # Reference number: '5, 6'; '25-28' etc.
-            ref = re.search(u'(\d+)(-|,\s?)(\d+)', ref_num).groups()
+            # Reference: 'VD1*, VD2*'; 'C8*-C11*', 'VD1, VD2'; 'C8-C11' etc.
+            prev_num = ref_num[0]
+            counter = 0
+            separator = ', '
+            ref = ref_type + str(prev_num)
             if need_adjust_flag == True:
-                # Reference: 'VD1*, VD2*'; 'C8*-C11*' etc.
-                ref = (ref_type + u'%s*%s' + ref_type + u'%s*') % ref
-            else:
-                # Reference: 'VD1, VD2'; 'C8-C11' etc.
-                ref = (ref_type + u'%s%s' + ref_type + u'%s') % ref
+                ref += u'*'
+            for num in ref_num[1:]:
+                if num == (prev_num + 1):
+                    prev_num = num
+                    counter += 1
+                    if counter > 1:
+                        separator = '-'
+                    continue
+                else:
+                    if counter > 0:
+                        ref += separator + ref_type + str(prev_num)
+                        if need_adjust_flag == True:
+                            ref += u'*'
+                    separator = ', '
+                    ref += separator + ref_type + str(num)
+                    if need_adjust_flag == True:
+                        ref += u'*'
+                    prev_num = num
+                    counter = 0
+            if counter > 0:
+                ref += separator + ref_type + str(prev_num)
+                if need_adjust_flag == True:
+                    ref += u'*'
         else:
             # Reference: 'R5'; 'VT13' etc.
             ref = ref_type + ref_num
@@ -881,11 +902,12 @@ class CompList():
             # Append last group
             grouped_comp_array.append(group_array)
 
-        # Combining the identical elements in one line
+        # Combining the identical elements in one line.
+        # All identical elements differs by ref_num.
+        # Resulting element has all ref_nums in ref_num field as list.
         temp_array = []
         for group in grouped_comp_array:
-            first = u''
-            last = u''
+            ref_nums = []
             prev = None
             first_index = 0
             last_index = 0
@@ -893,47 +915,40 @@ class CompList():
             for element in group:
                 if group.index(element) == 0:
                     # first element
-                    first = last = element[2]
+                    ref_nums.append(int(element[2]))
                     prev = element[:]
                     if len(group) == 1:
                         temp_group.append(element)
                         temp_array.append(temp_group)
                     continue
 
-                if element[:2] == prev[:2] and \
-                        int(element[2]) - 1 == int(prev[2]) and \
-                        element[3:] == prev[3:]:
+                if element[:2] == prev[:2] \
+                        and element[3:] == prev[3:]:
                     # equal elements
-                    last = element[2]
+                    ref_nums.append(int(element[2]))
                     last_index = group.index(element)
                 else:
                     # different elements
-                    if int(last) - int(first) > 0:
+                    if len(ref_nums) > 1:
                         # finish processing of several identical elements
-                        count = int(last) - int(first) + 1
-                        separator = u', '
-                        if count > 2:
-                            separator = u'-'
+                        count = len(ref_nums)
                         temp_element = group[last_index]
-                        temp_element[2] = first + separator + last
+                        temp_element[2] = ref_nums[:]
                         temp_element[10] = str(count)
                         temp_group.append(temp_element)
                     else:
                         # next different element
                         temp_group.append(prev)
-                    first = last = element[2]
+                    ref_nums = [int(element[2])]
                     first_index = last_index = group.index(element)
 
                 if group.index(element) == len(group) - 1:
                     # last element in the group
-                    if int(last) - int(first) > 0:
+                    if len(ref_nums) > 1:
                         # finish processing of several identical elements
-                        count = int(last) - int(first) + 1
-                        separator = u', '
-                        if count > 2:
-                            separator = u'-'
+                        count = len(ref_nums)
                         temp_element = group[last_index]
-                        temp_element[2] = first + separator + last
+                        temp_element[2] = ref_nums[:]
                         temp_element[10] = str(count)
                         temp_group.append(temp_element)
                     else:
