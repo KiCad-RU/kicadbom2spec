@@ -17,6 +17,7 @@
 
 import argparse
 import codecs
+import logging
 import os
 import re
 import shutil
@@ -45,9 +46,10 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 # Global
-version = ''
-default_settings_file_name = 'settings.ini'
-settings_separator = ';;;'
+VERSION = ''
+DEFAULT_SETTINGS_FILE_NAME = 'settings.ini'
+DEFAULT_LOGGING_FILE_NAME = 'log.txt'
+SETTINGS_SEPARATOR = ';;;'
 ID_RECENT = 2000
 
 
@@ -147,7 +149,7 @@ class Window(gui.MainFrame):
             icon = wx.Icon('bitmaps/icon.ico', wx.BITMAP_TYPE_ICO)
             self.SetIcon(icon)
 
-            self.settings_file = os.path.join(
+            self.config_path = os.path.join(
                     os.environ['APPDATA'],
                     'kicadbom2spec'
                     )
@@ -155,26 +157,35 @@ class Window(gui.MainFrame):
             icon = wx.Icon('bitmaps/icon.xpm', wx.BITMAP_TYPE_XPM)
             self.SetIcon(icon)
 
-            self.settings_file = os.path.join(
+            self.config_path = os.path.join(
                     os.path.expanduser('~/.config'),
                     'kicadbom2spec'
                     )
 
-        # At this moment in settings_file contains path only
-        if not os.path.exists(self.settings_file):
-            os.makedirs(self.settings_file)
+        if not os.path.exists(self.config_path):
+            os.makedirs(self.config_path)
 
+        # Logging
+        logging.basicConfig(
+                filename=os.path.join(
+                    self.config_path,
+                    DEFAULT_LOGGING_FILE_NAME
+                    ),
+                level=logging.ERROR
+                )
+
+        # Settings
         self.settings_file = os.path.join(
-                self.settings_file,
-                default_settings_file_name
+                self.config_path,
+                DEFAULT_SETTINGS_FILE_NAME
                 )
 
         if not os.path.exists(self.settings_file):
-            shutil.copy2(default_settings_file_name, self.settings_file)
+            shutil.copy2(DEFAULT_SETTINGS_FILE_NAME, self.settings_file)
 
         self.load_settings(self.settings_file)
 
-    def load_settings(self, settings_file_name=default_settings_file_name, select=False):
+    def load_settings(self, settings_file_name=DEFAULT_SETTINGS_FILE_NAME, select=False):
         """
         Loads settings from configuration file.
 
@@ -220,7 +231,7 @@ class Window(gui.MainFrame):
                     for item in self.values_dict.keys():
                         if self.settings.has_option('values', item):
                             values_list = self.settings.get('values', item)
-                            values_list = values_list.split(settings_separator)
+                            values_list = values_list.split(SETTINGS_SEPARATOR)
                             if values_list != ['']:
                                 self.values_dict[item] = values_list
 
@@ -412,7 +423,7 @@ class Window(gui.MainFrame):
                         for item in self.values_dict.keys():
                             if temp_settings.has_option('values', item):
                                 values_list = temp_settings.get('values', item)
-                                values_list = values_list.split(settings_separator)
+                                values_list = values_list.split(SETTINGS_SEPARATOR)
                                 if values_list != ['']:
                                     self.values_dict[item] = values_list
                     if import_settings['auto_filling_groups']:
@@ -467,7 +478,7 @@ class Window(gui.MainFrame):
                             recent_files.append(temp_settings.get('recent lib', recent))
                         self.build_recent_menu(recent_files, 'lib')
 
-    def save_settings(self, settings_file_name=default_settings_file_name):
+    def save_settings(self, settings_file_name=DEFAULT_SETTINGS_FILE_NAME):
         """
         Save settings to configuration file.
 
@@ -507,7 +518,7 @@ class Window(gui.MainFrame):
         if not self.settings.has_section('values'):
             self.settings.add_section('values')
         for field in self.values_dict.keys():
-            field_values = settings_separator.join(self.values_dict[field])
+            field_values = SETTINGS_SEPARATOR.join(self.values_dict[field])
             field_values = field_values.replace('%', '%%')
             self.settings.set('values', field, field_values)
 
@@ -1734,7 +1745,7 @@ class Window(gui.MainFrame):
             # Title
             self.SetTitle('kicadbom2spec - ' + self.schematic_file)
 
-        except:
+        except IOError as e:
             # Set cursor back to 'normal'
             if wx.IsBusy():
                 wx.EndBusyCursor()
@@ -1765,10 +1776,12 @@ class Window(gui.MainFrame):
                 u'При открытии файла схемы:\n' +
                 self.schematic_file + '\n' \
                 u'возникла ошибка:\n' + \
-                str(sys.exc_info()[1]),
+                e.strerror.encode('utf-8'),
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
+        except:
+            self.on_error(u'on_open_sch')
 
     def on_save_sch(self, event):
         """
@@ -1796,7 +1809,7 @@ class Window(gui.MainFrame):
                 self.saved = True
                 self.menuitem_save_sch.Enable(False)
                 self.update_comp_fields_panel()
-            except:
+            except IOError as e:
                 if os.path.exists(schematic.sch_name + '.tmp') \
                         and os.path.exists(schematic.sch_name):
                     os.remove(schematic.sch_name + '.tmp')
@@ -1804,11 +1817,13 @@ class Window(gui.MainFrame):
                     u'При сохранении файла схемы:\n' +
                     schematic.sch_name + '\n' \
                     u'возникла ошибка:\n' +
-                    str(sys.exc_info()[1]) + '\n' +
+                    e.strerror.encode('utf-8') + '\n\n' +
                     u'Файл не сохранен.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
                     )
+            except:
+                self.on_error(u'on_save_sch')
 
     def on_save_sch_as(self, event, file_name=None):
         """
@@ -1862,7 +1877,7 @@ class Window(gui.MainFrame):
                 if os.path.exists(new_path):
                     os.remove(new_path)
                 os.rename(new_path + '.tmp', new_path)
-            except:
+            except IOError as e:
                 if os.path.exists(new_path + '.tmp') \
                         and os.path.exists(new_path):
                     os.remove(new_path + '.tmp')
@@ -1870,11 +1885,13 @@ class Window(gui.MainFrame):
                     u'При сохранении файла схемы:\n' +
                     new_path + '\n' \
                     u'возникла ошибка:\n' +
-                    str(sys.exc_info()[1]) + '\n' \
+                    e.strerror.encode('utf-8') + '\n\n' \
                     u'Файл не сохранен.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
                     )
+            except:
+                self.on_error(u'on_save_sch_as')
 
     def on_open_lib(self, event=None, lib_file_name=''):
         """
@@ -1951,7 +1968,7 @@ class Window(gui.MainFrame):
             # Title
             self.SetTitle('kicadbom2spec - ' + self.library_file)
 
-        except:
+        except IOError as e:
             # Set cursor back to 'normal'
             if wx.IsBusy():
                 wx.EndBusyCursor()
@@ -1982,10 +1999,12 @@ class Window(gui.MainFrame):
                 u'При открытии файла библиотеки:\n' +
                 self.library_file + '\n' \
                 u'возникла ошибка:\n' + \
-                str(sys.exc_info()[1]),
+                e.strerror.encode('utf-8'),
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
+        except:
+            self.on_error(u'on_open_lib')
 
     def on_save_lib(self, event):
         """
@@ -2003,7 +2022,7 @@ class Window(gui.MainFrame):
             self.saved = True
             self.menuitem_save_lib.Enable(False)
             self.update_comp_fields_panel()
-        except:
+        except IOError as e:
             if os.path.exists(self.library_file + '.tmp') \
                     and os.path.exists(self.library_file):
                 os.remove(self.library_file + '.tmp')
@@ -2011,11 +2030,13 @@ class Window(gui.MainFrame):
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
                 u'возникла ошибка:\n' +
-                str(sys.exc_info()[1]) + '\n' \
+                e.strerror.encode('utf-8') + '\n\n' \
                 u'Файл не сохранен.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
+        except:
+            self.on_error(u'on_save_lib')
 
     def on_save_lib_as(self, event):
         """
@@ -2045,7 +2066,7 @@ class Window(gui.MainFrame):
             if os.path.exists(new_library_file):
                 os.remove(new_library_file)
             os.rename(new_library_file + '.tmp', new_library_file)
-        except:
+        except IOError as e:
             if os.path.exists(new_library_file + '.tmp') \
                     and os.path.exists(new_library_file):
                 os.remove(new_library_file + '.tmp')
@@ -2053,11 +2074,13 @@ class Window(gui.MainFrame):
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
                 u'возникла ошибка:\n' +
-                str(sys.exc_info()[1]) + '\n' \
+                e.strerror.encode('utf-8') + '\n\n' \
                 u'Файл не сохранен.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
+        except:
+            self.on_error(u'on_save_lib_as')
 
     def get_singular_group_name(self, group_name):
         """
@@ -2405,8 +2428,7 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'open', str(open_complist))
             self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
 
-            # try:
-            if 1:
+            try:
                 # Save entire schematic with current changes to temporary directory
                 temp_dir = tempfile.mkdtemp(prefix='kicadbom2spec_')
                 sch_file = os.path.basename(self.schematic_file)
@@ -2429,13 +2451,12 @@ class Window(gui.MainFrame):
                 complist.save(self.complist_file)
                 # Remove temporary directory
                 shutil.rmtree(temp_dir, ignore_errors=True)
-            # except:
-            else:
+            except IOError as e:
                 wx.MessageBox(
                     u'При создании перечня элементов:\n' +
                     self.complist_file + '\n' \
                     u'возникла ошибка:\n' + \
-                    str(sys.exc_info()[1]) + '\n' \
+                    e.strerror.encode('utf-8') + '\n\n' \
                     u'Не удалось создать перечень элементов.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
@@ -2444,6 +2465,8 @@ class Window(gui.MainFrame):
                 if wx.IsBusy():
                     wx.EndBusyCursor()
                 return
+            except:
+                self.on_error(u'on_complist')
 
             if open_complist:
                 if sys.platform == 'linux2':
@@ -2828,7 +2851,7 @@ class Window(gui.MainFrame):
             if not self.settings.has_section('values'):
                 self.settings.add_section('values')
             for field in self.values_dict.keys():
-                field_values = settings_separator.join(self.values_dict[field])
+                field_values = SETTINGS_SEPARATOR.join(self.values_dict[field])
                 field_values = field_values.replace('%', '%%')
                 if field_values:
                     self.settings.set('values', field, field_values)
@@ -2873,8 +2896,8 @@ class Window(gui.MainFrame):
         try:
             settings_import_dialog = wx.FileDialog( self,
                 u'Загрузить параметры из файла...',
-                os.path.dirname(default_settings_file_name),
-                os.path.basename(default_settings_file_name),
+                os.path.dirname(DEFAULT_SETTINGS_FILE_NAME),
+                os.path.basename(DEFAULT_SETTINGS_FILE_NAME),
                 u'Конфигурационный файл (*.ini)|*.ini|Все файлы (*.*)|*.*',
                 wx.FD_OPEN
                 )
@@ -2882,16 +2905,18 @@ class Window(gui.MainFrame):
                 return
             settings_file_name = settings_import_dialog.GetPath()
             self.load_settings(settings_file_name, True)
-        except:
+        except IOError as e:
             wx.MessageBox(
                 u'При загрузке параметров из файла:\n' +
                 settings_file_name + '\n' \
                 u'возникла ошибка:\n' +
-                str(sys.exc_info()[1]) + '\n' \
+                e.strerror.encode('utf-8') + '\n\n' \
                 'Параметры не загружены или загружены не полностью.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
+        except:
+            self.on_error(u'on_settings_import')
 
     def on_settings_export(self, event):
         """
@@ -2901,8 +2926,8 @@ class Window(gui.MainFrame):
         try:
             settings_export_dialog = wx.FileDialog( self,
                 u'Сохранить параметры в файл...',
-                os.path.dirname(default_settings_file_name),
-                os.path.basename(default_settings_file_name),
+                os.path.dirname(DEFAULT_SETTINGS_FILE_NAME),
+                os.path.basename(DEFAULT_SETTINGS_FILE_NAME),
                 u'Конфигурационный файл (*.ini)|*.ini|Все файлы (*.*)|*.*',
                 wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT
                 )
@@ -2910,16 +2935,18 @@ class Window(gui.MainFrame):
                 return
             settings_file_name = settings_export_dialog.GetPath()
             self.save_settings(settings_file_name)
-        except:
+        except IOError as e:
             wx.MessageBox(
                 u'При сохранении параметров в файл:\n' +
                 settings_file_name + '\n' \
                 u'возникла ошибка:\n' +
-                str(sys.exc_info()[1]) + '\n' \
+                e.strerror.encode('utf-8') + '\n\n' \
                 u'Параметры не сохранены или сохранены не полностью.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
+        except:
+            self.on_error(u'on_settings_export')
 
     def on_exit(self, event):
         """
@@ -3115,7 +3142,7 @@ class Window(gui.MainFrame):
         about_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
         about_dialog.statictext_version.SetLabel(
                 about_dialog.statictext_version.GetLabel() + \
-                str(version) + '\n' + \
+                str(VERSION) + '\n' + \
                 'Python: {}.{}.{}-{}'.format(
                     sys.version_info[0],
                     sys.version_info[1],
@@ -3128,7 +3155,7 @@ class Window(gui.MainFrame):
         about_dialog.hyperlink_email.SetURL(
                 '{}%20v{}'.format(
                     about_dialog.hyperlink_email.GetURL(),
-                    version
+                    VERSION
                     )
                 )
         about_dialog.Layout()
@@ -3162,6 +3189,23 @@ class Window(gui.MainFrame):
                 event_object = event_object.GetParent()
         else:
             event.Skip()
+
+    def on_error(self, msg):
+        """
+        Show message of critical error.
+        """
+        wx.MessageBox(
+            u'В программе произошёл сбой!\n' +
+            u'Подробное описание ошибки можно найти в файле:\n' +
+            os.path.join(self.config_path, DEFAULT_LOGGING_FILE_NAME),
+            u'Внимание!',
+            wx.ICON_ERROR|wx.OK, self
+            )
+        # Set cursor back to 'normal'
+        if wx.IsBusy():
+            wx.EndBusyCursor()
+        logging.exception(msg)
+        raise
 
 
 def main():
@@ -3199,13 +3243,13 @@ def main():
 
     # Current version
     version_file = open('version', 'r')
-    global version
-    version = version_file.read()
-    version = version.replace('\n', '')
+    global VERSION
+    VERSION = version_file.read()
+    VERSION = VERSION.replace('\n', '')
     version_file.close()
 
     if args.version:
-        print version
+        print VERSION
         exit()
 
     app = wx.App(False)

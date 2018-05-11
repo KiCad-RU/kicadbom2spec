@@ -389,7 +389,7 @@ class CompList():
         # Reference
         ref = u''
         if int(count) > 1:
-            # Reference: 'VD1*, VD2*'; 'C8*-C11*', 'VD1, VD2'; 'C8-C11' etc.
+            # Reference: 'VD1, VD2'; 'C8-C11', 'R7, R9-R14'; 'C8*-C11*' etc.
             prev_num = ref_num[0]
             counter = 0
             separator = ', '
