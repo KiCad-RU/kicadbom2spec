@@ -751,9 +751,6 @@ class CompList():
         components = self.get_components(sch_file_name)
         comp_array = []
         for comp in components:
-            # Skip unannotated components
-            if not comp.fields[0].text or comp.fields[0].text.endswith(u'?'):
-                continue
             # Skip components with not supported ref type
             if not re.match(REF_REGEXP, comp.fields[0].text):
                 continue
@@ -817,8 +814,8 @@ class CompList():
                 temp.append(u'1')
                 if hasattr(comp, u'path_and_ref'):
                     for ref in comp.path_and_ref:
-                        # Skip unannotated components
-                        if not ref[1] or ref[1].endswith(u'?'):
+                        # Skip components with not supported ref type
+                        if not re.match(REF_REGEXP, ref[1]):
                             continue
                         # Skip parts of the same comp from different sheets
                         for value in comp_array:

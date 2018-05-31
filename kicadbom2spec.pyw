@@ -939,8 +939,8 @@ class Window(gui.MainFrame):
         complist = CompList()
         for schematic in self.schematics:
             for comp in complist.get_components(schematic.sch_name, True):
-                # Skip unannotated components
-                if not comp.fields[0].text or comp.fields[0].text.endswith('?'):
+                # Skip components with not supported ref type
+                if not re.match(REF_REGEXP, comp.fields[0].text):
                     continue
                 # Skip parts of the same component
                 for row in values:
