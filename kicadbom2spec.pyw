@@ -3194,17 +3194,52 @@ class Window(gui.MainFrame):
         """
         Show message of critical error.
         """
-        wx.MessageBox(
-            u'В программе произошёл сбой!\n' +
-            u'Подробное описание ошибки можно найти в файле:\n' +
-            os.path.join(self.config_path, DEFAULT_LOGGING_FILE_NAME),
-            u'Внимание!',
-            wx.ICON_ERROR|wx.OK, self
-            )
+        log_filename = os.path.join(
+                self.config_path,
+                DEFAULT_LOGGING_FILE_NAME
+                )
+        log_text = '...\n'
+        if os.path.exists(log_filename):
+            with open(log_filename) as log_file:
+                log_lines = log_file.readlines()
+                log_text += ''.join(log_lines[-5:]) # last 5 lines of log
+        error_message = wx.MessageDialog(
+                self,
+                u'В программе произошёл сбой!\n' +
+                u'Подробное описание ошибки записано в файл\n' +
+                log_filename,
+                u'Внимание!',
+                wx.ICON_ERROR|wx.OK|wx.CANCEL
+                )
+        error_message.SetExtendedMessage(log_text)
+        error_message.SetOKLabel(u'Открыть файл...')
+        result = error_message.ShowModal()
+        if result == wx.ID_OK:
+            webbrowser.open_new(log_filename)
         # Set cursor back to 'normal'
         if wx.IsBusy():
             wx.EndBusyCursor()
         logging.exception(msg)
+        # Menu & Toolbar
+        self.menuitem_complist.Enable(False)
+        self.menuitem_save_sch.Enable(False)
+        self.menuitem_save_sch_as.Enable(False)
+        self.menuitem_save_lib.Enable(False)
+        self.menuitem_save_lib_as.Enable(False)
+        self.menuitem_copy.Enable(False)
+        self.menuitem_cut.Enable(False)
+        self.menuitem_edit.Enable(False)
+        self.menuitem_clear.Enable(False)
+        self.menuitem_find.Enable(False)
+        self.menuitem_replace.Enable(False)
+        # Variables
+        self.library_file = ''
+        self.schematic_file = ''
+        self.complist_file = ''
+        self.init_grid()
+        # Title
+        self.SetTitle('kicadbom2spec')
+
         raise
 
 
