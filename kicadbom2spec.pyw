@@ -998,8 +998,8 @@ class Window(gui.MainFrame):
                         else:
                             prefix = ''
                         for ref in comp.path_and_ref:
-                            # Skip unannotated components
-                            if not ref[1] or ref[1].endswith('?'):
+                            # Skip components with not supported ref type
+                            if not re.match(REF_REGEXP, comp.fields[0].text):
                                 continue
                             # Skip parts of the same comp from different sheets
                             for value in values:
@@ -1038,7 +1038,8 @@ class Window(gui.MainFrame):
         for schematic in self.schematics:
             for item in schematic.items:
                 if item.__class__.__name__ == 'Comp':
-                    if not item.fields[0].text.startswith('#') and not item.fields[0].text.endswith('?'):
+                    # Only components with supported ref type
+                    if re.match(REF_REGEXP, comp.fields[0].text):
                         for value in sorted_values:
                             # Skip copies of the one component (see 'path_and_ref' in Comp)
                             if self.grid.comp_is_copy(value[2]):
@@ -1258,7 +1259,7 @@ class Window(gui.MainFrame):
 
         def on_checkbox_all_clicked(event):
             """
-            Check/uncheck all fields in field seletor.
+            Check/uncheck all fields in field selector.
 
             """
             state = selector.checkbox_all.GetValue()
@@ -2955,7 +2956,7 @@ class Window(gui.MainFrame):
         """
         if not self.saved:
             if wx.MessageBox(
-                u'Имеются не сохраненные изменения!\nВыйти из приложения?',
+                u'Имеются не сохранённые изменения!\nВыйти из приложения?',
                 u'Внимание!',
                 wx.ICON_QUESTION|wx.YES_NO, self
                 ) == wx.NO:
@@ -3251,7 +3252,7 @@ def main():
     # Parsing of command-line arguments
     parser = argparse.ArgumentParser(
         description=(
-            u'Приложение создает файл перечня элементов оформленный ' \
+            u'Приложение создаёт файл перечня элементов оформленный ' \
             u'в соответствии с ЕСКД для схемы выполненной в САПР KiCad.\n'
             )
         )
