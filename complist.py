@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*-    Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4    -*-
 ### BEGIN LICENSE
-# Copyright (C) 2017 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
+# Copyright (C) 2018 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
@@ -75,6 +75,7 @@ class CompList():
         self.prohibit_empty_rows_on_top = False
         self.gost_in_group_name = False
         self.singular_group_name = True
+        self.join_same_name_groups = False
         self.prohibit_group_name_at_bottom = False
         self.add_first_usage = False
         self.fill_first_usage = False
@@ -901,6 +902,22 @@ class CompList():
                     cur_name = comp[0]
             # Append last group
             grouped_comp_array.append(group_array)
+
+        # If sequential groups has the same name but different ref_type
+        # they may be joined in single group.
+        if self.join_same_name_groups == True \
+                and len(grouped_comp_array) > 1:
+            temp_array = [grouped_comp_array[0]]
+            for group in grouped_comp_array[1:]:
+                # group name of last comp from previous group
+                prev_groupname = temp_array[-1][-1][0]
+                # group name of first comp from current group
+                cur_groupname = group[0][0]
+                if cur_groupname == prev_groupname:
+                    temp_array[-1].extend(group)
+                else:
+                    temp_array.append(group)
+            grouped_comp_array = temp_array
 
         # Combining the identical elements in one line.
         # All identical elements differs by ref_num.

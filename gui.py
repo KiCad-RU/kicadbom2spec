@@ -837,7 +837,7 @@ class CompListDialog ( wx.Dialog ):
 		self.panel_options = wx.Panel( self.complist_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_options_panel = wx.BoxSizer( wx.VERTICAL )
 		
-		self.option_scrolledwindow = wx.ScrolledWindow( self.panel_options, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
+		self.option_scrolledwindow = wx.ScrolledWindow( self.panel_options, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.VSCROLL )
 		self.option_scrolledwindow.SetScrollRate( 5, 5 )
 		sizer_options = wx.BoxSizer( wx.VERTICAL )
 		
@@ -911,6 +911,11 @@ class CompListDialog ( wx.Dialog ):
 		self.checkbox_singular_group_name.SetToolTipString( u"По умолчанию, для каждой группы наименование указывается в виде заголовка на отдельной строке.\nЕсли параметр отмечен, то наименование группы состоящей из одного элемента будет указано в наименовании этого элемента, а не отдельно." )
 		
 		sizer_groups.Add( self.checkbox_singular_group_name, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		self.checkbox_join_same_name_groups = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Объединять группы с одинаковыми именами", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.checkbox_join_same_name_groups.SetToolTipString( u"Компоненты разбиваются на группы по буквенно-позиционным обозначениям, но могут иметь одинаковое наименование группы. Если параметр отмечен, то последовательно идущие группы с одинаковыми именами будут объединены в одну, даже если компоненты имеют разные обозначения." )
+		
+		sizer_groups.Add( self.checkbox_join_same_name_groups, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		self.checkbox_prohibit_group_name_at_bottom = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Запретить наименования групп в конце страницы", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_prohibit_group_name_at_bottom.SetToolTipString( u"Если при заполнении перечня внизу страницы оказывается наименование группы без элементов, то с помощью этого параметра можно указать программе переносить его на следующую страницу, к эелементам." )
