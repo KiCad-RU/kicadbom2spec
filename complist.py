@@ -16,6 +16,7 @@
 ### END LICENSE
 
 import csv
+import codecs
 import os
 import re
 import time
@@ -198,13 +199,11 @@ class CompList():
         Remove any escapes in text.
 
         """
-        pure_text = text.encode('utf-8')
         # Decoding internal escapes
-        pure_text = pure_text.decode('string_escape')
+        pure_text = text.decode('string_escape')
         # Decoding escapes from KiCad
         pure_text = pure_text.decode('string_escape')
-        pure_text = pure_text.decode('utf-8')
-        return pure_text
+        return unicode(pure_text)
 
     def _replace_text(self, page, label, text, center=False, underline=False):
         """
@@ -691,7 +690,7 @@ class CompList():
             for field in comp.fields:
                 if hasattr(field, u'name'):
                     if field.name == field_name:
-                        return field.text.decode('utf-8')
+                        return field.text
             return u''
 
         def apply_substitution(comp, ref, field_value):
@@ -740,12 +739,12 @@ class CompList():
 
         # Get title block description
         sch = Schematic(sch_file_name)
-        self.developer = sch.descr.comment2.decode('utf-8')
-        self.verifier = sch.descr.comment3.decode('utf-8')
-        self.approver = sch.descr.comment4.decode('utf-8')
-        self.decimal_num = self.convert_decimal_num(sch.descr.comment1.decode('utf-8'))
-        self.title = self.convert_title(sch.descr.title.decode('utf-8'))
-        self.company = sch.descr.comp.decode('utf-8')
+        self.developer = sch.descr.comment2
+        self.verifier = sch.descr.comment3
+        self.approver = sch.descr.comment4
+        self.decimal_num = self.convert_decimal_num(sch.descr.comment1)
+        self.title = self.convert_title(sch.descr.title)
+        self.company = sch.descr.comp
 
         # Load all fields
         components = self.get_components(sch_file_name)
@@ -759,7 +758,7 @@ class CompList():
                 try:
                     for field in comp.fields:
                         if hasattr(field, u'name'):
-                            if field.name.decode('utf-8') == u'Исключён из ПЭ':
+                            if field.name == u'Исключён из ПЭ':
                                 raise
                 except:
                     continue
@@ -779,7 +778,7 @@ class CompList():
                 temp.append(ref_num)
                 for field in comp.fields:
                     if hasattr(field, u'name'):
-                        if field.name.decode('utf-8') == u'Подбирают при регулировании':
+                        if field.name == u'Подбирают при регулировании':
                             temp.append(True)
                             break
                 else:
@@ -789,7 +788,7 @@ class CompList():
                     self.aliases_dict[u'марка']
                     ))
                 if self.aliases_dict[u'значение'] == u'':
-                    temp.append(comp.fields[1].text.decode('utf-8'))
+                    temp.append(comp.fields[1].text)
                 else:
                     temp.append(get_text_from_field(
                         comp,
@@ -965,7 +964,7 @@ class CompList():
             file_name = os.path.splitext(complist_file_name)[0] + self.file_format
             headers_row = [u'Поз. обозначение', u'Наименование', u'Кол.', u'Примечание']
             empty_row = ['', '', '', '']
-            with open(file_name, 'wb') as csv_file:
+            with codecs.open(file_name, 'wb', encoding='utf-8') as csv_file:
                 csv_writer = csv.writer(csv_file)
                 csv_writer.writerow(headers_row)
 
@@ -1283,7 +1282,7 @@ class CompList():
                         self.complist.body.addElement(body)
 
         # Add meta data
-        version_file = open('version', 'r')
+        version_file = codecs.open('version', 'r', encoding='utf-8')
         version = version_file.read()
         version = version.replace('\n', '')
         version_file.close()
@@ -1369,8 +1368,8 @@ class CompList():
         sch = Schematic(sch_file_name)
         for item in sch.items:
             if item.__class__.__name__ == u'Sheet':
-                sheets.append(os.path.abspath(os.path.join(cur_path, item.file_name.decode('utf-8'))))
-                sheets.extend(self.get_sheets(os.path.abspath(os.path.join(cur_path, item.file_name.decode('utf-8')))))
+                sheets.append(os.path.abspath(os.path.join(cur_path, item.file_name)))
+                sheets.extend(self.get_sheets(os.path.abspath(os.path.join(cur_path, item.file_name))))
         os.chdir(exec_path)
         return list(set(sheets))
 

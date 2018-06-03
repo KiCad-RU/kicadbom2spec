@@ -135,13 +135,13 @@ class Window(gui.MainFrame):
             u'примечание':u'Примечание'
             }
         self.stamp_dict = {
-            'decimal_num':u'',
-            'developer':u'',
-            'verifier':u'',
-            'inspector':u'',
-            'approver':u'',
-            'comp':u'',
-            'title':u''
+            u'decimal_num':u'',
+            u'developer':u'',
+            u'verifier':u'',
+            u'inspector':u'',
+            u'approver':u'',
+            u'comp':u'',
+            u'title':u''
             }
         self.group_names_dict = {}
 
@@ -799,20 +799,20 @@ class Window(gui.MainFrame):
                             self.comp_fields_panel_grid.SetRowLabelValue(i, str(field.number))
                             if i == 0:
                                 self.comp_fields_panel_grid.SetCellValue(i, 0, u'Обозначение')
-                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                             elif i == 1:
                                 self.comp_fields_panel_grid.SetCellValue(i, 0, u'Значение')
-                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                             elif i == 2:
                                 self.comp_fields_panel_grid.SetCellValue(i, 0, u'Посад.место')
-                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                             elif i == 3:
                                 self.comp_fields_panel_grid.SetCellValue(i, 0, u'Документация')
-                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                             else:
                                 if hasattr(field, 'name'):
-                                    self.comp_fields_panel_grid.SetCellValue(i, 0, field.name.decode('utf-8'))
-                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                    self.comp_fields_panel_grid.SetCellValue(i, 0, field.name)
+                                self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                         break
             else:
                 ref = self.grid.GetCellValue(row, 2)
@@ -836,20 +836,20 @@ class Window(gui.MainFrame):
                                     self.comp_fields_panel_grid.SetRowLabelValue(i, str(field.number))
                                     if i == 0:
                                         self.comp_fields_panel_grid.SetCellValue(i, 0, u'Обозначение')
-                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                                     elif i == 1:
                                         self.comp_fields_panel_grid.SetCellValue(i, 0, u'Значение')
-                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                                     elif i == 2:
                                         self.comp_fields_panel_grid.SetCellValue(i, 0, u'Посад.место')
-                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                                     elif i == 3:
                                         self.comp_fields_panel_grid.SetCellValue(i, 0, u'Документация')
-                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                                     else:
                                         if hasattr(field, 'name'):
-                                            self.comp_fields_panel_grid.SetCellValue(i, 0, field.name.decode('utf-8'))
-                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text.decode('utf-8'))
+                                            self.comp_fields_panel_grid.SetCellValue(i, 0, field.name)
+                                        self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                                 break
         else:
             self.comp_fields_panel_ref_label.SetLabelText('...')
@@ -1039,7 +1039,7 @@ class Window(gui.MainFrame):
             for item in schematic.items:
                 if item.__class__.__name__ == 'Comp':
                     # Only components with supported ref type
-                    if re.match(REF_REGEXP, comp.fields[0].text):
+                    if re.match(REF_REGEXP, item.fields[0].text):
                         for value in sorted_values:
                             # Skip copies of the one component (see 'path_and_ref' in Comp)
                             if self.grid.comp_is_copy(value[2]):
@@ -1064,7 +1064,7 @@ class Window(gui.MainFrame):
                                             str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
                                             str_field += u' 0001 C CNN'
                                             str_field += u' "' + field_name + '"'
-                                            item.fields.append(schematic.Comp.Field(str_field.encode('utf-8')))
+                                            item.fields.append(schematic.Comp.Field(str_field))
                                     else:
                                         for field_index, field in enumerate(item.fields):
                                             if hasattr(field, 'name'):
@@ -1086,7 +1086,7 @@ class Window(gui.MainFrame):
                                         str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
                                         str_field += u' 0001 C CNN'
                                         str_field += u' "Исключён из ПЭ"'
-                                        item.fields.append(schematic.Comp.Field(str_field.encode('utf-8')))
+                                        item.fields.append(schematic.Comp.Field(str_field))
                                 else:
                                     # Delete field
                                     for field_index, field in enumerate(item.fields):
@@ -1162,7 +1162,7 @@ class Window(gui.MainFrame):
                                             {True:'I', False:'N'}[item.fields[0].italic],
                                             {True:'B', False:'N'}[item.fields[0].italic]
                                             )
-                                        item.fields.append(schematic.Comp.Field(str_field.encode('utf-8')))
+                                        item.fields.append(schematic.Comp.Field(str_field))
                                 else:
                                     # Delete field if it present
                                     for field_index, field in enumerate(item.fields):
@@ -1242,7 +1242,7 @@ class Window(gui.MainFrame):
                                     str_field += u' "' + value[index] + u'" '
                                     str_field += u' 0 0 60 H I C CNN'
                                     str_field += u' "' + field_name + '"'
-                                    comp.fields.append(self.library.Component.Field(str_field.encode('utf-8')))
+                                    comp.fields.append(self.library.Component.Field(str_field))
                             else:
                                 for field_index, field in enumerate(comp.fields):
                                     if hasattr(field, 'name'):
@@ -1739,12 +1739,12 @@ class Window(gui.MainFrame):
 
                 # Stamp fields
                 sch = Schematic(self.schematic_file)
-                self.stamp_dict['decimal_num'] = sch.descr.comment1.decode('utf-8')
-                self.stamp_dict['developer'] = sch.descr.comment2.decode('utf-8')
-                self.stamp_dict['verifier'] = sch.descr.comment3.decode('utf-8')
-                self.stamp_dict['approver'] = sch.descr.comment4.decode('utf-8')
-                self.stamp_dict['comp'] = sch.descr.comp.decode('utf-8')
-                self.stamp_dict['title'] = sch.descr.title.decode('utf-8')
+                self.stamp_dict['decimal_num'] = sch.descr.comment1
+                self.stamp_dict['developer'] = sch.descr.comment2
+                self.stamp_dict['verifier'] = sch.descr.comment3
+                self.stamp_dict['approver'] = sch.descr.comment4
+                self.stamp_dict['comp'] = sch.descr.comp
+                self.stamp_dict['title'] = sch.descr.title
 
                 # Menu & Toolbar
                 self.menuitem_complist.Enable(True)
@@ -1792,7 +1792,7 @@ class Window(gui.MainFrame):
                 u'При открытии файла схемы:\n' +
                 self.schematic_file + '\n' \
                 u'возникла ошибка:\n' + \
-                e.strerror.encode('utf-8'),
+                e.strerror,
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
@@ -1833,7 +1833,7 @@ class Window(gui.MainFrame):
                     u'При сохранении файла схемы:\n' +
                     schematic.sch_name + '\n' \
                     u'возникла ошибка:\n' +
-                    e.strerror.encode('utf-8') + '\n\n' +
+                    e.strerror + '\n\n' +
                     u'Файл не сохранен.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
@@ -1901,7 +1901,7 @@ class Window(gui.MainFrame):
                     u'При сохранении файла схемы:\n' +
                     new_path + '\n' \
                     u'возникла ошибка:\n' +
-                    e.strerror.encode('utf-8') + '\n\n' \
+                    e.strerror + '\n\n' \
                     u'Файл не сохранен.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
@@ -2015,7 +2015,7 @@ class Window(gui.MainFrame):
                 u'При открытии файла библиотеки:\n' +
                 self.library_file + '\n' \
                 u'возникла ошибка:\n' + \
-                e.strerror.encode('utf-8'),
+                e.strerror,
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
                 )
@@ -2046,7 +2046,7 @@ class Window(gui.MainFrame):
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
                 u'возникла ошибка:\n' +
-                e.strerror.encode('utf-8') + '\n\n' \
+                e.strerror + '\n\n' \
                 u'Файл не сохранен.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
@@ -2090,7 +2090,7 @@ class Window(gui.MainFrame):
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
                 u'возникла ошибка:\n' +
-                e.strerror.encode('utf-8') + '\n\n' \
+                e.strerror + '\n\n' \
                 u'Файл не сохранен.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
@@ -2472,7 +2472,7 @@ class Window(gui.MainFrame):
                     u'При создании перечня элементов:\n' +
                     self.complist_file + '\n' \
                     u'возникла ошибка:\n' + \
-                    e.strerror.encode('utf-8') + '\n\n' \
+                    e.strerror + '\n\n' \
                     u'Не удалось создать перечень элементов.',
                     u'Внимание!',
                     wx.ICON_ERROR|wx.OK, self
@@ -2926,7 +2926,7 @@ class Window(gui.MainFrame):
                 u'При загрузке параметров из файла:\n' +
                 settings_file_name + '\n' \
                 u'возникла ошибка:\n' +
-                e.strerror.encode('utf-8') + '\n\n' \
+                e.strerror + '\n\n' \
                 'Параметры не загружены или загружены не полностью.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
@@ -2956,7 +2956,7 @@ class Window(gui.MainFrame):
                 u'При сохранении параметров в файл:\n' +
                 settings_file_name + '\n' \
                 u'возникла ошибка:\n' +
-                e.strerror.encode('utf-8') + '\n\n' \
+                e.strerror + '\n\n' \
                 u'Параметры не сохранены или сохранены не полностью.',
                 u'Внимание!',
                 wx.ICON_ERROR|wx.OK, self
@@ -3217,7 +3217,7 @@ class Window(gui.MainFrame):
                 )
         log_text = '...\n'
         if os.path.exists(log_filename):
-            with open(log_filename) as log_file:
+            with codecs.open(log_filename, 'r', encoding='utf-8') as log_file:
                 log_lines = log_file.readlines()
                 log_text += ''.join(log_lines[-5:]) # last 5 lines of log
         error_message = wx.MessageDialog(
@@ -3236,25 +3236,6 @@ class Window(gui.MainFrame):
         # Set cursor back to 'normal'
         if wx.IsBusy():
             wx.EndBusyCursor()
-        # Menu & Toolbar
-        self.menuitem_complist.Enable(False)
-        self.menuitem_save_sch.Enable(False)
-        self.menuitem_save_sch_as.Enable(False)
-        self.menuitem_save_lib.Enable(False)
-        self.menuitem_save_lib_as.Enable(False)
-        self.menuitem_copy.Enable(False)
-        self.menuitem_cut.Enable(False)
-        self.menuitem_edit.Enable(False)
-        self.menuitem_clear.Enable(False)
-        self.menuitem_find.Enable(False)
-        self.menuitem_replace.Enable(False)
-        # Variables
-        self.library_file = ''
-        self.schematic_file = ''
-        self.complist_file = ''
-        self.init_grid()
-        # Title
-        self.SetTitle('kicadbom2spec')
 
         raise
 
@@ -3293,7 +3274,7 @@ def main():
     args = parser.parse_args()
 
     # Current version
-    version_file = open('version', 'r')
+    version_file = codecs.open('version', 'r', 'utf-8')
     global VERSION
     VERSION = version_file.read()
     VERSION = VERSION.replace('\n', '')
