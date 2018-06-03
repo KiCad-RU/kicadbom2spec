@@ -1686,6 +1686,9 @@ class Window(gui.MainFrame):
             wx.BeginBusyCursor()
             wx.SafeYield()
 
+            # Reset title
+            self.SetTitle('kicadbom2spec')
+
             # Menu & Toolbar
             self.menuitem_complist.Enable(False)
             self.menuitem_save_sch.Enable(False)
@@ -1714,37 +1717,49 @@ class Window(gui.MainFrame):
             for schematic_name in schematic_names:
                 self.schematics.append(Schematic(schematic_name))
             sch_values = self.get_schematic_values()
-            self.grid.AppendRows(len(sch_values))
-            self.grid.set_values(sch_values)
-            self.grid.undo_buffer = []
-            self.grid.redo_buffer = []
-            self.grid.on_sort()
-            self.on_grid_change()
-            self.saved = True
+            if len(sch_values) == 0:
+                wx.MessageBox(
+                    u'Похоже, в открываемой схеме компоненты отсутствуют\n' + \
+                    u'или имеют неверные обозначения.\n' + \
+                    u'\n' + \
+                    u'Убедитесь, что в схеме присутствуют компоненты с\n' + \
+                    u'корректными позиционными обозначениями и попытайтесь\n' + \
+                    u'открыть файл схемы снова.',
+                    u'Внимание!',
+                    wx.ICON_INFORMATION|wx.OK, self
+                    )
+            else:
+                self.grid.AppendRows(len(sch_values))
+                self.grid.set_values(sch_values)
+                self.grid.undo_buffer = []
+                self.grid.redo_buffer = []
+                self.grid.on_sort()
+                self.on_grid_change()
+                self.saved = True
 
-            # Stamp fields
-            sch = Schematic(self.schematic_file)
-            self.stamp_dict['decimal_num'] = sch.descr.comment1.decode('utf-8')
-            self.stamp_dict['developer'] = sch.descr.comment2.decode('utf-8')
-            self.stamp_dict['verifier'] = sch.descr.comment3.decode('utf-8')
-            self.stamp_dict['approver'] = sch.descr.comment4.decode('utf-8')
-            self.stamp_dict['comp'] = sch.descr.comp.decode('utf-8')
-            self.stamp_dict['title'] = sch.descr.title.decode('utf-8')
+                # Stamp fields
+                sch = Schematic(self.schematic_file)
+                self.stamp_dict['decimal_num'] = sch.descr.comment1.decode('utf-8')
+                self.stamp_dict['developer'] = sch.descr.comment2.decode('utf-8')
+                self.stamp_dict['verifier'] = sch.descr.comment3.decode('utf-8')
+                self.stamp_dict['approver'] = sch.descr.comment4.decode('utf-8')
+                self.stamp_dict['comp'] = sch.descr.comp.decode('utf-8')
+                self.stamp_dict['title'] = sch.descr.title.decode('utf-8')
 
-            # Menu & Toolbar
-            self.menuitem_complist.Enable(True)
-            self.menuitem_save_sch.Enable(False)
-            self.menuitem_save_sch_as.Enable(True)
-            self.menuitem_find.Enable(True)
-            self.menuitem_replace.Enable(True)
-            self.add_to_recent(self.schematic_file, 'sch')
-            self.update_comp_fields_panel()
+                # Menu & Toolbar
+                self.menuitem_complist.Enable(True)
+                self.menuitem_save_sch.Enable(False)
+                self.menuitem_save_sch_as.Enable(True)
+                self.menuitem_find.Enable(True)
+                self.menuitem_replace.Enable(True)
+                self.add_to_recent(self.schematic_file, 'sch')
+                self.update_comp_fields_panel()
+
+                # Title
+                self.SetTitle('kicadbom2spec - ' + self.schematic_file)
 
             # Set cursor back to 'normal'
             wx.EndBusyCursor()
-
-            # Title
-            self.SetTitle('kicadbom2spec - ' + self.schematic_file)
 
         except IOError as e:
             # Set cursor back to 'normal'
@@ -3195,6 +3210,7 @@ class Window(gui.MainFrame):
         """
         Show message of critical error.
         """
+        logging.exception(msg)
         log_filename = os.path.join(
                 self.config_path,
                 DEFAULT_LOGGING_FILE_NAME
@@ -3220,7 +3236,6 @@ class Window(gui.MainFrame):
         # Set cursor back to 'normal'
         if wx.IsBusy():
             wx.EndBusyCursor()
-        logging.exception(msg)
         # Menu & Toolbar
         self.menuitem_complist.Enable(False)
         self.menuitem_save_sch.Enable(False)
