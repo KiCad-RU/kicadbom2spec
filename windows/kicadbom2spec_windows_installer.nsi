@@ -553,9 +553,14 @@ Function InitComponents
 	font_ok:
 
 	ClearErrors
+	SetRegView 32
 	EnumRegKey $0 HKLM "SOFTWARE\LibreOffice" 0
 	IfErrors 0 office_ok
-		!insertmacro SetSectionFlag ${sec_office} ${SF_SELECTED}
+		ClearErrors
+		SetRegView 64
+		EnumRegKey $0 HKLM "SOFTWARE\LibreOffice" 0
+		IfErrors 0 office_ok
+			!insertmacro SetSectionFlag ${sec_office} ${SF_SELECTED}
 	office_ok:
 
 	Pop $0
