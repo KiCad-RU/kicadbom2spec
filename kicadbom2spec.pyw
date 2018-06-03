@@ -2484,16 +2484,25 @@ class Window(gui.MainFrame):
             except:
                 self.on_error(u'on_complist')
 
-            if open_complist:
-                if sys.platform == 'linux2':
-                    subprocess.Popen(["xdg-open", self.complist_file])
+            if os.path.exists(self.complist_file):
+                if open_complist:
+                    if sys.platform == 'linux2':
+                        subprocess.Popen(["xdg-open", self.complist_file])
+                    else:
+                        os.startfile(self.complist_file)
                 else:
-                    os.startfile(self.complist_file)
+                    wx.MessageBox(
+                        u'Перечень элементов успешно создан и сохранен!',
+                        u'kicadbom2spec',
+                        wx.ICON_INFORMATION | wx.OK,
+                        self
+                        )
             else:
                 wx.MessageBox(
-                    u'Перечень элементов успешно создан и сохранен!',
+                    u'Похоже что-то пошло не так!\n' + \
+                    u'Файл перечня элементов не был создан.',
                     u'kicadbom2spec',
-                    wx.ICON_INFORMATION | wx.OK,
+                    wx.ICON_EXCLAMATION | wx.OK,
                     self
                     )
 

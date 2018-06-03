@@ -829,6 +829,10 @@ class CompList():
                 else:
                     comp_array.append(temp)
 
+        if len(comp_array) == 0:
+            self.components_array = None
+            return
+
         # Apply substitution
         for i in range(len(comp_array)):
             comp = get_comp_by_ref(comp_array[i][1] + comp_array[i][2])
@@ -958,6 +962,9 @@ class CompList():
         Save created list of the components to the file.
 
         """
+        if self.components_array == None:
+            return
+
         base_path = os.path.dirname(os.path.realpath(__file__))
         if self.file_format == u'.csv':
             # File for writing the list of the components
