@@ -913,7 +913,8 @@ class CompList():
                 prev_groupname = temp_array[-1][-1][0]
                 # group name of first comp from current group
                 cur_groupname = group[0][0]
-                if cur_groupname == prev_groupname:
+                if cur_groupname == prev_groupname \
+                        and cur_groupname != u'':
                     temp_array[-1].extend(group)
                 else:
                     temp_array.append(group)

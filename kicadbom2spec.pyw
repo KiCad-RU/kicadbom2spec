@@ -653,12 +653,16 @@ class Window(gui.MainFrame):
         """
         for row in range(self.grid.GetNumberRows()):
             group_name = self.grid.GetCellValue(row, 1)
-            ref = self.grid.GetCellValue(row, 2)
-            ref = self.grid.get_pure_ref(ref)
             if group_name == u'':
-                for suffix in self.auto_groups_dict.keys():
-                    if ref.startswith(suffix) and self.auto_groups_dict[suffix].startswith('1'):
-                        group_name = self.auto_groups_dict[suffix][1:]
+                ref = self.grid.GetCellValue(row, 2)
+                ref = self.grid.get_pure_ref(ref)
+                ref_type = ref.rstrip('0123456789')
+                for pattern in self.auto_groups_dict.keys():
+                    re_pattern = pattern.replace('?', '.?')
+                    re_pattern = re_pattern.replace('*', '.*')
+                    if re.match(re_pattern, ref_type) \
+                            and self.auto_groups_dict[pattern].startswith('1'):
+                        group_name = self.auto_groups_dict[pattern][1:]
                         self.grid.set_cell_value(row, 1, group_name)
                         break
         if self.grid.is_changed():
@@ -2706,6 +2710,7 @@ class Window(gui.MainFrame):
             """
             index = settings_editor.auto_groups_checklistbox.GetSelections()[0]
             settings_editor.auto_groups_checklistbox.Delete(index)
+            settings_editor.auto_groups_checklistbox.SetSelection(0)
 
         def mark_spaces_as_dots(event):
             """
