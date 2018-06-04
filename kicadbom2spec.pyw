@@ -2171,24 +2171,28 @@ class Window(gui.MainFrame):
             value = complist.convert_title(value)
             value = value.replace('\\n', '\n')
             complist_dialog.stamp_title_converted.SetLabel(value)
-            # Resize dialog height
+            # Resize dialog min height
             dialog_width = complist_dialog.GetSize().GetWidth()
+            dialog_height = complist_dialog.GetSize().GetHeight()
             complist_dialog.SetSizeHints(
-                -1,
-                -1,
-                -1,
-                -1)
+                    -1,
+                    -1,
+                    -1,
+                    -1
+                )
             complist_dialog.Fit()
             complist_dialog.SetSizeHints(
                 complist_dialog.GetSize().GetWidth(),
                 complist_dialog.GetSize().GetHeight(),
-                -1,
-                complist_dialog.GetSize().GetHeight()
+                    -1,
+                    -1
                 )
-            complist_dialog.SetSize(wx.Size(
-                dialog_width,
-                complist_dialog.GetSize().GetHeight()
-                ))
+            complist_dialog.SetSize(
+                    wx.Size(
+                        dialog_width,
+                        dialog_height
+                    )
+                )
 
         def on_first_usage_checked(event):
             """
@@ -2256,11 +2260,11 @@ class Window(gui.MainFrame):
 
         # Set min size of dialog
         complist_dialog.Fit()
-        complist_dialog.SetSizeHints(
-            complist_dialog.GetSize().GetWidth(),
-            complist_dialog.GetSize().GetHeight(),
-            -1,
-            complist_dialog.GetSize().GetHeight()
+        complist_dialog.SetMinSize(
+                wx.Size(
+                    complist_dialog.GetSize().GetWidth(),
+                    complist_dialog.GetSize().GetHeight()
+                )
             )
 
         # Events
@@ -2278,14 +2282,14 @@ class Window(gui.MainFrame):
         open_complist = False
 
         if self.settings.has_section('complist'):
+            width = -1
+            height = -1
             if self.settings.has_option('complist', 'dialog width'):
-               complist_dialog.SetSize(
-                    wx.Size(
-                        self.settings.getint('complist', 'dialog width'),
-                        -1
-                        )
-                    )
-               complist_dialog.CentreOnParent()
+                width = self.settings.getint('complist', 'dialog width')
+            if self.settings.has_option('complist', 'dialog height'):
+                height = self.settings.getint('complist', 'dialog height')
+            complist_dialog.SetSize(wx.Size(width, height))
+            complist_dialog.CentreOnParent()
             if self.settings.has_option('complist', 'all'):
                 complist.all_components = self.settings.getboolean('complist', 'all')
             if self.settings.has_option('complist', 'units'):
@@ -2377,13 +2381,18 @@ class Window(gui.MainFrame):
         complist_dialog.dialog_buttonsOK.SetFocus()
         result = complist_dialog.ShowModal()
 
-        # Save dialog width
+        # Save dialog size
         if not self.settings.has_section('complist'):
             self.settings.add_section('complist')
         self.settings.set(
             'complist',
             'dialog width',
             str(complist_dialog.GetSize().GetWidth())
+            )
+        self.settings.set(
+            'complist',
+            'dialog height',
+            str(complist_dialog.GetSize().GetHeight())
             )
 
         if result == wx.ID_OK:
