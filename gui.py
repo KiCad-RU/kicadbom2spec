@@ -872,7 +872,7 @@ class CompListDialog ( wx.Dialog ):
 		sizer_groups = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Группы элементов" ), wx.VERTICAL )
 		
 		self.checkbox_empty_row_after_name = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Вставлять пустую строку после наименования группы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_empty_row_after_name.SetToolTipString( u"Если параметр отмечен, то между наименованием группы и первы её элементом будет вставлена одна пустая строка." )
+		self.checkbox_empty_row_after_name.SetToolTipString( u"Если параметр отмечен, то между наименованием группы и первым её элементом будет вставлена одна пустая строка." )
 		
 		sizer_groups.Add( self.checkbox_empty_row_after_name, 0, wx.ALL, 5 )
 		
@@ -885,7 +885,7 @@ class CompListDialog ( wx.Dialog ):
 		
 		self.empty_rows_groups_label = wx.StaticText( sizer_groups.GetStaticBox(), wx.ID_ANY, u"пустых строк между разными типами элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.empty_rows_groups_label.Wrap( -1 )
-		self.empty_rows_groups_label.SetToolTipString( u"Между элементами с разным обозначением будет вставлено указанное число пустых строк." )
+		self.empty_rows_groups_label.SetToolTipString( u"Между группами элементов с разным обозначением будет вставлено указанное число пустых строк." )
 		
 		sizer_empty_rows_groups.Add( self.empty_rows_groups_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
@@ -918,7 +918,7 @@ class CompListDialog ( wx.Dialog ):
 		sizer_groups.Add( self.checkbox_join_same_name_groups, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		self.checkbox_prohibit_group_name_at_bottom = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Запретить наименования групп в конце страницы", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.checkbox_prohibit_group_name_at_bottom.SetToolTipString( u"Если при заполнении перечня внизу страницы оказывается наименование группы без элементов, то с помощью этого параметра можно указать программе переносить его на следующую страницу, к эелементам." )
+		self.checkbox_prohibit_group_name_at_bottom.SetToolTipString( u"Если, при заполнении перечня, внизу страницы оказывается наименование группы без элементов, то с помощью этого параметра можно указать программе переносить его на следующую страницу, к эелементам." )
 		
 		sizer_groups.Add( self.checkbox_prohibit_group_name_at_bottom, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
