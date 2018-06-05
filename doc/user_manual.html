@@ -495,7 +495,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_разделители">3.3. Разделители</a></li>
 <li><a href="#_псевдонимы">3.4. Псевдонимы</a></li>
 <li><a href="#_словарь">3.5. Словарь</a></li>
-<li><a href="#_импорт_экспорт_параметров">3.6. Импорт/экспорт параметров</a></li>
+<li><a href="#_файл_параметров">3.6. Файл параметров</a></li>
+<li><a href="#_импорт_экспорт_параметров">3.7. Импорт/экспорт параметров</a></li>
 </ul>
 </li>
 <li><a href="#_параметры_командной_строки">4. Параметры командной строки</a>
@@ -2485,7 +2486,32 @@ LibreOffice Calc. А вот LibreOffice Writer такой функциональ
 </div>
 </div>
 <div class="sect2">
-<h3 id="_импорт_экспорт_параметров">3.6. Импорт/экспорт параметров</h3>
+<h3 id="_файл_параметров">3.6. Файл параметров</h3>
+<div class="paragraph">
+<p>Файл, содержащий пользовательские настройки, называется <strong>settings.ini</strong>. Его
+расположение зависит от используемой операционной системы:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Linux</dt>
+<dd>
+<p><code>~/.config/kicadbom2spec/</code></p>
+</dd>
+<dt class="hdlist1">Windows</dt>
+<dd>
+<p><code>%APPDATA%\kicadbom2spec\</code></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>В каталоге с файлами программы <strong>kicadbom2spec</strong>, тоже имеется файл
+<em>settings.ini</em>&#8201;&#8212;&#8201;в нём содержатся параметры со значениями по умолчанию. Если
+<strong>kicadbom2spec</strong> установлен впервые, то этот файл копируется в качестве
+пользовательского, в указанный выше каталог.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_импорт_экспорт_параметров">3.7. Импорт/экспорт параметров</h3>
 <div class="paragraph">
 <p>Выполнить перенос параметров из одной копии программы в другую можно следующим
 образом.</p>
@@ -2687,7 +2713,7 @@ LibreOffice Calc. А вот LibreOffice Writer такой функциональ
 </div>
 <div id="footer">
 <div id="footer-text">
-Редакция от 2018-06-04 14:48:08 EEST
+Редакция от 2018-06-05 18:40:08 EEST
 </div>
 </div>
 </body>
