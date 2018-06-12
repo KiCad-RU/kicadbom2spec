@@ -1012,14 +1012,15 @@ class Window(gui.MainFrame):
                         # Do not mark components that only has parts (not copies)
                         # on different sheets.
                         for ref in comp.path_and_ref:
-                            if ref[1] != comp.fields[0].text:
+                            if re.match(REF_REGEXP, ref[1]) \
+                                    and ref[1] != comp.fields[0].text:
                                 # Has copy
                                 break
                         else:
                             prefix = ''
                         for ref in comp.path_and_ref:
                             # Skip components with not supported ref type
-                            if not re.match(REF_REGEXP, comp.fields[0].text):
+                            if not re.match(REF_REGEXP, ref[1]):
                                 continue
                             # Skip parts of the same comp from different sheets
                             for value in values:
