@@ -17,6 +17,7 @@
 
 import argparse
 import codecs
+import inspect
 import logging
 import os
 import re
@@ -171,7 +172,9 @@ class Window(gui.MainFrame):
                     self.config_path,
                     DEFAULT_LOGGING_FILE_NAME
                     ),
-                level=logging.ERROR
+                level=logging.INFO,
+                format='\n%(asctime)s %(levelname)s: %(message)s',
+                datefmt='%Y.%m.%d %H:%M:%S'
                 )
 
         # Settings
@@ -1817,7 +1820,7 @@ class Window(gui.MainFrame):
                 wx.ICON_ERROR|wx.OK, self
                 )
         except:
-            self.on_error(u'on_open_sch')
+            self.on_error()
 
     def on_save_sch(self, event):
         """
@@ -1859,7 +1862,7 @@ class Window(gui.MainFrame):
                     wx.ICON_ERROR|wx.OK, self
                     )
             except:
-                self.on_error(u'on_save_sch')
+                self.on_error()
 
     def on_save_sch_as(self, event, file_name=None):
         """
@@ -1927,7 +1930,7 @@ class Window(gui.MainFrame):
                     wx.ICON_ERROR|wx.OK, self
                     )
             except:
-                self.on_error(u'on_save_sch_as')
+                self.on_error()
 
     def on_open_lib(self, event=None, lib_file_name=''):
         """
@@ -2040,7 +2043,7 @@ class Window(gui.MainFrame):
                 wx.ICON_ERROR|wx.OK, self
                 )
         except:
-            self.on_error(u'on_open_lib')
+            self.on_error()
 
     def on_save_lib(self, event):
         """
@@ -2072,7 +2075,7 @@ class Window(gui.MainFrame):
                 wx.ICON_ERROR|wx.OK, self
                 )
         except:
-            self.on_error(u'on_save_lib')
+            self.on_error()
 
     def on_save_lib_as(self, event):
         """
@@ -2116,7 +2119,7 @@ class Window(gui.MainFrame):
                 wx.ICON_ERROR|wx.OK, self
                 )
         except:
-            self.on_error(u'on_save_lib_as')
+            self.on_error()
 
     def get_singular_group_name(self, group_name):
         """
@@ -2516,7 +2519,7 @@ class Window(gui.MainFrame):
                     wx.EndBusyCursor()
                 return
             except:
-                self.on_error(u'on_complist')
+                self.on_error()
 
             if os.path.exists(self.complist_file):
                 if open_complist:
@@ -2976,7 +2979,7 @@ class Window(gui.MainFrame):
                 wx.ICON_ERROR|wx.OK, self
                 )
         except:
-            self.on_error(u'on_settings_import')
+            self.on_error()
 
     def on_settings_export(self, event):
         """
@@ -3006,7 +3009,7 @@ class Window(gui.MainFrame):
                 wx.ICON_ERROR|wx.OK, self
                 )
         except:
-            self.on_error(u'on_settings_export')
+            self.on_error()
 
     def on_exit(self, event):
         """
@@ -3250,11 +3253,20 @@ class Window(gui.MainFrame):
         else:
             event.Skip()
 
-    def on_error(self, msg):
+    def on_error(self):
         """
         Show message of critical error.
         """
-        logging.exception(msg)
+        try:
+            trace_frame = inspect.trace()[-1]
+            arg_values = inspect.getargvalues(trace_frame[0])
+            last_call = u'\n\t{fname}{aval}'.format(
+                    fname = trace_frame[3],
+                    aval = inspect.formatargvalues(*arg_values)
+                    )
+        except:
+            last_call = ''
+        logging.exception(last_call)
         log_filename = os.path.join(
                 self.config_path,
                 DEFAULT_LOGGING_FILE_NAME
@@ -3263,7 +3275,16 @@ class Window(gui.MainFrame):
         if os.path.exists(log_filename):
             with codecs.open(log_filename, 'r', encoding='utf-8') as log_file:
                 log_lines = log_file.readlines()
-                log_text += ''.join(log_lines[-5:]) # last 5 lines of log
+                log_lines.reverse()
+                log_text = u''
+                line_num = 0
+                for line in log_lines:
+                    log_text = line + log_text
+                    line_num += 1
+                    if line[:4].isdigit() and line.endswith(u'ERROR'):
+                        break
+                    elif line_num > 9:
+                        break
         error_message = wx.MessageDialog(
                 self,
                 u'В программе произошёл сбой!\n' +
