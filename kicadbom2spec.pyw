@@ -2342,6 +2342,8 @@ class Window(gui.MainFrame):
                 complist.center_group_name = self.settings.getboolean('complist', 'center_group_name')
             if self.settings.has_option('complist', 'center_reference'):
                 complist.center_reference = self.settings.getboolean('complist', 'center_reference')
+            if self.settings.has_option('complist', 'extremal_width_factor'):
+                complist.extremal_width_factor = self.settings.getint('complist', 'extremal_width_factor')
 
             if self.settings.has_option('complist', 'open'):
                 open_complist = self.settings.getboolean('complist', 'open')
@@ -2375,6 +2377,7 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_underline_group.SetValue(complist.underline_group_name)
         complist_dialog.checkbox_center_group.SetValue(complist.center_group_name)
         complist_dialog.checkbox_center_ref.SetValue(complist.center_reference)
+        complist_dialog.spinctrl_extremal_width_factor.SetValue(complist.extremal_width_factor)
 
         complist_dialog.checkbox_open.SetValue(open_complist)
 
@@ -2439,6 +2442,7 @@ class Window(gui.MainFrame):
             complist.underline_group_name = complist_dialog.checkbox_underline_group.GetValue()
             complist.center_group_name = complist_dialog.checkbox_center_group.GetValue()
             complist.center_reference = complist_dialog.checkbox_center_ref.GetValue()
+            complist.extremal_width_factor = complist_dialog.spinctrl_extremal_width_factor.GetValue()
 
             open_complist = complist_dialog.checkbox_open.GetValue()
 
@@ -2478,6 +2482,7 @@ class Window(gui.MainFrame):
             self.settings.set('complist', 'underline_group_name', str(complist.underline_group_name))
             self.settings.set('complist', 'center_group_name', str(complist.center_group_name))
             self.settings.set('complist', 'center_reference', str(complist.center_reference))
+            self.settings.set('complist', 'extremal_width_factor', str(complist.extremal_width_factor))
 
             self.settings.set('complist', 'open', str(open_complist))
             self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])

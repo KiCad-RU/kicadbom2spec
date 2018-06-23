@@ -953,7 +953,7 @@ class CompListDialog ( wx.Dialog ):
 		self.checkbox_changes_sheet = wx.CheckBox( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Добавить лист регистрации изменений,", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_changes_sheet.SetToolTipString( u"Если данная опция включена и количество листов перечня превышает указанное число, то в конец перечня элементов будет добавлен лист регистрации изменений." )
 		
-		sizer_options_format.Add( self.checkbox_changes_sheet, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options_format.Add( self.checkbox_changes_sheet, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 5 )
 		
 		sizer_first_count_for_changes_sheet = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -964,8 +964,8 @@ class CompListDialog ( wx.Dialog ):
 		self.statictext_changes_sheet.Wrap( -1 )
 		sizer_first_count_for_changes_sheet.Add( self.statictext_changes_sheet, 0, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
-		self.spinctrl_count_for_changes_sheet = wx.SpinCtrl( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"2", wx.DefaultPosition, wx.Size( -1,-1 ), wx.SP_ARROW_KEYS, 0, 9999, 0 )
-		sizer_first_count_for_changes_sheet.Add( self.spinctrl_count_for_changes_sheet, 0, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		self.spinctrl_count_for_changes_sheet = wx.SpinCtrl( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"2", wx.DefaultPosition, wx.Size( 100,-1 ), wx.SP_ARROW_KEYS, 0, 9999, 10 )
+		sizer_first_count_for_changes_sheet.Add( self.spinctrl_count_for_changes_sheet, 1, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		
 		sizer_options_format.Add( sizer_first_count_for_changes_sheet, 1, wx.EXPAND, 5 )
@@ -989,6 +989,24 @@ class CompListDialog ( wx.Dialog ):
 		self.checkbox_center_ref.SetToolTipString( u"Если параметр отмечен, то позиционные обозначения элементов будут выровнены по центру ячейки таблицы, а не по её левому краю." )
 		
 		sizer_options_format.Add( self.checkbox_center_ref, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
+		
+		sizer_extremal_width_factor = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.statictext_extremal_width_factor = wx.StaticText( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"Переносить текст на следующую строку,\nесли ширина шрифта меньше: ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.statictext_extremal_width_factor.Wrap( -1 )
+		self.statictext_extremal_width_factor.SetToolTipString( u"Если содержимое ячейки слишком велико и не помещается, ширина шрифта уменьшается до необходимой величины. Данный параметр позволяет избежать чрезмерного сжатия, текст разбивается на слова и переносится на следующую строку." )
+		
+		sizer_extremal_width_factor.Add( self.statictext_extremal_width_factor, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.spinctrl_extremal_width_factor = wx.SpinCtrl( sizer_options_format.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 50,-1 ), wx.SP_ARROW_KEYS, 1, 99, 80 )
+		sizer_extremal_width_factor.Add( self.spinctrl_extremal_width_factor, 1, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		self.statictext_extremal_units = wx.StaticText( sizer_options_format.GetStaticBox(), wx.ID_ANY, u"%", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.statictext_extremal_units.Wrap( -1 )
+		sizer_extremal_width_factor.Add( self.statictext_extremal_units, 0, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.RIGHT, 5 )
+		
+		
+		sizer_options_format.Add( sizer_extremal_width_factor, 1, wx.EXPAND, 5 )
 		
 		
 		sizer_options.Add( sizer_options_format, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )

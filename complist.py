@@ -34,7 +34,7 @@ from odf import dc, meta
 
 from kicadsch import *
 
-REF_REGEXP = re.compile(u'(.*[^0-9])([0-9]+)', re.U)
+REF_REGEXP = re.compile(u'([^0-9]+)([0-9]+)', re.U)
 NUM_REGEXP = re.compile(u'([А-ЯA-Z0-9]+(?:[^А-ЯA-Z0-9][0-9\.\-\s]+)?)(Э[1-7])?', re.U)
 
 class CompList():
@@ -86,6 +86,7 @@ class CompList():
         self.underline_group_name = False
         self.center_group_name = False
         self.center_reference = False
+        self.extremal_width_factor = 80
 
         # Additional data
         self.separators_dict = {
@@ -117,10 +118,10 @@ class CompList():
             }
 
         # Current state of filling the list of components
-        self._cur_line = 1
+        self._cur_row = 1
         self._cur_page_num = 1
         self._cur_page = None
-        self._lines_on_page = 0
+        self._rows_per_page = 0
 
     def _get_width_factor(self, label, text):
         """
@@ -185,7 +186,7 @@ class CompList():
 
         text_width, text_height = dc.GetTextExtent(text)
         # wx draws text differently than libreoffice, correction needed
-        text_width -= len(text) * 0.35
+        text_width -= len(text) * 0.3
 
         width_factor_float = (100 * column_width * pixel_per_mm) / text_width
         width_factor_int = int(width_factor_float)
@@ -296,6 +297,7 @@ class CompList():
                                 # Fit text to cell in *.odt (*.ods does it automatically)
                                 if self.file_format == u'.odt':
                                     width_factor = self._get_width_factor(label, text)
+
                                     if width_factor < 100:
                                         suffix = u'_%d' % width_factor
                                         curStyleName = p.getAttribute(u'stylename')
@@ -344,17 +346,17 @@ class CompList():
                             if re.search(u'#\d+:\d+', p_data.data) != None:
                                 p_data.data = u''
 
-    def _next_line(self):
+    def _next_row(self):
         """
-        Moving to next line.
+        Moving to next row.
         If table is full, save it in list object and create a new one.
 
         """
-        # Increase line counter
-        self._cur_line += 1
+        # Increase row counter
+        self._cur_row += 1
 
         # First page of the list has 29 or 26 lines, other pages has 32 lines
-        if self._cur_line > self._lines_on_page:
+        if self._cur_row > self._rows_per_page:
             # Table is full
             if self.file_format == u'.ods':
                 self._cur_page.setAttribute(u'name', u'стр. %d' % self._cur_page_num)
@@ -365,8 +367,8 @@ class CompList():
                 # Needed for getting styles in _replace_text_in_table
                 self.complist = self._cur_page
             self._cur_page_num += 1
-            self._cur_line = 1
-            self._lines_on_page = 32
+            self._cur_row = 1
+            self._rows_per_page = 32
 
     def _get_final_values(self, element, with_group=False):
         """
@@ -658,23 +660,128 @@ class CompList():
 
         return group_names, components
 
-    def _set_line(self, element, with_group=False):
+    def _normalize_row(self, columns):
         """
-        Fill the line in list of the components using element's fields.
+        If value of a cell does not fit, it will be splitted and moved to
+        extra row.
+        This method returns a tuple: normalized columns and rest of it
+        as extra row
 
         """
-        for index, value in enumerate(self._get_final_values(element, with_group)):
-            center = False
-            # Reference column
-            if index == 0:
-                center = self.center_reference
+        norm_columns = list(columns)
+        extra_ref = None
+        extra_name = None
+        extra_count = None
+        extra_comment = None
+        extra_row = None
+        width_factors = [100, 100, 100, 100]
+        for index, value in enumerate(columns):
+            width_factors[index] = self._get_width_factor(
+                    '#{}:{}'.format(index + 1, self._cur_row),
+                    value
+                    )
+        # Reference column
+        if width_factors[0] < self.extremal_width_factor:
+            ref = columns[0]
+            extremal_pos = int(len(ref) * width_factors[0] / self.extremal_width_factor)
+            # First try: find separator before extremal position
+            pos1 = ref.rfind(u', ', 0, extremal_pos)
+            pos2 = ref.rfind(u'-', 0, extremal_pos)
+            pos = max(pos1, pos2)
+            if pos == -1:
+                # Second try: find separator after extremal position
+                # (it is still less than extremal_width_factor,
+                # but better than nothing)
+                pos1 = ref.find(u', ', extremal_pos)
+                pos2 = ref.find(u'-', extremal_pos)
+                pos = max(pos1, pos2)
+            if pos != -1:
+                separator = ref[pos]
+                if separator == u',':
+                    norm_columns[0] = ref[:(pos + 1)]
+                    extra_ref = ref[(pos + 2):]
+                elif separator == u'-':
+                    norm_columns[0] = ref[:(pos + 1)]
+                    extra_ref = ref[pos:]
+        # Name column
+        if width_factors[1] < self.extremal_width_factor:
+            name = columns[1]
+            extremal_pos = int(len(name) * width_factors[1] / self.extremal_width_factor)
+            # First try: find separator before extremal position
+            pos = name.rfind(u' ', 0, extremal_pos)
+            if pos == -1:
+                # Second try: find separator after extremal position
+                # (it is still less than extremal_width_factor,
+                # but better than nothing)
+                pos = name.find(u' ', extremal_pos)
+            if pos != -1:
+                norm_columns[1] = name[:pos]
+                extra_name = name[pos:]
+        # Comment column
+        if width_factors[3] < self.extremal_width_factor:
+            comment = columns[3]
+            extremal_pos = int(len(comment) * width_factors[3] / self.extremal_width_factor)
+            # First try: find separator before extremal position
+            pos = comment.rfind(u' ', 0, extremal_pos)
+            if pos == -1:
+                # Second try: find separator after extremal position
+                # (it is still less than extremal_width_factor,
+                # but better than nothing)
+                pos = comment.find(u' ', extremal_pos)
+            if pos != -1:
+                norm_columns[3] = comment[:pos]
+                extra_comment = comment[pos:]
 
-            self._replace_text(
-                self._cur_page,
-                u'#{}:{}'.format(index + 1, self._cur_line),
-                value,
-                center=center
-                )
+        if extra_ref != None or extra_name != None or extra_comment != None:
+            extra_row = []
+            if extra_ref == None:
+                extra_row.append(u'')
+            else:
+                extra_row.append(extra_ref)
+            if extra_name == None:
+                extra_row.append(u'')
+            else:
+                extra_row.append(extra_name)
+            if extra_count == None:
+                extra_row.append(u'')
+            else:
+                extra_row.append(extra_count)
+            if extra_comment == None:
+                extra_row.append(u'')
+            else:
+                extra_row.append(extra_comment)
+        return norm_columns, extra_row
+
+    def _set_row(self, columns):
+        """
+        Fill the row in list of the components using element's fields.
+
+        Columns of the component list:
+        0 - reference
+        1 - name
+        2 - count
+        3 - comment
+
+        """
+        while True:
+            columns, extra_row = self._normalize_row(columns)
+            for index, value in enumerate(columns):
+                center = False
+                # Reference column
+                if index == 0:
+                    center = self.center_reference
+
+                self._replace_text(
+                    self._cur_page,
+                    u'#{}:{}'.format(index + 1, self._cur_row),
+                    value,
+                    center=center
+                    )
+            if extra_row == None:
+                break
+            else:
+                columns = extra_row
+                self._next_row()
 
     def load(self, sch_file_name):
         """
@@ -1109,16 +1216,16 @@ class CompList():
         # Select pattern for first page
         if not self.add_first_usage and not self.add_customer_fields:
             self._cur_page = self._firstPagePatternV1
-            self._lines_on_page = 29
+            self._rows_per_page = 29
         elif self.add_first_usage and not self.add_customer_fields:
             self._cur_page = self._firstPagePatternV2
-            self._lines_on_page = 29
+            self._rows_per_page = 29
         elif not self.add_first_usage and self.add_customer_fields:
             self._cur_page = self._firstPagePatternV3
-            self._lines_on_page = 26
+            self._rows_per_page = 26
         elif self.add_first_usage and self.add_customer_fields:
             self._cur_page = self._firstPagePatternV4
-            self._lines_on_page = 26
+            self._rows_per_page = 26
 
         if self.file_format == u'.odt':
             # Needed for getting styles in _replace_text_in_table
@@ -1142,16 +1249,17 @@ class CompList():
             if add_empty_rows == True:
                 for _ in range(self.empty_rows_after_group):
                     if self.prohibit_empty_rows_on_top == True and \
-                            self._cur_line == 1:
+                            self._cur_row == 1:
                         break
-                    self._next_line()
+                    self._next_row()
             prev_ref_type = ref_type
 
             if group_name != u'':
                 if len(group) == 1 and self.singular_group_name == True:
                     # Place group name with name of component
-                    self._set_line(group[0], with_group=True)
-                    self._next_line()
+                    columns = self._get_final_values(group[0], with_group=True)
+                    self._set_row(columns)
+                    self._next_row()
                     continue
                 else:
                     # New group title
@@ -1159,59 +1267,61 @@ class CompList():
                         group_names_with_gost, components = self._get_group_names_with_gost(group)
                         # If name of group at bottom of page - move it to next page
                         if self.prohibit_group_name_at_bottom == True \
-                                and (self._cur_line + len(group_names_with_gost)) >= self._lines_on_page:
-                            while self._cur_line != 1:
-                                self._next_line()
+                                and (self._cur_row + len(group_names_with_gost)) >= self._rows_per_page:
+                            while self._cur_row != 1:
+                                self._next_row()
                         # Write group names with GOST
                         for group_name_with_gost in group_names_with_gost:
                             self._replace_text(
                                 self._cur_page,
-                                u'#2:%d' % self._cur_line,
+                                u'#2:%d' % self._cur_row,
                                 group_name_with_gost,
                                 center=self.center_group_name,
                                 underline=self.underline_group_name
                                 )
-                            self._next_line()
+                            self._next_row()
                         # Empty row after group name
                         if self.empty_row_after_name == True:
-                            if not (self.prohibit_empty_rows_on_top == True and self._cur_line == 1):
-                                self._next_line()
+                            if not (self.prohibit_empty_rows_on_top == True and self._cur_row == 1):
+                                self._next_row()
                         # Write to table prepared components
                         for comp in components:
                             # Write component into list
-                            self._set_line(comp)
-                            self._next_line()
+                            columns = self._get_final_values(comp)
+                            self._set_row(columns)
+                            self._next_row()
                         continue
 
                     else:
                         # If name of group at bottom of page - move it to next page
                         if self.prohibit_group_name_at_bottom == True \
-                                and self._cur_line == self._lines_on_page:
-                            self._next_line()
+                                and self._cur_row == self._rows_per_page:
+                            self._next_row()
                         self._replace_text(
                             self._cur_page,
-                            u'#2:%d' % self._cur_line,
+                            u'#2:%d' % self._cur_row,
                             group_name,
                             center=self.center_group_name,
                             underline=self.underline_group_name
                             )
-                        self._next_line()
+                        self._next_row()
                         # Empty row after group name
                         if self.empty_row_after_name == True:
-                            if not (self.prohibit_empty_rows_on_top == True and self._cur_line == 1):
-                                self._next_line()
+                            if not (self.prohibit_empty_rows_on_top == True and self._cur_row == 1):
+                                self._next_row()
 
             for comp in group:
                 # Write component into list
-                self._set_line(comp)
-                self._next_line()
+                columns = self._get_final_values(comp)
+                self._set_row(columns)
+                self._next_row()
 
         # Current table not empty - save it
-        if self._cur_line != 1:
-            # Set last line as current
-            self._cur_line = self._lines_on_page
+        if self._cur_row != 1:
+            # Set last row as current
+            self._cur_row = self._rows_per_page
             # Go to next empty page and save current
-            self._next_line()
+            self._next_row()
 
         # If the sheet of changes is needed - append it
         pg_cnt = len(self.complist_pages)
