@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Mar 30 2018)
+## Python code generated with wxFormBuilder (version Jun 28 2018)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO "NOT" EDIT THIS FILE!
@@ -1152,9 +1152,9 @@ class CompListDialog ( wx.Dialog ):
 class SettingsDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Редактор настроек", pos = wx.DefaultPosition, size = wx.Size( 600,400 ), style = wx.DEFAULT_DIALOG_STYLE )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Редактор настроек", pos = wx.DefaultPosition, size = wx.Size( 600,450 ), style = wx.DEFAULT_DIALOG_STYLE )
 		
-		self.SetSizeHintsSz( wx.Size( 600,400 ), wx.Size( -1,-1 ) )
+		self.SetSizeHintsSz( wx.Size( 600,450 ), wx.Size( -1,-1 ) )
 		
 		sizer_settings_dialog = wx.BoxSizer( wx.VERTICAL )
 		
@@ -1420,6 +1420,156 @@ class SettingsDialog ( wx.Dialog ):
 		
 		separators_common_sizer.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
+		separators_preview_sizer = wx.StaticBoxSizer( wx.StaticBox( self.separators_panel, wx.ID_ANY, u"Предварительный просмотр наименования" ), wx.VERTICAL )
+		
+		separators_preview_values_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.p_mark_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.p_mark_statictext.Wrap( -1 )
+		self.p_mark_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.p_mark_statictext.SetForegroundColour( wx.Colour( 0, 128, 64 ) )
+		
+		separators_preview_values_sizer.Add( self.p_mark_statictext, 0, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.mark_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u"марка", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.mark_statictext.Wrap( -1 )
+		self.mark_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.mark_statictext.SetForegroundColour( wx.Colour( 0, 128, 64 ) )
+		
+		separators_preview_values_sizer.Add( self.mark_statictext, 0, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.s_mark_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.s_mark_statictext.Wrap( -1 )
+		self.s_mark_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.s_mark_statictext.SetForegroundColour( wx.Colour( 0, 128, 64 ) )
+		
+		separators_preview_values_sizer.Add( self.s_mark_statictext, 0, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.p_value_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.p_value_statictext.Wrap( -1 )
+		self.p_value_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.p_value_statictext.SetForegroundColour( wx.Colour( 127, 0, 0 ) )
+		
+		separators_preview_values_sizer.Add( self.p_value_statictext, 0, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.value_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u"значение", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.value_statictext.Wrap( -1 )
+		self.value_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.value_statictext.SetForegroundColour( wx.Colour( 127, 0, 0 ) )
+		
+		separators_preview_values_sizer.Add( self.value_statictext, 0, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.s_value_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.s_value_statictext.Wrap( -1 )
+		self.s_value_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.s_value_statictext.SetForegroundColour( wx.Colour( 127, 0, 0 ) )
+		
+		separators_preview_values_sizer.Add( self.s_value_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
+		
+		self.p_accuracy_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.p_accuracy_statictext.Wrap( -1 )
+		self.p_accuracy_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.p_accuracy_statictext.SetForegroundColour( wx.Colour( 0, 127, 127 ) )
+		
+		separators_preview_values_sizer.Add( self.p_accuracy_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
+		
+		self.accuracy_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u"классточности", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.accuracy_statictext.Wrap( -1 )
+		self.accuracy_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.accuracy_statictext.SetForegroundColour( wx.Colour( 0, 127, 127 ) )
+		
+		separators_preview_values_sizer.Add( self.accuracy_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
+		
+		self.s_accuracy_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.s_accuracy_statictext.Wrap( -1 )
+		self.s_accuracy_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.s_accuracy_statictext.SetForegroundColour( wx.Colour( 0, 127, 127 ) )
+		
+		separators_preview_values_sizer.Add( self.s_accuracy_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
+		
+		self.p_type_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.p_type_statictext.Wrap( -1 )
+		self.p_type_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.p_type_statictext.SetForegroundColour( wx.Colour( 0, 0, 127 ) )
+		
+		separators_preview_values_sizer.Add( self.p_type_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
+		
+		self.type_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u"тип", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.type_statictext.Wrap( -1 )
+		self.type_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.type_statictext.SetForegroundColour( wx.Colour( 0, 0, 127 ) )
+		
+		separators_preview_values_sizer.Add( self.type_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
+		
+		self.s_type_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.s_type_statictext.Wrap( -1 )
+		self.s_type_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.s_type_statictext.SetForegroundColour( wx.Colour( 0, 0, 127 ) )
+		
+		separators_preview_values_sizer.Add( self.s_type_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
+		
+		self.p_gost_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.p_gost_statictext.Wrap( -1 )
+		self.p_gost_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.p_gost_statictext.SetForegroundColour( wx.Colour( 127, 0, 64 ) )
+		
+		separators_preview_values_sizer.Add( self.p_gost_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
+		
+		self.gost_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u"стандарт", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.gost_statictext.Wrap( -1 )
+		self.gost_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.gost_statictext.SetForegroundColour( wx.Colour( 127, 0, 64 ) )
+		
+		separators_preview_values_sizer.Add( self.gost_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
+		
+		self.s_gost_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.s_gost_statictext.Wrap( -1 )
+		self.s_gost_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
+		self.s_gost_statictext.SetForegroundColour( wx.Colour( 127, 0, 64 ) )
+		
+		separators_preview_values_sizer.Add( self.s_gost_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
+		
+		self.dummy_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u" ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.dummy_statictext.Wrap( -1 )
+		self.dummy_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString ) )
+		self.dummy_statictext.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+		
+		separators_preview_values_sizer.Add( self.dummy_statictext, 0, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		
+		separators_preview_sizer.Add( separators_preview_values_sizer, 1, wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		
+		self.m_staticline12 = wx.StaticLine( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		separators_preview_sizer.Add( self.m_staticline12, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		separators_preview_selector_sizer = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.mark_preview_checkbox = wx.CheckBox( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u"Марка", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.mark_preview_checkbox.SetValue(True) 
+		separators_preview_selector_sizer.Add( self.mark_preview_checkbox, 0, wx.ALL, 5 )
+		
+		self.value_preview_checkbox = wx.CheckBox( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u"Значение", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.value_preview_checkbox.SetValue(True) 
+		separators_preview_selector_sizer.Add( self.value_preview_checkbox, 0, wx.ALL, 5 )
+		
+		self.accuracy_preview_checkbox = wx.CheckBox( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u"Класс точности", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.accuracy_preview_checkbox.SetValue(True) 
+		separators_preview_selector_sizer.Add( self.accuracy_preview_checkbox, 0, wx.ALL, 5 )
+		
+		self.type_preview_checkbox = wx.CheckBox( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u"Тип", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.type_preview_checkbox.SetValue(True) 
+		separators_preview_selector_sizer.Add( self.type_preview_checkbox, 0, wx.ALL, 5 )
+		
+		self.gost_preview_checkbox = wx.CheckBox( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u"Стандарт", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.gost_preview_checkbox.SetValue(True) 
+		separators_preview_selector_sizer.Add( self.gost_preview_checkbox, 0, wx.ALL, 5 )
+		
+		
+		separators_preview_sizer.Add( separators_preview_selector_sizer, 1, wx.EXPAND, 5 )
+		
+		
+		separators_common_sizer.Add( separators_preview_sizer, 1, wx.EXPAND|wx.ALL, 5 )
+		
 		
 		self.separators_panel.SetSizer( separators_common_sizer )
 		self.separators_panel.Layout()
@@ -1648,7 +1798,7 @@ class SettingsSelector ( wx.Dialog ):
 		self.panel_settings_selector = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		sizer_settings = wx.BoxSizer( wx.VERTICAL )
 		
-		self.statictext1 = wx.StaticText( self.panel_settings_selector, wx.ID_ANY, u"В выбраном файле найдены следующие\nпараметры:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.statictext1 = wx.StaticText( self.panel_settings_selector, wx.ID_ANY, u"В выбранном файле найдены следующие\nпараметры:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.statictext1.Wrap( -1 )
 		sizer_settings.Add( self.statictext1, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 5 )
 		

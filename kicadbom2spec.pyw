@@ -2732,6 +2732,28 @@ class Window(gui.MainFrame):
             text = text.replace(' ', '·')
             text_ctrl.ChangeValue(text)
             text_ctrl.SetInsertionPoint(pos)
+            # Sync new value of prefix/suffix with preview panel
+            if text_ctrl.name == u'п_марка':
+                settings_editor.p_mark_statictext.SetLabel(text)
+            elif text_ctrl.name == u'марка_с':
+                settings_editor.s_mark_statictext.SetLabel(text)
+            elif text_ctrl.name == u'п_значение':
+                settings_editor.p_value_statictext.SetLabel(text)
+            elif text_ctrl.name == u'значение_с':
+                settings_editor.s_value_statictext.SetLabel(text)
+            elif text_ctrl.name == u'п_класс точности':
+                settings_editor.p_accuracy_statictext.SetLabel(text)
+            elif text_ctrl.name == u'класс точности_с':
+                settings_editor.s_accuracy_statictext.SetLabel(text)
+            elif text_ctrl.name == u'п_тип':
+                settings_editor.p_type_statictext.SetLabel(text)
+            elif text_ctrl.name == u'тип_с':
+                settings_editor.s_type_statictext.SetLabel(text)
+            elif text_ctrl.name == u'п_стандарт':
+                settings_editor.p_gost_statictext.SetLabel(text)
+            elif text_ctrl.name == u'стандарт_с':
+                settings_editor.s_gost_statictext.SetLabel(text)
+            settings_editor.separators_panel.Layout()
             event.Skip()
 
         def on_put_to_clipboard(event):
@@ -2751,6 +2773,35 @@ class Window(gui.MainFrame):
                     text = text.replace('·', ' ')
                     wx.TheClipboard.SetData(wx.TextDataObject(text))
                 wx.TheClipboard.Close()
+
+        def on_preview_checkbox(event):
+            """
+            Show or hide selected part of name in preview panel.
+
+            """
+            part_name = event.GetEventObject().GetLabel()
+            state = event.IsChecked()
+            if part_name == u'Марка':
+                settings_editor.p_mark_statictext.Show(state)
+                settings_editor.mark_statictext.Show(state)
+                settings_editor.s_mark_statictext.Show(state)
+            elif part_name == u'Значение':
+                settings_editor.p_value_statictext.Show(state)
+                settings_editor.value_statictext.Show(state)
+                settings_editor.s_value_statictext.Show(state)
+            elif part_name == u'Класс точности':
+                settings_editor.p_accuracy_statictext.Show(state)
+                settings_editor.accuracy_statictext.Show(state)
+                settings_editor.s_accuracy_statictext.Show(state)
+            elif part_name == u'Тип':
+                settings_editor.p_type_statictext.Show(state)
+                settings_editor.type_statictext.Show(state)
+                settings_editor.s_type_statictext.Show(state)
+            elif part_name == u'Стандарт':
+                settings_editor.p_gost_statictext.Show(state)
+                settings_editor.gost_statictext.Show(state)
+                settings_editor.s_gost_statictext.Show(state)
+            settings_editor.separators_panel.Layout()
 
         def on_group_names_listctrl_selected(event):
             """
@@ -2824,6 +2875,12 @@ class Window(gui.MainFrame):
         settings_editor.group_names_add_button.Bind(wx.EVT_BUTTON, on_group_names_add_button_clicked)
         settings_editor.group_names_edit_button.Bind(wx.EVT_BUTTON, on_group_names_edit_button_clicked)
         settings_editor.group_names_remove_button.Bind(wx.EVT_BUTTON, on_group_names_remove_button_clicked)
+        # Events separators preview
+        settings_editor.mark_preview_checkbox.Bind(wx.EVT_CHECKBOX, on_preview_checkbox)
+        settings_editor.value_preview_checkbox.Bind(wx.EVT_CHECKBOX, on_preview_checkbox)
+        settings_editor.accuracy_preview_checkbox.Bind(wx.EVT_CHECKBOX, on_preview_checkbox)
+        settings_editor.type_preview_checkbox.Bind(wx.EVT_CHECKBOX, on_preview_checkbox)
+        settings_editor.gost_preview_checkbox.Bind(wx.EVT_CHECKBOX, on_preview_checkbox)
 
         field_names = (
             u'группа',
@@ -2858,6 +2915,9 @@ class Window(gui.MainFrame):
         for i in range(len(separators_field_names)):
             prefix_text = getattr(settings_editor, 'separator{}_prefix_text'.format(i + 1))
             suffix_text = getattr(settings_editor, 'separator{}_suffix_text'.format(i + 1))
+            # names is needed for syncing the values with preview panel
+            prefix_text.name = u'п_{}'.format(separators_field_names[i])
+            suffix_text.name = u'{}_с'.format(separators_field_names[i])
             prefix_text.Bind(wx.EVT_TEXT, mark_spaces_as_dots)
             suffix_text.Bind(wx.EVT_TEXT, mark_spaces_as_dots)
             prefix_text.Bind(wx.EVT_TEXT_COPY, on_put_to_clipboard)
