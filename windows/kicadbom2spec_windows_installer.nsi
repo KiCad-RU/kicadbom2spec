@@ -28,8 +28,8 @@ ${StrRep}
 !define PROG_NAME "kicadbom2spec"
 
 !define DEPENDENCIES "..\..\windows_installer_dependencies\"
-!define PYTHON "python-2.7.14.msi"
-!define PYTHON_NAME "Python 2.7.14"
+!define PYTHON "python-2.7.15.msi"
+!define PYTHON_NAME "Python 2.7.15"
 !define WXPYTHON "wxPython3.0-win32-3.0.2.0-py27.exe"
 !define WXPYTHON_NAME "wxPython 3.0"
 !define ODFPY "odfpy-1.3.6.tar.gz"
@@ -368,13 +368,24 @@ Function .onInit
 	StrCpy $SETTINGS_DIR "$APPDATA"
 
 	ClearErrors
+	SetRegView 32
 	ReadRegStr $0 HKLM \
 		"Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" \
 		"UninstallString"
 	ReadRegStr $1 HKLM \
 		"Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" \
 		"DisplayVersion"
-	IfErrors uninstalled 0
+	IfErrors 0 uninstall
+		ClearErrors
+		SetRegView 64
+		ReadRegStr $0 HKLM \
+			"Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" \
+			"UninstallString"
+		ReadRegStr $1 HKLM \
+			"Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}" \
+			"DisplayVersion"
+		IfErrors uninstalled 0
+		uninstall:
 		IfFileExists "$0" 0 uninstalled
 			MessageBox MB_YESNO|MB_ICONQUESTION \
 			"На Вашем ПК уже установлена программа ${PROG_NAME} v$1.\
@@ -401,30 +412,38 @@ Function InitComponents
 
 	StrCpy $KICAD_DIR ""
 	ClearErrors
+	SetRegView 32
 	ReadRegStr $0 HKLM \
 		"Software\Microsoft\Windows\CurrentVersion\Uninstall\KiCad" \
 		"InstallLocation"
-	IfErrors kicad_no 0
-		IfFileExists "$0\bin\pythonw.exe" 0 kicad_no
-			StrCpy $KICAD_DIR $0
-			MessageBox MB_YESNO|MB_ICONQUESTION \
-			"На Вашем ПК установлен KiCad со встроенным интерпретатором \
-			языка Python и библиотекой графического пользовательского \
-			интерфейса wxWidgets. Эти компоненты необходимы для работы \
-			программы kicadbom2spec и могут использоваться совместно. $\n\
-			Хотите использовать эти компоненты из KiCad или установить их \
-			отдельно? \
-			$\n$\n \
-			Нажмите ''Да'' чтобы использовать необходимые компоненты из \
-			KiCad. \
-			$\n$\n \
-			Нажмите ''Нет'' чтобы установить необходимые компоненты отдельно." \
-			IDYES kicad_yes IDNO kicad_no
-			kicad_yes:
-				StrCpy $PYTHON_MODE "KICAD"
-				Goto kicad_end
-			kicad_no:
-				StrCpy $PYTHON_MODE "SYSTEM"
+	IfErrors 0 kicad_maybe
+		ClearErrors
+		SetRegView 64
+		ReadRegStr $0 HKLM \
+			"Software\Microsoft\Windows\CurrentVersion\Uninstall\KiCad" \
+			"InstallLocation"
+		IfErrors kicad_no 0
+			kicad_maybe:
+			IfFileExists "$0\bin\pythonw.exe" 0 kicad_no
+				StrCpy $KICAD_DIR $0
+				MessageBox MB_YESNO|MB_ICONQUESTION \
+				"На Вашем ПК установлен KiCad со встроенным интерпретатором \
+				языка Python и библиотекой графического пользовательского \
+				интерфейса wxWidgets. Эти компоненты необходимы для работы \
+				программы kicadbom2spec и могут использоваться совместно. $\n\
+				Хотите использовать эти компоненты из KiCad или установить их \
+				отдельно? \
+				$\n$\n \
+				Нажмите ''Да'' чтобы использовать необходимые компоненты из \
+				KiCad. \
+				$\n$\n \
+				Нажмите ''Нет'' чтобы установить необходимые компоненты отдельно." \
+				IDYES kicad_yes IDNO kicad_no
+				kicad_yes:
+					StrCpy $PYTHON_MODE "KICAD"
+					Goto kicad_end
+				kicad_no:
+					StrCpy $PYTHON_MODE "SYSTEM"
 	kicad_end:
 
 	IntOp $0 ${SF_RO} | ${SF_SELECTED}
@@ -574,6 +593,9 @@ Section "un.kicadbom2spec" un_sec_main
 	RMDir /r "$INSTDIR"
 	SetShellVarContext all
 	RMDir /r "$SMPROGRAMS\${PROG_NAME}"
+	SetRegView 32
+	DeleteRegKey "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}"
+	SetRegView 64
 	DeleteRegKey "HKLM" "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROG_NAME}"
 SectionEnd
 
