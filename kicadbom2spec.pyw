@@ -67,6 +67,12 @@ class Window(gui.MainFrame):
         """
         gui.MainFrame.__init__(self, parent)
 
+        # FIXME: temporary fix for wx bug (https://trac.wxwidgets.org/ticket/16440)
+        bugDialog = wx.Dialog(self)
+        bugDialog.SetSize(wx.Size(1, 1))
+        bugDialog.Bind(wx.EVT_IDLE, lambda event: bugDialog.Destroy())
+        bugDialog.Show()
+
         # Events
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_toolbar)
         self.splitter_main.Bind(wx.EVT_SIZE, self.on_splitter_size_changed)
@@ -1612,8 +1618,9 @@ class Window(gui.MainFrame):
             if self.library:
                 editor.statictext_4.Hide()
                 editor.editor_ctrl_4.Hide()
-            min_size = editor.GetSizer().Fit(editor)
             editor.Layout()
+            editor.Fit()
+            min_size = editor.GetSize()
             editor.SetSizeHints(
                 min_size.GetWidth(),
                 min_size.GetHeight(),
@@ -2624,10 +2631,7 @@ class Window(gui.MainFrame):
             editor.editor_ctrl_4.Hide()
         editor.Layout()
         editor.Fit()
-        if 'gtk' in wx.version():
-            min_size = editor.GetClientSize()
-        else:
-            min_size = editor.GetSize()
+        min_size = editor.GetSize()
         editor.SetSizeHints(
             min_size.GetWidth(),
             min_size.GetHeight(),
