@@ -655,6 +655,40 @@ class Window(gui.MainFrame):
                 if self.settings.has_option('general', 'space as dot'):
                     self.grid.space_as_dot = self.settings.getboolean('general', 'space as dot')
 
+    def reset_gui(self):
+        """
+        Clear grid and reset menu and toolbar.
+
+        """
+        # Set cursor back to 'normal'
+        if wx.IsBusy():
+            wx.EndBusyCursor()
+
+        # Title
+        self.SetTitle('kicadbom2spec')
+
+        # Menu & Toolbar
+        self.menuitem_complist.Enable(False)
+        self.menuitem_save_sch.Enable(False)
+        self.menuitem_save_sch_as.Enable(False)
+        self.menuitem_save_lib.Enable(False)
+        self.menuitem_save_lib_as.Enable(False)
+        self.menuitem_copy.Enable(False)
+        self.menuitem_cut.Enable(False)
+        self.menuitem_edit.Enable(False)
+        self.menuitem_undo.Enable(False)
+        self.menuitem_redo.Enable(False)
+        self.menuitem_clear.Enable(False)
+        self.menuitem_find.Enable(False)
+        self.menuitem_replace.Enable(False)
+
+        # Initialize grid of the components
+        self.init_grid()
+        self.saved = True
+
+        # Clear field panel
+        self.update_comp_fields_panel()
+
     def apply_auto_groups(self):
         """
         Set group names defined for component type.
@@ -841,8 +875,7 @@ class Window(gui.MainFrame):
                                 self.comp_fields_panel_grid.SetCellValue(i, 0, u'Документация')
                                 self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                             else:
-                                if hasattr(field, 'name'):
-                                    self.comp_fields_panel_grid.SetCellValue(i, 0, field.name)
+                                self.comp_fields_panel_grid.SetCellValue(i, 0, field.name)
                                 self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                         break
             else:
@@ -878,8 +911,7 @@ class Window(gui.MainFrame):
                                         self.comp_fields_panel_grid.SetCellValue(i, 0, u'Документация')
                                         self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                                     else:
-                                        if hasattr(field, 'name'):
-                                            self.comp_fields_panel_grid.SetCellValue(i, 0, field.name)
+                                        self.comp_fields_panel_grid.SetCellValue(i, 0, field.name)
                                         self.comp_fields_panel_grid.SetCellValue(i, 1, field.text)
                                 break
         else:
@@ -993,26 +1025,25 @@ class Window(gui.MainFrame):
                     if self.aliases_dict[u'значение'] == u'':
                         row[4] = comp.fields[1].text
                     for field in comp.fields:
-                        if hasattr(field, 'name'):
-                            if field.name == u'Исключён из ПЭ':
-                                row[0] = u'0'
-                            if field.name == self.aliases_dict[u'группа']:
-                                row[1] = field.text
-                            if field.name == u'Подбирают при регулировании':
-                                row[2] += '*'
-                            if field.name == self.aliases_dict[u'марка']:
-                                row[3] = field.text
-                            if self.aliases_dict[u'значение'] != u'' and \
-                                    field.name == self.aliases_dict[u'значение']:
-                                row[4] = field.text
-                            if field.name == self.aliases_dict[u'класс точности']:
-                                row[5] = field.text
-                            if field.name == self.aliases_dict[u'тип']:
-                                row[6] = field.text
-                            if field.name == self.aliases_dict[u'стандарт']:
-                                row[7] = field.text
-                            if field.name == self.aliases_dict[u'примечание']:
-                                row[8] = field.text
+                        if field.name == u'Исключён из ПЭ':
+                            row[0] = u'0'
+                        if field.name == self.aliases_dict[u'группа']:
+                            row[1] = field.text
+                        if field.name == u'Подбирают при регулировании':
+                            row[2] += '*'
+                        if field.name == self.aliases_dict[u'марка']:
+                            row[3] = field.text
+                        if self.aliases_dict[u'значение'] != u'' and \
+                                field.name == self.aliases_dict[u'значение']:
+                            row[4] = field.text
+                        if field.name == self.aliases_dict[u'класс точности']:
+                            row[5] = field.text
+                        if field.name == self.aliases_dict[u'тип']:
+                            row[6] = field.text
+                        if field.name == self.aliases_dict[u'стандарт']:
+                            row[7] = field.text
+                        if field.name == self.aliases_dict[u'примечание']:
+                            row[8] = field.text
                     if hasattr(comp, 'path_and_ref'):
                         prefix = '(*)'
                         # Do not mark components that only has parts (not copies)
@@ -1081,60 +1112,57 @@ class Window(gui.MainFrame):
                                         continue
                                     if value[index] != u'':
                                         for field in item.fields:
-                                            if hasattr(field, 'name'):
-                                                if field.name == field_name:
-                                                    field.text = value[index]
-                                                    break
+                                            if field.name == field_name:
+                                                field.text = value[index]
+                                                break
                                         else:
-                                            str_field = u'F ' + str(len(item.fields))
-                                            str_field += u' "' + value[index] + u'" '
-                                            str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
-                                            str_field += u' 0001 C CNN'
-                                            str_field += u' "' + field_name + '"'
-                                            item.fields.append(schematic.Comp.Field(str_field))
+                                            field_str = u'F {num} "{text}" H {x} {y} 60 0001 C CNN "{name}"'.format(
+                                                            num = len(item.fields),
+                                                            text = value[index],
+                                                            x = item.pos_x,
+                                                            y = item.pos_y,
+                                                            name = field_name
+                                                )
+                                            item.fields.append(schematic.Comp.Field(item, field_str))
                                     else:
                                         for field_index, field in enumerate(item.fields):
-                                            if hasattr(field, 'name'):
-                                                if field.name == field_name:
-                                                    del item.fields[field_index]
-                                                    break
+                                            if field.name == field_name:
+                                                del item.fields[field_index]
+                                                break
 
                                 if value[0] == '0':
                                     # Check if field present
                                     for field in item.fields:
-                                        if hasattr(field, 'name'):
-                                            if field.name == u'Исключён из ПЭ':
-                                                # Already present
-                                                break
+                                        if field.name == u'Исключён из ПЭ':
+                                            # Already present
+                                            break
                                     else:
                                         # Create field
-                                        str_field = u'F ' + str(len(item.fields))
-                                        str_field += u' "~" '
-                                        str_field += u' H ' + str(item.pos_x) + u' ' + str(item.pos_y) + u' 60'
-                                        str_field += u' 0001 C CNN'
-                                        str_field += u' "Исключён из ПЭ"'
-                                        item.fields.append(schematic.Comp.Field(str_field))
+                                        field_str = u'F {num} "~" H {x} {y} 60 0001 C CNN "Исключён из ПЭ"'.format(
+                                                        num = len(item.fields),
+                                                        x = item.pos_x,
+                                                        y = item.pos_y
+                                            )
+                                        item.fields.append(schematic.Comp.Field(item, field_str))
                                 else:
                                     # Delete field
                                     for field_index, field in enumerate(item.fields):
-                                        if hasattr(field, 'name'):
-                                            if field.name == u'Исключён из ПЭ':
-                                                del item.fields[field_index]
-                                                break
+                                        if field.name == u'Исключён из ПЭ':
+                                            del item.fields[field_index]
+                                            break
 
                                 # By default, every time create new field with correct position.
                                 # But if field is already present and its value was changed,
                                 # then leave field as is ("manual mode")
                                 if value[2].endswith('*'):
                                     for field_index, field in enumerate(item.fields):
-                                        if hasattr(field, 'name'):
-                                            if field.name == u'Подбирают при регулировании':
-                                                if field.text == '*':
-                                                    # Recreate field
-                                                    del item.fields[field_index]
-                                                else:
-                                                    # Leave field as is
-                                                    break
+                                        if field.name == u'Подбирают при регулировании':
+                                            if field.text == '*':
+                                                # Recreate field
+                                                del item.fields[field_index]
+                                            else:
+                                                # Leave field as is
+                                                break
                                     else:
                                         # Create field
                                         # Place field value behind reference
@@ -1177,26 +1205,25 @@ class Window(gui.MainFrame):
                                             v_offset = h_offset
                                             h_offset = 0
 
-                                        str_field = u'F {} "*" {} {} {} {} {} {} {}{}{} "Подбирают при регулировании"'.format(
-                                            len(item.fields),
-                                            item.fields[0].orientation,
-                                            item.fields[0].pos_x + int(h_offset),
-                                            item.fields[0].pos_y + int(v_offset),
-                                            item.fields[0].size,
-                                            {True:'0000', False:'0001'}[self.show_need_adjust_mark],
-                                            'C',
-                                            item.fields[0].vjustify,
-                                            {True:'I', False:'N'}[item.fields[0].italic],
-                                            {True:'B', False:'N'}[item.fields[0].italic]
+                                        field_str = u'F {} "*" {} {} {} {} {} {} {}{}{} "Подбирают при регулировании"'.format(
+                                                        len(item.fields),
+                                                        item.fields[0].orientation,
+                                                        item.fields[0].pos_x + int(h_offset),
+                                                        item.fields[0].pos_y + int(v_offset),
+                                                        item.fields[0].size,
+                                                        {True:'0000', False:'0001'}[self.show_need_adjust_mark],
+                                                        'C',
+                                                        item.fields[0].vjustify,
+                                                        {True:'I', False:'N'}[item.fields[0].italic],
+                                                        {True:'B', False:'N'}[item.fields[0].italic]
                                             )
-                                        item.fields.append(schematic.Comp.Field(str_field))
+                                        item.fields.append(schematic.Comp.Field(item, field_str))
                                 else:
                                     # Delete field if it present
                                     for field_index, field in enumerate(item.fields):
-                                        if hasattr(field, 'name'):
-                                            if field.name == u'Подбирают при регулировании':
-                                                del item.fields[field_index]
-                                                break
+                                        if field.name == u'Подбирают при регулировании':
+                                            del item.fields[field_index]
+                                            break
                                 # Update fields numbers
                                 for field_index, field in enumerate(item.fields):
                                     field.number = field_index
@@ -1223,19 +1250,18 @@ class Window(gui.MainFrame):
                 self.library.lib_name  # Library name
                 ]
             for field in comp.fields:
-                if hasattr(field, 'name'):
-                    if field.name == self.aliases_dict[u'группа']:
-                        row[1] = field.text
-                    if field.name == self.aliases_dict[u'марка']:
-                        row[3] = field.text
-                    if field.name == self.aliases_dict[u'класс точности']:
-                        row[5] = field.text
-                    if field.name == self.aliases_dict[u'тип']:
-                        row[6] = field.text
-                    if field.name == self.aliases_dict[u'стандарт']:
-                        row[7] = field.text
-                    if field.name == self.aliases_dict[u'примечание']:
-                        row[8] = field.text
+                if field.name == self.aliases_dict[u'группа']:
+                    row[1] = field.text
+                if field.name == self.aliases_dict[u'марка']:
+                    row[3] = field.text
+                if field.name == self.aliases_dict[u'класс точности']:
+                    row[5] = field.text
+                if field.name == self.aliases_dict[u'тип']:
+                    row[6] = field.text
+                if field.name == self.aliases_dict[u'стандарт']:
+                    row[7] = field.text
+                if field.name == self.aliases_dict[u'примечание']:
+                    row[8] = field.text
             values.append(row)
         return values
 
@@ -1260,21 +1286,20 @@ class Window(gui.MainFrame):
                         for index, field_name in field_names.items():
                             if value[index] != u'':
                                 for field in comp.fields:
-                                    if hasattr(field, 'name'):
-                                        if field.name == field_name:
-                                            field.text = value[index]
-                                            break
+                                    if field.name == field_name:
+                                        field.text = value[index]
+                                        break
                                 else:
-                                    str_field = u'F' + str(len(comp.fields))
-                                    str_field += u' "' + value[index] + u'" '
-                                    str_field += u' 0 0 60 H I C CNN'
-                                    str_field += u' "' + field_name + '"'
-                                    comp.fields.append(self.library.Component.Field(str_field))
+                                    field_str = u'F{num} "{text}" 0 0 60 H I C CNN "{name}"'.format(
+                                                    num = len(comp.fields),
+                                                    text = value[index],
+                                                    name = field_name
+                                        )
+                                    comp.fields.append(self.library.Component.Field(comp, field_str))
                             else:
                                 for field_index, field in enumerate(comp.fields):
-                                    if hasattr(field, 'name'):
-                                        if field.name == field_name:
-                                            del comp.fields[field_index]
+                                    if field.name == field_name:
+                                        del comp.fields[field_index]
                         for field_index, field in enumerate(comp.fields):
                             field.number = field_index
 
@@ -1793,40 +1818,29 @@ class Window(gui.MainFrame):
             wx.EndBusyCursor()
 
         except IOError as e:
-            # Set cursor back to 'normal'
-            if wx.IsBusy():
-                wx.EndBusyCursor()
-
-            # Title
-            self.SetTitle('kicadbom2spec')
-
-            # Menu & Toolbar
-            self.menuitem_complist.Enable(False)
-            self.menuitem_save_sch.Enable(False)
-            self.menuitem_save_sch_as.Enable(False)
-            self.menuitem_save_lib.Enable(False)
-            self.menuitem_save_lib_as.Enable(False)
-            self.menuitem_copy.Enable(False)
-            self.menuitem_cut.Enable(False)
-            self.menuitem_edit.Enable(False)
-            self.menuitem_clear.Enable(False)
-            self.menuitem_find.Enable(False)
-            self.menuitem_replace.Enable(False)
-
-            # Initialize grid of the components
-            self.init_grid()
-
             # Remove bad file from recent
             self.remove_from_recent(self.schematic_file, 'sch')
-
             wx.MessageBox(
                 u'При открытии файла схемы:\n' +
                 self.schematic_file + '\n' \
                 u'возникла ошибка:\n' + \
                 e.strerror,
                 u'Внимание!',
-                wx.ICON_ERROR|wx.OK, self
+                wx.ICON_EXCLAMATION|wx.OK, self
                 )
+            self.reset_gui()
+        except ParsingError:
+            # Remove bad file from recent
+            self.remove_from_recent(self.schematic_file, 'sch')
+            wx.MessageBox(
+                u'При открытии файла схемы:\n' +
+                self.schematic_file + '\n' \
+                u'возникла ошибка:\n' + \
+                u'Содержимое файла имеет неподдерживаемый формат.',
+                u'Внимание!',
+                wx.ICON_EXCLAMATION|wx.OK, self
+                )
+            self.reset_gui()
         except:
             self.on_error()
 
@@ -1867,7 +1881,7 @@ class Window(gui.MainFrame):
                     e.strerror + '\n\n' +
                     u'Файл не сохранен.',
                     u'Внимание!',
-                    wx.ICON_ERROR|wx.OK, self
+                    wx.ICON_EXCLAMATION|wx.OK, self
                     )
             except:
                 self.on_error()
@@ -1935,7 +1949,7 @@ class Window(gui.MainFrame):
                     e.strerror + '\n\n' \
                     u'Файл не сохранен.',
                     u'Внимание!',
-                    wx.ICON_ERROR|wx.OK, self
+                    wx.ICON_EXCLAMATION|wx.OK, self
                     )
             except:
                 self.on_error()
@@ -2016,40 +2030,29 @@ class Window(gui.MainFrame):
             self.SetTitle('kicadbom2spec - ' + self.library_file)
 
         except IOError as e:
-            # Set cursor back to 'normal'
-            if wx.IsBusy():
-                wx.EndBusyCursor()
-
-            # Title
-            self.SetTitle('kicadbom2spec')
-
-            # Menu & Toolbar
-            self.menuitem_complist.Enable(False)
-            self.menuitem_save_sch.Enable(False)
-            self.menuitem_save_sch_as.Enable(False)
-            self.menuitem_save_lib.Enable(False)
-            self.menuitem_save_lib_as.Enable(False)
-            self.menuitem_copy.Enable(False)
-            self.menuitem_cut.Enable(False)
-            self.menuitem_edit.Enable(False)
-            self.menuitem_clear.Enable(False)
-            self.menuitem_find.Enable(False)
-            self.menuitem_replace.Enable(False)
-
-            # Initialize grid of the components
-            self.init_grid()
-
             # Remove bad file from recent
             self.remove_from_recent(self.library_file, 'lib')
-
             wx.MessageBox(
                 u'При открытии файла библиотеки:\n' +
                 self.library_file + '\n' \
                 u'возникла ошибка:\n' + \
                 e.strerror,
                 u'Внимание!',
-                wx.ICON_ERROR|wx.OK, self
+                wx.ICON_EXCLAMATION|wx.OK, self
                 )
+            self.reset_gui()
+        except ParsingError:
+            # Remove bad file from recent
+            self.remove_from_recent(self.library_file, 'lib')
+            wx.MessageBox(
+                u'При открытии файла библиотеки:\n' +
+                self.library_file + '\n' \
+                u'возникла ошибка:\n' + \
+                u'Содержимое файла имеет неподдерживаемый формат.',
+                u'Внимание!',
+                wx.ICON_EXCLAMATION|wx.OK, self
+                )
+            self.reset_gui()
         except:
             self.on_error()
 
@@ -2080,7 +2083,7 @@ class Window(gui.MainFrame):
                 e.strerror + '\n\n' \
                 u'Файл не сохранен.',
                 u'Внимание!',
-                wx.ICON_ERROR|wx.OK, self
+                wx.ICON_EXCLAMATION|wx.OK, self
                 )
         except:
             self.on_error()
@@ -2124,7 +2127,7 @@ class Window(gui.MainFrame):
                 e.strerror + '\n\n' \
                 u'Файл не сохранен.',
                 u'Внимание!',
-                wx.ICON_ERROR|wx.OK, self
+                wx.ICON_EXCLAMATION|wx.OK, self
                 )
         except:
             self.on_error()
@@ -2525,14 +2528,16 @@ class Window(gui.MainFrame):
                     e.strerror + '\n\n' \
                     u'Не удалось создать перечень элементов.',
                     u'Внимание!',
-                    wx.ICON_ERROR|wx.OK, self
+                    wx.ICON_EXCLAMATION|wx.OK, self
                     )
                 # Set cursor back to 'normal'
                 if wx.IsBusy():
                     wx.EndBusyCursor()
-                return
             except:
                 self.on_error()
+                # Set cursor back to 'normal'
+                if wx.IsBusy():
+                    wx.EndBusyCursor()
 
             if os.path.exists(self.complist_file):
                 if open_complist:
@@ -3046,7 +3051,7 @@ class Window(gui.MainFrame):
                 e.strerror + '\n\n' \
                 'Параметры не загружены или загружены не полностью.',
                 u'Внимание!',
-                wx.ICON_ERROR|wx.OK, self
+                wx.ICON_EXCLAMATION|wx.OK, self
                 )
         except:
             self.on_error()
@@ -3076,7 +3081,7 @@ class Window(gui.MainFrame):
                 e.strerror + '\n\n' \
                 u'Параметры не сохранены или сохранены не полностью.',
                 u'Внимание!',
-                wx.ICON_ERROR|wx.OK, self
+                wx.ICON_EXCLAMATION|wx.OK, self
                 )
         except:
             self.on_error()
@@ -3232,7 +3237,7 @@ class Window(gui.MainFrame):
                 wx.MessageBox(
                     u'В выделенной ячейке не найдено совпадений для замены!',
                     u'Замена',
-                    wx.ICON_ERROR | wx.OK, self
+                    wx.ICON_EXCLAMATION | wx.OK, self
                     )
                 return
             new_cell_value = cell_value.replace(find_str, replace_str, 1)
@@ -3273,24 +3278,23 @@ class Window(gui.MainFrame):
         """
         about_dialog = gui.AboutDialog(self)
         about_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
+        py_version = 'Python: {}.{}.{}-{}'.format(
+                        sys.version_info[0],
+                        sys.version_info[1],
+                        sys.version_info[2],
+                        sys.version_info[3]
+            )
+        wx_version = 'wxWidgets: ' + wx.version()
+        odf_version = 'odfpy: ' + odfpy_version.split('/')[-1]
         about_dialog.statictext_version.SetLabel(
                 about_dialog.statictext_version.GetLabel() + \
                 str(VERSION) + '\n' + \
-                'Python: {}.{}.{}-{}'.format(
-                    sys.version_info[0],
-                    sys.version_info[1],
-                    sys.version_info[2],
-                    sys.version_info[3]
-                    ) + '\n' + \
-                'wxWidgets: {}'.format(wx.version()) + '\n' + \
-                'odfpy: {}'.format(odfpy_version.split('/')[-1])
-                )
-        about_dialog.hyperlink_email.SetURL(
-                '{}%20v{}'.format(
-                    about_dialog.hyperlink_email.GetURL(),
-                    VERSION
-                    )
-                )
+                py_version + '\n' + \
+                wx_version + '\n' + \
+                odf_version
+            )
+        email_link = about_dialog.hyperlink_email.GetURL() + '%20v' + VERSION
+        about_dialog.hyperlink_email.SetURL(email_link)
         about_dialog.Layout()
         about_dialog.Fit()
         about_dialog.CentreOnParent()
@@ -3368,10 +3372,6 @@ class Window(gui.MainFrame):
         result = error_message.ShowModal()
         if result == wx.ID_OK:
             webbrowser.open_new(log_filename)
-        # Set cursor back to 'normal'
-        if wx.IsBusy():
-            wx.EndBusyCursor()
-
         raise
 
 
