@@ -953,8 +953,8 @@ class Schematic(object):
             # Since Sept 15, 2017, custom line width/style/color allowed.
             # Only non default values are stored.
             width (int) - width of line in mils;
-            style (str) - style of line (solid, dashed, dotted, dash_dot);
-            color (str) - color in CSS format: rgb(0, 0, 0) rgba(0, 0, 0, 0)
+            style (unicode) - style of line (solid, dashed, dotted, dash_dot);
+            color (unicode) - color in CSS format: rgb(0, 0, 0) rgba(0, 0, 0, 0)
 
         """
 
