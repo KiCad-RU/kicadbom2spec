@@ -979,10 +979,10 @@ class Schematic(object):
                 if custom_parts[0] == u'width':
                     self.width = int(custom_parts[1])
                     custom_parts = custom_parts[2:]
-                if custom_parts[0] == u'style':
+                if custom_parts and custom_parts[0] == u'style':
                     self.style = custom_parts[1]
                     custom_parts = custom_parts[2:]
-                if custom_parts[0].startswith(u'rgb'):
+                if custom_parts and custom_parts[0].startswith(u'rgb'):
                     self.color = u' '.join(custom_parts)
             parts = split_line(lines[1])
             self.start_x = int(parts[0].lstrip(u'\t'))
