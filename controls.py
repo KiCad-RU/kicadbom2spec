@@ -15,19 +15,26 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
+"""
+Module with custom wx-based controls for GUI.
+
+"""
+
 import re
 import sys
 import platform
+from operator import itemgetter
+
 import wx
 import wx.grid
-from operator import itemgetter
+
 from complist import REF_REGEXP
 
 # Windows XP does not support Unicode characters in grid labels
 if platform.win32_ver()[0] == 'XP':
     EDITOR_POPUP_LABEL = u'...'
-    SORT_IND_UP = ' >'
-    SORT_IND_DOWN = ' <'
+    SORT_IND_UP = u' >'
+    SORT_IND_DOWN = u' <'
 else:
     EDITOR_POPUP_LABEL = u'☰'
     SORT_IND_UP = u' ▲'
@@ -40,7 +47,8 @@ class EditorCtrlPopup(wx.Dialog):
 
     """
 
-    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize, id=wx.ID_ANY, style=wx.NO_BORDER, title=u'', name = u''):
+    def __init__(self, parent, pos=wx.DefaultPosition, size=wx.DefaultSize,  # pylint: disable=too-many-arguments, too-many-locals, too-many-statements
+                 id=wx.ID_ANY, style=wx.NO_BORDER, title=u'', name=u''):  # pylint: disable=redefined-builtin
         """
         Create popup for EditorCtrl.
 
@@ -100,10 +108,10 @@ class EditorCtrlPopup(wx.Dialog):
             # Separate default and other values
             if parent.std_values or set(parent.values) - set(parent.std_values):
                 sizer_items.Add(
-                        wx.StaticLine(scrolled_window),
-                        0,
-                        wx.EXPAND
-                        )
+                    wx.StaticLine(scrolled_window),
+                    0,
+                    wx.EXPAND
+                    )
 
         # Standard values at the top.
         for value in parent.std_values:
@@ -140,10 +148,10 @@ class EditorCtrlPopup(wx.Dialog):
         # Separate standard and common values
         if parent.std_values and set(parent.values) - set(parent.std_values):
             sizer_items.Add(
-                    wx.StaticLine(scrolled_window),
-                    0,
-                    wx.EXPAND
-                    )
+                wx.StaticLine(scrolled_window),
+                0,
+                wx.EXPAND
+                )
 
         # Common values
         for value in parent.values:
@@ -177,7 +185,6 @@ class EditorCtrlPopup(wx.Dialog):
             self.items.append(panel)
 
         self.select_item(0)
-        item_height = self.items[0].GetSize().GetHeight()
 
         scrolled_window.SetSizer(sizer_items)
         scrolled_window.Layout()
@@ -197,7 +204,7 @@ class EditorCtrlPopup(wx.Dialog):
         self.Bind(wx.EVT_CHAR_HOOK, self.on_key)
 
         # Calculate optimal size and position of the popup
-        display_width, display_height = wx.DisplaySize()
+        _, display_height = wx.DisplaySize()
         parent_rect = parent.GetScreenRect()
         # Internal border size = 1px
         popup_height = sizer_items.GetSize().GetHeight() + 2
@@ -232,13 +239,15 @@ class EditorCtrlPopup(wx.Dialog):
 
         """
         # Reset previous selection
-        if self.selected_item != None:
+        if self.selected_item is not None:
             self.items[self.selected_item].text.SetForegroundColour(wx.NullColour)
             self.items[self.selected_item].SetBackgroundColour(wx.NullColour)
             self.items[self.selected_item].Refresh()
         # Select item
-        self.items[index].text.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT))
-        self.items[index].SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT))
+        self.items[index].text.SetForegroundColour(
+            wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT))
+        self.items[index].SetBackgroundColour(
+            wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT))
         self.items[index].SetFocus()
         self.items[index].Refresh()
         self.selected_item = index
@@ -248,11 +257,9 @@ class EditorCtrlPopup(wx.Dialog):
         Return value of the selected item.
 
         """
-        if self.selected_item != None:
-            value = self.items[self.selected_item].text.GetLabel()
-            return value
-        else:
-            return None
+        if self.selected_item is not None:
+            return self.items[self.selected_item].text.GetLabel()
+        return None
 
     def on_activate(self, event):
         """
@@ -284,7 +291,7 @@ class EditorCtrlPopup(wx.Dialog):
         else:
             event.Skip()
 
-    def on_left_up(self, event):
+    def on_left_up(self, event):  # pylint: disable=unused-argument
         """
         Left click.
 
@@ -305,14 +312,14 @@ class EditorCtrlPopup(wx.Dialog):
             self.select_item(self.items.index(panel))
 
 
-class EditorCtrl(wx.Control):
+class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
     """
     Custom field value editor.
 
     """
 
-    def __init__(self, parent):
-        wx.Control.__init__(self, parent, style=wx.NO_BORDER)
+    def __init__(self, parent, id=wx.ID_ANY):  # pylint: disable=redefined-builtin
+        wx.Control.__init__(self, parent, id, style=wx.NO_BORDER)
 
         self.SetCanFocus(False)
         self.Bind(wx.EVT_CHAR_HOOK, self.on_key)
@@ -334,10 +341,10 @@ class EditorCtrl(wx.Control):
 
         # Popup button
         self.button = wx.Button(
-                parent=self,
-                label=EDITOR_POPUP_LABEL,
-                style=wx.BU_EXACTFIT
-                )
+            parent=self,
+            label=EDITOR_POPUP_LABEL,
+            style=wx.BU_EXACTFIT
+            )
         self.button.SetCanFocus(False)
         self.button.Enable(False)
         self.button.Bind(wx.EVT_BUTTON, self.on_button)
@@ -399,11 +406,10 @@ class EditorCtrl(wx.Control):
         if std_values:
             self.std_values = std_values
             self.button.Enable(True)
-        (w, h) = (-1, -1)
         max_width = -1
         for value in self.values:
-                (w, h) = self.text_ctrl.GetTextExtent(value)
-                max_width = max(max_width, w)
+            width, _ = self.text_ctrl.GetTextExtent(value)
+            max_width = max(max_width, width)
         border_size = self.text_ctrl.GetWindowBorderSize()
         self.text_ctrl.SetMinSize((max_width + border_size.GetWidth() * 2, -1))
 
@@ -424,7 +430,7 @@ class EditorCtrl(wx.Control):
         """
         value = self.text_ctrl.GetValue()
         if self.GetGrandParent().space_as_dot:
-            value = value.replace('·', ' ')
+            value = value.replace(u'·', u' ')
         return value
 
     def on_key(self, event):
@@ -465,10 +471,8 @@ class EditorCtrl(wx.Control):
         Set flag for selecting all text on activating text control.
 
         """
-        if not self.skip_selecting:
-            self.select_all = True
-        else:
-            self.skip_selecting = False
+        self.select_all = not self.skip_selecting
+        self.skip_selecting = False
         event.Skip()
 
     def on_text_ctrl_idle(self, event):
@@ -489,12 +493,12 @@ class EditorCtrl(wx.Control):
         if self.GetGrandParent().space_as_dot:
             pos = self.text_ctrl.GetInsertionPoint()
             text = self.text_ctrl.GetValue()
-            text = text.replace(' ', '·')
+            text = text.replace(u' ', u'·')
             self.text_ctrl.ChangeValue(text)
             self.text_ctrl.SetInsertionPoint(pos)
         event.Skip()
 
-    def on_copy(self, event):
+    def on_copy(self, event):  # pylint: disable=unused-argument
         """
         Copy selected text.
 
@@ -503,7 +507,7 @@ class EditorCtrl(wx.Control):
             if wx.TheClipboard.Open():
                 text = self.text_ctrl.GetStringSelection()
                 if text:
-                    text = text.replace('·', ' ')
+                    text = text.replace(u'·', u' ')
                     wx.TheClipboard.SetData(wx.TextDataObject(text))
                 wx.TheClipboard.Close()
         else:
@@ -512,7 +516,7 @@ class EditorCtrl(wx.Control):
             self.text_ctrl.Bind(wx.EVT_TEXT_COPY, self.on_copy)
         self.skip_selecting = True
 
-    def on_cut(self, event):
+    def on_cut(self, event):  # pylint: disable=unused-argument
         """
         Cut selected text.
 
@@ -525,7 +529,7 @@ class EditorCtrl(wx.Control):
                     end = self.text_ctrl.GetSelection()[1]
                     self.text_ctrl.Remove(start, end)
                     self.text_ctrl.SetInsertionPoint(start)
-                    text = text.replace('·', ' ')
+                    text = text.replace(u'·', u' ')
                     wx.TheClipboard.SetData(wx.TextDataObject(text))
                 wx.TheClipboard.Close()
         else:
@@ -534,7 +538,7 @@ class EditorCtrl(wx.Control):
             self.text_ctrl.Bind(wx.EVT_TEXT_CUT, self.on_cut)
         self.skip_selecting = True
 
-    def on_paste(self, event):
+    def on_paste(self, event):  # pylint: disable=unused-argument
         """
         Paste text (to selection).
 
@@ -542,7 +546,7 @@ class EditorCtrl(wx.Control):
         self.text_ctrl.Paste()
         self.skip_selecting = True
 
-    def on_delete(self, event):
+    def on_delete(self, event):  # pylint: disable=unused-argument
         """
         Delete (selected) text.
 
@@ -550,7 +554,7 @@ class EditorCtrl(wx.Control):
         self.text_ctrl.WriteText(u'')
         self.skip_selecting = True
 
-    def on_select_all(self, event):
+    def on_select_all(self, event):  # pylint: disable=unused-argument
         """
         Select all text.
 
@@ -558,12 +562,11 @@ class EditorCtrl(wx.Control):
         self.text_ctrl.SelectAll()
         self.skip_selecting = True
 
-    def on_text_ctrl_popup(self, event):
+    def on_text_ctrl_popup(self, event):  # pylint: disable=too-many-statements
         """
         Create popup menu for text control.
 
         """
-
         menu = wx.Menu()
         item = wx.MenuItem(menu, self.copy_id, u'Копировать')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy_small.png', wx.BITMAP_TYPE_PNG))
@@ -598,7 +601,7 @@ class EditorCtrl(wx.Control):
         self.Bind(wx.EVT_MENU, self.on_select_all, item)
 
         cur_value = self.get_value()
-        if not cur_value in [u'', u'<не изменять>']:
+        if cur_value not in [u'', u'<не изменять>']:
             menu.Append(wx.ID_SEPARATOR)
             if cur_value in self.std_values:
                 if len(cur_value) > 15:
@@ -610,7 +613,7 @@ class EditorCtrl(wx.Control):
                     )
                 item.SetBitmap(
                     wx.Bitmap(
-                        'bitmaps/list-remove_small.png',
+                        u'bitmaps/list-remove_small.png',
                         wx.BITMAP_TYPE_PNG
                         )
                     )
@@ -620,15 +623,13 @@ class EditorCtrl(wx.Control):
                 if len(cur_value) > 15:
                     cur_value = cur_value[:9] + u'…' + cur_value[-5:]
                 item = wx.MenuItem(
-                        menu,
-                        self.add_std_value_id,
-                        u'Добавить "%s" в стандартные' % cur_value
-                        )
+                    menu,
+                    self.add_std_value_id,
+                    u'Добавить "%s" в стандартные' % cur_value
+                    )
                 item.SetBitmap(
-                        wx.Bitmap(u'bitmaps/list-add_small.png',
-                            wx.BITMAP_TYPE_PNG
-                            )
-                        )
+                    wx.Bitmap(u'bitmaps/list-add_small.png', wx.BITMAP_TYPE_PNG)
+                    )
                 menu.AppendItem(item)
                 self.Bind(wx.EVT_MENU, self.on_add_std_value, item)
 
@@ -657,19 +658,16 @@ class EditorCtrl(wx.Control):
         self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         submenu_item = wx.MenuItem(
-                menu,
-                wx.NewId(),
-                u'Вставить подстановку…',
-                u'',
-                wx.ITEM_NORMAL,
-                submenu
-                )
+            menu,
+            wx.NewId(),
+            u'Вставить подстановку…',
+            u'',
+            wx.ITEM_NORMAL,
+            submenu
+            )
         submenu_item.SetBitmap(
-                wx.Bitmap(
-                    u'bitmaps/insert-text_small.png',
-                    wx.BITMAP_TYPE_PNG
-                    )
-                )
+            wx.Bitmap(u'bitmaps/insert-text_small.png', wx.BITMAP_TYPE_PNG)
+            )
         submenu_item = menu.AppendItem(submenu_item)
 
         # Enable/disable items
@@ -696,7 +694,7 @@ class EditorCtrl(wx.Control):
         self.PopupMenu(menu, popup_position)
         menu.Destroy()
 
-    def on_add_std_value(self, event):
+    def on_add_std_value(self, event):  # pylint: disable=unused-argument
         """
         Add current value to standard values.
 
@@ -705,7 +703,7 @@ class EditorCtrl(wx.Control):
         self.std_values.append(cur_value)
         self.skip_selecting = True
 
-    def on_remove_std_value(self, event):
+    def on_remove_std_value(self, event):  # pylint: disable=unused-argument
         """
         Remove current value from standard values.
 
@@ -741,11 +739,11 @@ class EditorCtrl(wx.Control):
         if self.popup:
             if not event.IsShown():
                 new_value = self.popup.get_selected_value()
-                if new_value != None:
+                if new_value is not None:
                     self.text_ctrl.SetValue(new_value)
                 self.popup.Destroy()
 
-    def on_button(self, event):
+    def on_button(self, event):  # pylint: disable=unused-argument
         """
         Show popup with all available values.
 
@@ -763,12 +761,16 @@ class CellEditor(wx.grid.PyGridCellEditor):
 
     def __init__(self):
         wx.grid.PyGridCellEditor.__init__(self)
+        self.control = None
+        self.start_value = u''
 
-    def Create(self, parent, id, evtHandler):
-        self.control = EditorCtrl(parent)
+    def Create(self, parent, id, evtHandler):  # pylint: disable=redefined-builtin, arguments-differ
+        self.control = EditorCtrl(parent, id)
         self.SetControl(self.control)
+        if evtHandler:
+            self.control.PushEventHandler(evtHandler)
 
-    def SetSize(self, rect):
+    def SetSize(self, rect):  # pylint: disable=arguments-differ
         self.control.SetDimensions(
             rect.x,
             rect.y,
@@ -776,42 +778,43 @@ class CellEditor(wx.grid.PyGridCellEditor):
             rect.height+2,
             wx.SIZE_ALLOW_MINUS_ONE
             )
-    def BeginEdit(self, row, col, grid):
+
+    def BeginEdit(self, row, col, grid):  # pylint: disable=arguments-differ
         self.start_value = grid.GetTable().GetValue(row, col)
         self.control.skip_selecting = True
         self.control.text_ctrl.SetValue(self.start_value)
         self.control.text_ctrl.SetInsertionPointEnd()
         self.control.SetFocus()
 
-    def EndEdit(self, row, col, grid, old_value):
+    def EndEdit(self, row, col, grid, old_value):  # pylint: disable=arguments-differ, unused-argument
         cur_value = self.control.get_value()
         if cur_value != old_value:
             return cur_value
-        else:
-            return None
+        return None
 
-    def IsAcceptedKey(self, event):
+    def IsAcceptedKey(self, event):  # pylint: disable=arguments-differ, unused-argument
         """
         Disable starting editor from keyboard.
         """
         return False
 
-    def ApplyEdit(self, row, col, grid):
+    def ApplyEdit(self, row, col, grid):  # pylint: disable=arguments-differ
         value = self.control.get_value()
         grid.set_cell_value(row, col, value)
-        self.start_value = ''
-        self.control.text_ctrl.SetValue('')
+        self.start_value = u''
+        self.control.text_ctrl.SetValue(u'')
         self.control.clear_items()
 
-    def Reset(self):
+    def Reset(self):  # pylint: disable=arguments-differ
         self.control.skip_selecting = True
         self.control.text_ctrl.SetValue(self.start_value)
         self.control.text_ctrl.SetInsertionPointEnd()
 
-    def Clone(self):
+    def Clone(self):  # pylint: disable=arguments-differ
         return CellEditor()
 
     def set_items(self, values, std_values, default_value=None):
+        """Proxy-method for custom control."""
         self.control.set_items(
             values,
             std_values,
@@ -827,11 +830,16 @@ class CellRenderer(wx.grid.PyGridCellRenderer):
     def __init__(self):
         wx.grid.PyGridCellRenderer.__init__(self)
 
-    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
+    def Draw(self, grid, attr, dc, rect, row, col, isSelected):  # pylint: disable=too-many-arguments, arguments-differ
         # Draw background
         dc.SetBackgroundMode(wx.SOLID)
         if isSelected:
-            dc.SetBrush(wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT), wx.BRUSHSTYLE_SOLID))
+            dc.SetBrush(
+                wx.Brush(
+                    wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT),
+                    wx.BRUSHSTYLE_SOLID
+                    )
+                )
         else:
             dc.SetBrush(wx.Brush(attr.GetBackgroundColour(), wx.BRUSHSTYLE_SOLID))
         dc.SetPen(wx.TRANSPARENT_PEN)
@@ -841,7 +849,7 @@ class CellRenderer(wx.grid.PyGridCellRenderer):
         dc.SetFont(attr.GetFont())
         text = grid.GetCellValue(row, col)
         if grid.space_as_dot:
-            text = text.replace(' ', '·')
+            text = text.replace(u' ', u'·')
         if isSelected:
             dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT))
         else:
@@ -857,19 +865,19 @@ class CellRenderer(wx.grid.PyGridCellRenderer):
             text_rect.SetHeight(rect.GetHeight() - 4)
             dc.DrawLabel(text, text_rect, h_align|v_align)
 
-    def GetBestSize(self, grid, attr, dc, row, col):
+    def GetBestSize(self, grid, attr, dc, row, col):  # pylint: disable=too-many-arguments, arguments-differ
         text = grid.GetCellValue(row, col)
         if grid.space_as_dot:
-            text = text.replace(' ', '·')
+            text = text.replace(u' ', u'·')
         dc.SetFont(attr.GetFont())
-        w, h = dc.GetTextExtent(text)
-        return wx.Size(w, h)
+        best_size = dc.GetTextExtent(text)
+        return best_size
 
-    def Clone(self):
+    def Clone(self):  # pylint: disable=arguments-differ
         return CellRenderer()
 
 
-class Grid(wx.grid.Grid):
+class Grid(wx.grid.Grid):  # pylint: disable=too-many-ancestors
     """
     Grid of the fields.
 
@@ -974,10 +982,10 @@ class Grid(wx.grid.Grid):
         old_values = self.undo_buffer[-1][:]
         for row in range(rows):
             ref = self.get_pure_ref(self.GetCellValue(row, 2))
-            for old_row in range(len(old_values)):
+            for old_row, _ in enumerate(old_values):
                 if ref == self.get_pure_ref(old_values[old_row][2]):
                     for col in range(cols):
-                        old_value = old_values[old_row][col].replace('\\"', '"')
+                        old_value = old_values[old_row][col].replace(u'\\"', u'"')
                         value = self.GetCellValue(row, col)
                         if old_value != value:
                             return True
@@ -997,40 +1005,39 @@ class Grid(wx.grid.Grid):
             return
         self.SetCellValue(row, col, value)
         # Find copies and changes it too.
-        if cur_ref.startswith('(*)'):
+        if cur_ref.startswith(u'(*)'):
             ref_orig = self.get_pure_ref(cur_ref)
             rows = self.GetNumberRows()
             for cur_row in range(rows):
-                cur_row_ref = self.GetCellValue(cur_row, 2).rstrip('*')
-                if cur_row_ref.startswith('(' + ref_orig + ')'):
+                cur_row_ref = self.GetCellValue(cur_row, 2).rstrip(u'*')
+                if cur_row_ref.startswith(u'(' + ref_orig + u')'):
                     # Reference gets only adjusting flag
                     if col == 2:
-                        if value.endswith('*'):
-                            value = cur_row_ref + '*'
+                        if value.endswith(u'*'):
+                            value = cur_row_ref + u'*'
                         else:
                             value = cur_row_ref
                     self.SetCellValue(cur_row, col, value)
 
-    def get_pure_ref(self, ref):
+    @staticmethod
+    def get_pure_ref(ref):
         """
         Remove additional markers (like (R321)R123, (*)R321, C45* etc.)
         and return pure value of the reference.
 
         """
-        pure_ref = ref.split(')')[-1]
-        pure_ref = pure_ref.rstrip('*')
+        pure_ref = ref.split(u')')[-1]
+        pure_ref = pure_ref.rstrip(u'*')
         return pure_ref
 
-    def comp_is_copy(self, ref):
+    @staticmethod
+    def comp_is_copy(ref):
         """
         Return true if component is a copy of another (one component with
         different references).
 
         """
-        if '(' in ref and ')' in ref and not ref.startswith('(*)'):
-            return True
-        else:
-            return False
+        return bool(u'(' in ref and u')' in ref and not ref.startswith(u'(*)'))
 
     def update_attributes(self):
         """
@@ -1055,7 +1062,12 @@ class Grid(wx.grid.Grid):
                 elif col == 2 or \
                         (col == 4 and self.window.library):
                     self.SetReadOnly(row, col)
-                    self.SetCellAlignment(row, col, wx.ALIGN_CENTRE_HORIZONTAL, wx.ALIGN_CENTRE_VERTICAL)
+                    self.SetCellAlignment(
+                        row,
+                        col,
+                        wx.ALIGN_CENTRE_HORIZONTAL,
+                        wx.ALIGN_CENTRE_VERTICAL
+                        )
                 # Copies of the component (like "(R321)R123") is read only
                 if self.comp_is_copy(ref_value):
                     self.SetReadOnly(row, col)
@@ -1121,16 +1133,16 @@ class Grid(wx.grid.Grid):
 
         """
         col_num = self.GetNumberCols()
-        choices = [[]] # First column with checkboxes skiped
+        choices = [[]] # First column with checkboxes skipped
         for col in range(1, col_num):
-            if not col in columns or col == 2:
+            if col not in columns or col == 2:
                 choices.append([])
                 continue
             else:
                 column_choices = []
                 for row in rows:
                     cell_value = self.GetCellValue(row, col)
-                    if cell_value != '' and not cell_value in column_choices:
+                    if cell_value and cell_value not in column_choices:
                         column_choices.append(cell_value)
                 column_choices.sort()
                 choices.append(column_choices)
@@ -1177,7 +1189,7 @@ class Grid(wx.grid.Grid):
         # Copies of the component (like "(R321)R123") is read only
         ref = self.GetCellValue(event.GetRow(), 2)
         if self.comp_is_copy(ref):
-            matches = re.search(r'\((.+)\)(.+)\*?', ref)
+            matches = re.search(ur'\((.+)\)(.+)\*?', ref)
             ref_orig = matches.groups()[0]
             ref_copy = matches.groups()[1]
             if wx.MessageBox(
@@ -1186,16 +1198,15 @@ class Grid(wx.grid.Grid):
                     u'всегда равны полям оригинального компонента.\n\n' \
                     u'Перейти к редактированию оригинального компонента ' \
                     u'"{orig}"?'.format(
-                        copy = ref_copy,
-                        orig = ref_orig
+                        copy=ref_copy,
+                        orig=ref_orig
                         ),
                     u'Внимание!',
-                    wx.ICON_QUESTION|wx.YES_NO, self
-                    ) == wx.YES:
+                    wx.ICON_QUESTION|wx.YES_NO, self) == wx.YES:
                 rows = self.GetNumberRows()
                 for row in range(rows):
                     row_ref = self.GetCellValue(row, 2)
-                    if row_ref == '(*)' + ref_orig:
+                    if row_ref == u'(*)' + ref_orig:
                         self.SetGridCursor(row, event.GetCol())
                         self.SelectRow(row)
                         self.MakeCellVisible(row, event.GetCol())
@@ -1296,7 +1307,6 @@ class Grid(wx.grid.Grid):
         Setup cell editor after creating.
 
         """
-        row = event.GetRow()
         col = event.GetCol()
         cell_editor = event.GetControl()
         row_num = self.GetNumberRows()
@@ -1309,7 +1319,7 @@ class Grid(wx.grid.Grid):
         std_values = self.window.values_dict[col_title.lower()]
         cell_editor.set_items(choices[col], std_values)
 
-    def on_editor_shown(self, event):
+    def on_editor_shown(self, event):  # pylint: disable=unused-argument
         """
         Create new default editor.
 

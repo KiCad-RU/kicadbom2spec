@@ -15,20 +15,27 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
+"""
+Python-wrapper for KiCad's Schematics and Libraries.
+
+"""
+
 import codecs
 
 
 class ParsingError(Exception):
+    """
+    Exception for files with unsupported content.
 
-    def __init__(self, value):
+    """
+
+    def __init__(self, value):  # pylint: disable=super-init-not-called
         self.value = value
 
     def __str__(self):
-        if isinstance(self.value, unicode) \
-                or isinstance(self.value, str):
+        if isinstance(self.value, (str, unicode)):  # pylint: disable=undefined-variable
             return self.value
-        else:
-            return repr(self.value)
+        return repr(self.value)
 
 
 class Schematic(object):
@@ -58,7 +65,7 @@ class Schematic(object):
         self.sch_name = sch_name
         self.load(self.sch_name)
 
-    def load(self, sch_name):
+    def load(self, sch_name):  # pylint: disable=too-many-branches
         """
         Open KiCad Schematic file and read all information from it.
 
@@ -67,6 +74,7 @@ class Schematic(object):
             sch_name (unicode) - full name of KiCad Schematic file;
 
         """
+        self.sch_name = sch_name
         self.libs = self.Libs(self)
         self.eelayer = []
         self.items = []
@@ -81,20 +89,19 @@ class Schematic(object):
             if sch_line.startswith(u'$'):
                 if sch_line.startswith(u'$EndSCHEMATC'):
                     return
-                else:
-                    item = sch_line
-                    item_val = u''
-                    while not sch_line.startswith(u'$End'):
-                        item_val += sch_line
-                        sch_line = sch_file.readline()
-                    if item.startswith(u'$Descr'):
-                        self.descr = self.Descr(self, item_val)
-                    elif item.startswith(u'$Comp'):
-                        self.items.append(self.Comp(self, item_val))
-                    elif item.startswith(u'$Sheet'):
-                        self.items.append(self.Sheet(self, item_val))
-                    elif item.startswith(u'$Bitmap'):
-                        self.items.append(self.Bitmap(self, item_val))
+                item = sch_line
+                item_val = u''
+                while not sch_line.startswith(u'$End'):
+                    item_val += sch_line
+                    sch_line = sch_file.readline()
+                if item.startswith(u'$Descr'):
+                    self.descr = self.Descr(self, item_val)
+                elif item.startswith(u'$Comp'):
+                    self.items.append(self.Comp(self, item_val))
+                elif item.startswith(u'$Sheet'):
+                    self.items.append(self.Sheet(self, item_val))
+                elif item.startswith(u'$Bitmap'):
+                    self.items.append(self.Bitmap(self, item_val))
             elif sch_line.startswith(u'Connection'):
                 self.items.append(self.Connection(self, sch_line))
             elif sch_line.startswith(u'NoConn'):
@@ -111,7 +118,7 @@ class Schematic(object):
             elif sch_line.startswith(u'LIBS:'):
                 self.libs.add(sch_line)
             elif sch_line.startswith(u'EELAYER') and not u'END' in sch_line:
-                    self.eelayer.append(self.Eelayer(self, sch_line))
+                self.eelayer.append(self.Eelayer(self, sch_line))
 
     def save(self, sch_name=None):
         """
@@ -128,10 +135,10 @@ class Schematic(object):
         sch_file = codecs.open(sch_file_name, 'w', 'utf-8')
 
         first_line = u'{stamp} {head} {version}\n'.format(
-                         stamp = self.EESCHEMA_FILE_STAMP,
-                         head = self.SCHEMATIC_HEAD_STRING,
-                         version = self.version
-             )
+            stamp=self.EESCHEMA_FILE_STAMP,
+            head=self.SCHEMATIC_HEAD_STRING,
+            version=self.version
+            )
         sch_file.write(first_line)
 
         self.libs.save(sch_file)
@@ -197,15 +204,15 @@ class Schematic(object):
                 sch_file.write(line)
 
 
-    class Eelayer(object):
+    class Eelayer(object):  # pylint: disable=too-few-public-methods
         """
         Description of EESchema layers (not used in Eeschema).
 
         Attributes:
 
             schematic (Schematic) - parent schematic;
-            nn (int) - number of layers;
-            mm (int) - current layer.
+            count (int) - number of layers;
+            current (int) - current layer.
 
         """
 
@@ -222,8 +229,8 @@ class Schematic(object):
             self.schematic = schematic
             str_eelayer = str_eelayer.lstrip(u'EELAYER ')
             parts = split_line(str_eelayer)
-            self.nn = int(parts[0])
-            self.mm = int(parts[1])
+            self.count = int(parts[0])
+            self.current = int(parts[1])
 
         def save(self, sch_file):
             """
@@ -234,14 +241,14 @@ class Schematic(object):
                 sch_file (file) - file for writing.
 
             """
-            line = u'EELAYER {nn} {mm}\n'.format(
-                        nn = self.nn,
-                        mm = self.mm
+            line = u'EELAYER {n} {c}\n'.format(
+                n=self.count,
+                c=self.current
                 )
             sch_file.write(line)
 
 
-    class Descr(object):
+    class Descr(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
         """
         Title block description.
 
@@ -266,7 +273,7 @@ class Schematic(object):
 
         """
 
-        def __init__(self, schematic, str_descr):
+        def __init__(self, schematic, str_descr):  # pylint: disable=too-many-branches
             """
             Extracts title block description form strings.
 
@@ -284,11 +291,9 @@ class Schematic(object):
                     self.sheet_format = parts[1]
                     self.sheet_size_x = int(parts[2])
                     self.sheet_size_y = int(parts[3])
-                    if len(parts) > 3 \
-                            and parts[-1] == u'portrait':
-                        self.portrait = True
-                    else:
-                        self.portrait = False
+                    self.portrait = False
+                    if len(parts) > 3:
+                        self.portrait = bool(parts[-1] == u'portrait')
                 elif parts[0] == u'encoding':
                     self.encoding = parts[1]
                 elif parts[0] == u'Sheet':
@@ -332,26 +337,26 @@ class Schematic(object):
                     u'Comment3 "{comment3}"\n' \
                     u'Comment4 "{comment4}"\n' \
                     u'$EndDescr\n'.format(
-                        paper = self.sheet_format,
-                        width = self.sheet_size_x,
-                        height = self.sheet_size_y,
-                        portrait = {True:u' portrait', False:u''}[self.portrait],
-                        encoding = self.encoding,
-                        number = self.sheet_number,
-                        count = self.sheet_count,
-                        title = self.title,
-                        date = self.date,
-                        rev = self.rev,
-                        comp = self.comp,
-                        comment1 = self.comment1,
-                        comment2 = self.comment2,
-                        comment3 = self.comment3,
-                        comment4 = self.comment4
-                )
+                        paper=self.sheet_format,
+                        width=self.sheet_size_x,
+                        height=self.sheet_size_y,
+                        portrait={True:u' portrait', False:u''}[self.portrait],
+                        encoding=self.encoding,
+                        number=self.sheet_number,
+                        count=self.sheet_count,
+                        title=self.title,
+                        date=self.date,
+                        rev=self.rev,
+                        comp=self.comp,
+                        comment1=self.comment1,
+                        comment2=self.comment2,
+                        comment3=self.comment3,
+                        comment4=self.comment4
+                        )
             sch_file.write(descr)
 
 
-    class Comp(object):
+    class Comp(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
         """
         Description of the component.
 
@@ -414,9 +419,9 @@ class Schematic(object):
                 elif parts[0].startswith(u'\t') \
                         or parts[0].startswith(u' '):
                     test_str = u'\t{unit:<4} {pos_x:<4} {pos_y:<4}'.format(
-                                   unit = self.unit,
-                                   pos_x = self.pos_x,
-                                   pos_y = self.pos_y
+                        unit=self.unit,
+                        pos_x=self.pos_x,
+                        pos_y=self.pos_y
                         )
                     if line == test_str:
                         # Just check first line that starts with tab or space.
@@ -442,21 +447,21 @@ class Schematic(object):
                        u'L {name} {ref}\n' \
                        u'U {unit} {convert} {timestamp}\n' \
                        u'P {pos_x} {pos_y}\n'.format(
-                           name = self.name,
-                           ref = self.ref,
-                           unit = self.unit,
-                           convert = {True:u'2', False:u'1'}[self.convert],
-                           timestamp = self.timestamp,
-                           pos_x = self.pos_x,
-                           pos_y = self.pos_y
-                )
+                           name=self.name,
+                           ref=self.ref,
+                           unit=self.unit,
+                           convert={True:u'2', False:u'1'}[self.convert],
+                           timestamp=self.timestamp,
+                           pos_x=self.pos_x,
+                           pos_y=self.pos_y
+                           )
             sch_file.write(comp_str)
             if hasattr(self, u'path_and_ref'):
-                for item in (self.path_and_ref):
+                for item in self.path_and_ref:
                     path_and_ref_str = u'AR Path="{path}" Ref="{ref}"  Part="{part}" \n'.format(
-                                path = item[0],
-                                ref = item[1],
-                                part = item[2]
+                        path=item[0],
+                        ref=item[1],
+                        part=item[2]
                         )
                     sch_file.write(path_and_ref_str)
             for field in self.fields:
@@ -464,15 +469,15 @@ class Schematic(object):
             comp_str = u'\t{unit:<4} {pos_x:<4} {pos_y:<4}\n' \
                        u'\t{or_m[0]:<4} {or_m[1]:<4} {or_m[2]:<4} {or_m[3]:<4}\n' \
                        u'$EndComp\n'.format(
-                           unit = self.unit,
-                           pos_x = self.pos_x,
-                           pos_y = self.pos_y,
-                           or_m = self.orient_matrix
-                )
+                           unit=self.unit,
+                           pos_x=self.pos_x,
+                           pos_y=self.pos_y,
+                           or_m=self.orient_matrix
+                           )
             sch_file.write(comp_str)
 
 
-        class Field(object):
+        class Field(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
             """
             Description of the field of the component.
 
@@ -558,24 +563,24 @@ class Schematic(object):
                 name = u''
                 if self.name:
                     name = u' "{}"'.format(self.name)
-                field_str = u'F {number} "{text}" {orient} {pos_x:<3} {pos_y:<3} {size:<3} {flags} {hjustify} {vjustify}{italic}{bold}{name}\n'.format(
-                                number = self.number,
-                                text = vtext,
-                                orient = self.orientation,
-                                pos_x = self.pos_x,
-                                pos_y = self.pos_y,
-                                size = self.size,
-                                flags = self.flags,
-                                hjustify = self.hjustify,
-                                vjustify = self.vjustify,
-                                italic = {True:u'I', False:u'N'}[self.italic],
-                                bold = {True:u'B', False:u'N'}[self.bold],
-                                name = name
+                field_str = u'F {number} "{text}" {orient} {pos_x:<3} {pos_y:<3} {size:<3} {flags} {hjustify} {vjustify}{italic}{bold}{name}\n'.format(  # pylint: disable=line-too-long
+                    number=self.number,
+                    text=vtext,
+                    orient=self.orientation,
+                    pos_x=self.pos_x,
+                    pos_y=self.pos_y,
+                    size=self.size,
+                    flags=self.flags,
+                    hjustify=self.hjustify,
+                    vjustify=self.vjustify,
+                    italic={True:u'I', False:u'N'}[self.italic],
+                    bold={True:u'B', False:u'N'}[self.bold],
+                    name=name
                     )
                 sch_file.write(field_str)
 
 
-    class Sheet(object):
+    class Sheet(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
         """
         Description of the hierarchical sheet.
 
@@ -641,16 +646,16 @@ class Schematic(object):
                         u'U {timestamp}\n' \
                         u'F0 "{name}" {name_size}\n' \
                         u'F1 "{file_name}" {file_name_size}\n'.format(
-                            pos_x = self.pos_x,
-                            pos_y = self.pos_y,
-                            dim_x = self.dim_x,
-                            dim_y = self.dim_y,
-                            timestamp = self.timestamp,
-                            name = self.name,
-                            name_size = self.name_size,
-                            file_name = self.file_name,
-                            file_name_size = self.file_name_size
-                )
+                            pos_x=self.pos_x,
+                            pos_y=self.pos_y,
+                            dim_x=self.dim_x,
+                            dim_y=self.dim_y,
+                            timestamp=self.timestamp,
+                            name=self.name,
+                            name_size=self.name_size,
+                            file_name=self.file_name,
+                            file_name_size=self.file_name_size
+                            )
             sch_file.write(sheet_str)
             for field in self.fields:
                 field.save(sch_file)
@@ -658,7 +663,7 @@ class Schematic(object):
             sch_file.write(sheet_str)
 
 
-        class Field(object):
+        class Field(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
             """
             Description of field of the hierarchical sheet.
 
@@ -713,19 +718,19 @@ class Schematic(object):
                     sch_file (file) - file for writing.
 
                 """
-                field_str = u'F{number} "{text}" {form} {side} {pos_x:<3} {pos_y:<3} {dim:<3}\n'.format(
-                                number = self.number,
-                                text = self.text,
-                                form = self.form,
-                                side = self.side,
-                                pos_x = self.pos_x,
-                                pos_y = self.pos_y,
-                                dim = self.dimension
+                field_str = u'F{number} "{text}" {form} {side} {pos_x:<3} {pos_y:<3} {dim:<3}\n'.format(  # pylint: disable=line-too-long
+                    number=self.number,
+                    text=self.text,
+                    form=self.form,
+                    side=self.side,
+                    pos_x=self.pos_x,
+                    pos_y=self.pos_y,
+                    dim=self.dimension
                     )
                 sch_file.write(field_str)
 
 
-    class Bitmap(object):
+    class Bitmap(object):  # pylint: disable=too-few-public-methods
         """
         Description of the bitmap.
 
@@ -758,8 +763,8 @@ class Schematic(object):
                     if line.startswith(u'EndData'):
                         break
                     line = line.rstrip(u' ')
-                    bytes = split_line(line)
-                    for byte in bytes:
+                    byte_array = split_line(line)
+                    for byte in byte_array:
                         if byte == u'$EndBitmap':
                             # Fix for bug in Eeschema:
                             # marker '$EndBitmap' present in data block.
@@ -800,15 +805,15 @@ class Schematic(object):
                          u'{data}\n' \
                          u'EndData\n' \
                          u'$EndBitmap\n'.format(
-                             pos_x = self.pos_x,
-                             pos_y = self.pos_y,
-                             scale = self.scale,
-                             data = data_str
-                )
+                             pos_x=self.pos_x,
+                             pos_y=self.pos_y,
+                             scale=self.scale,
+                             data=data_str
+                             )
             sch_file.write(bitmap_str)
 
 
-    class Connection(object):
+    class Connection(object):  # pylint: disable=too-few-public-methods
         """
         Description of the connection (junction) or no connection position.
 
@@ -848,14 +853,14 @@ class Schematic(object):
 
             """
             connection_str = u'{conn_type} ~ {pos_x:<4} {pos_y:<4}\n'.format(
-                                 conn_type = self.type,
-                                 pos_x = self.pos_x,
-                                 pos_y = self.pos_y
+                conn_type=self.type,
+                pos_x=self.pos_x,
+                pos_y=self.pos_y
                 )
             sch_file.write(connection_str)
 
 
-    class Text(object):
+    class Text(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
         """
         Description of the text label.
 
@@ -923,21 +928,21 @@ class Schematic(object):
             shape = u''
             if self.type in (u'GLabel', u'HLabel'):
                 shape = u' ' + self.shape
-            text_str = u'Text {label_type} {pos_x:<4} {pos_y:<4} {orient:<4} {dim:<4}{shape} {italic} {bold}\n{text}\n'.format(
-                           label_type = self.type,
-                           pos_x = self.pos_x,
-                           pos_y = self.pos_y,
-                           orient = self.orientation,
-                           dim = self.dimension,
-                           shape = shape,
-                           italic = {True:u'Italic', False:u'~'}[self.italic],
-                           bold = self.bold,
-                           text = self.text
+            text_str = u'Text {label_type} {pos_x:<4} {pos_y:<4} {orient:<4} {dim:<4}{shape} {italic} {bold}\n{text}\n'.format(  # pylint: disable=line-too-long
+                label_type=self.type,
+                pos_x=self.pos_x,
+                pos_y=self.pos_y,
+                orient=self.orientation,
+                dim=self.dimension,
+                shape=shape,
+                italic={True:u'Italic', False:u'~'}[self.italic],
+                bold=self.bold,
+                text=self.text
                 )
             sch_file.write(text_str)
 
 
-    class Wire(object):
+    class Wire(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
         """
         Description of the wire.
 
@@ -1008,18 +1013,18 @@ class Schematic(object):
                 custom_options += u' ' + self.color
             wire_str = u'Wire {wire_type} Line{custom}\n' \
                        u'\t{start_x:<4} {start_y:<4} {end_x:<4} {end_y:<4}\n'.format(
-                           wire_type = self.type,
-                           custom = custom_options,
-                           start_x = self.start_x,
-                           start_y = self.start_y,
-                           end_x = self.end_x,
-                           end_y = self.end_y
-                )
+                           wire_type=self.type,
+                           custom=custom_options,
+                           start_x=self.start_x,
+                           start_y=self.start_y,
+                           end_x=self.end_x,
+                           end_y=self.end_y
+                           )
             sch_file.write(wire_str)
 
 
 
-    class Entry(object):
+    class Entry(object):  # pylint: disable=too-few-public-methods
         """
         Description of the entry.
 
@@ -1047,7 +1052,7 @@ class Schematic(object):
             self.schematic = schematic
             lines = str_entry.splitlines()
             parts = split_line(lines[0])
-            self.type = u'{type_parts[1]} {type_parts[2]}'.format(type_parts = parts)
+            self.type = u'{type_parts[1]} {type_parts[2]}'.format(type_parts=parts)  # pylint: disable=invalid-format-index
             parts = split_line(lines[1])
             self.start_x = int(parts[0].lstrip(u'\t'))
             self.start_y = int(parts[1])
@@ -1065,12 +1070,12 @@ class Schematic(object):
             """
             entry_str = u'Entry {entry_type}\n' \
                         u'\t{start_x:<4} {start_y:<4} {end_x:<4} {end_y:<4}\n'.format(
-                           entry_type = self.type,
-                           start_x = self.start_x,
-                           start_y = self.start_y,
-                           end_x = self.end_x,
-                           end_y = self.end_y
-                )
+                            entry_type=self.type,
+                            start_x=self.start_x,
+                            start_y=self.start_y,
+                            end_x=self.end_x,
+                            end_y=self.end_y
+                            )
             sch_file.write(entry_str)
 
 
@@ -1107,6 +1112,7 @@ class Library(object):
             lib_name (unicode) - full name of KiCad Schematic library file;
 
         """
+        self.lib_name = lib_name
         self.components = []
 
         lib_file = codecs.open(self.lib_name, 'r', 'utf-8')
@@ -1131,7 +1137,7 @@ class Library(object):
             elif lib_line.startswith(u'#encoding'):
                 self.encoding = split_line(lib_line)[-1].replace(u'\n', u'')
             elif lib_line.startswith(u'#End Library'):
-                    return
+                return
 
     def save(self, new_name=None):
         """
@@ -1149,11 +1155,11 @@ class Library(object):
 
         header = u'{file_id} {major}.{minor}\n' \
                  u'#encoding {encoding}\n'.format(
-                     file_id = self.LIBFILE_IDENT,
-                     major = self.version_major,
-                     minor = self.version_minor,
-                     encoding = self.encoding
-            )
+                     file_id=self.LIBFILE_IDENT,
+                     major=self.version_major,
+                     minor=self.version_minor,
+                     encoding=self.encoding
+                     )
         lib_file.write(header)
         for component in self.components:
             component.save(lib_file)
@@ -1161,7 +1167,7 @@ class Library(object):
         lib_file.close()
 
 
-    class Component(object):
+    class Component(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
         """
         Description of the component of a library.
 
@@ -1180,12 +1186,12 @@ class Library(object):
             fields (list of Field) - list of component fields;
             aliases (list of str) - list of aliases (exists only if the component has alias names);
             fplist (list of str) - list of footprints assigned to component (if specified);
-            graphic_elements (list of Polygon, Rectangle, Circle, Arc, Text, Pin) - list of all graphical
-        elements of a component.
+            graphic_elements (list of Polygon, Rectangle, Circle, Arc, Text,
+        Pin) - list of all graphical elements of a component.
 
         """
 
-        def __init__(self, library, str_component):
+        def __init__(self, library, str_component):  # pylint: disable=too-many-branches
             """
             Create description of library component from strings.
 
@@ -1207,7 +1213,7 @@ class Library(object):
                     if parts[0] == u'$ENDFPLIST':
                         footprint = False
                     else:
-                        self.fplist.append(parts[0])
+                        self.fplist.append(parts[0])  # pylint: disable=access-member-before-definition
                 elif parts[0] == u'DEF':
                     self.name = parts[1]
                     self.reference = parts[2]
@@ -1259,17 +1265,17 @@ class Library(object):
             component_str = u'#\n' \
                             u'# {nick}\n' \
                             u'#\n' \
-                            u'DEF {name} {ref} 0 {offset} {pin_num} {pin_name} {unit_count} {units_locked} {power_flag}\n'.format(
-                                nick = nick,
-                                name = self.name,
-                                ref = self.reference,
-                                offset = str(self.text_offset),
-                                pin_num = {True:u'Y', False:u'N'}[self.draw_pinnumber],
-                                pin_name = {True:u'Y', False:u'N'}[self.draw_pinname],
-                                unit_count = str(self.unit_count),
-                                units_locked = {True:u'L', False:u'F'}[self.units_locked],
-                                power_flag = {True:u'P', False:u'N'}[self.power_flag]
-                )
+                            u'DEF {name} {ref} 0 {offset} {pin_num} {pin_name} {unit_count} {units_locked} {power_flag}\n'.format(  # pylint: disable=line-too-long
+                                nick=nick,
+                                name=self.name,
+                                ref=self.reference,
+                                offset=str(self.text_offset),
+                                pin_num={True:u'Y', False:u'N'}[self.draw_pinnumber],
+                                pin_name={True:u'Y', False:u'N'}[self.draw_pinname],
+                                unit_count=str(self.unit_count),
+                                units_locked={True:u'L', False:u'F'}[self.units_locked],
+                                power_flag={True:u'P', False:u'N'}[self.power_flag]
+                                )
             lib_file.write(component_str)
             for field in self.fields:
                 field.save(lib_file)
@@ -1278,8 +1284,8 @@ class Library(object):
                 component_str += u'ALIAS {}\n'.format(u' '.join(self.aliases))
             if hasattr(self, u'fplist'):
                 component_str += u'$FPLIST\n'
-                for fp in self.fplist:
-                    component_str += u' {}\n'.format(fp)
+                for footprint in self.fplist:
+                    component_str += u' {}\n'.format(footprint)
                 component_str += u'$ENDFPLIST\n'
             component_str += u'DRAW\n'
             lib_file.write(component_str)
@@ -1290,7 +1296,7 @@ class Library(object):
             lib_file.write(component_str)
 
 
-        class Field(object):
+        class Field(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
             """
             Description of the field of the library component.
 
@@ -1368,24 +1374,24 @@ class Library(object):
                 name = u''
                 if self.name:
                     name = u' "{}"'.format(self.name)
-                field_str = u'F{number} "{text}" {pos_x} {pos_y} {size} {orient} {visibility} {hjustify} {vjustify}{italic}{bold}{name}\n'.format(
-                                number = self.number,
-                                text = self.text,
-                                pos_x = self.pos_x,
-                                pos_y = self.pos_y,
-                                size = self.diamension,
-                                orient = self.orientation,
-                                visibility = {True:u'V', False:u'I'}[self.visibility],
-                                hjustify = self.hjustify,
-                                vjustify = self.vjustify,
-                                italic = {True:u'I', False:u'N'}[self.italic],
-                                bold = {True:u'B', False:u'N'}[self.bold],
-                                name = name
+                field_str = u'F{number} "{text}" {pos_x} {pos_y} {size} {orient} {visibility} {hjustify} {vjustify}{italic}{bold}{name}\n'.format(  # pylint: disable=line-too-long
+                    number=self.number,
+                    text=self.text,
+                    pos_x=self.pos_x,
+                    pos_y=self.pos_y,
+                    size=self.diamension,
+                    orient=self.orientation,
+                    visibility={True:u'V', False:u'I'}[self.visibility],
+                    hjustify=self.hjustify,
+                    vjustify=self.vjustify,
+                    italic={True:u'I', False:u'N'}[self.italic],
+                    bold={True:u'B', False:u'N'}[self.bold],
+                    name=name
                     )
                 lib_file.write(field_str)
 
 
-        class Polygon(object):
+        class Polygon(object):  # pylint: disable=too-few-public-methods
             """
             Description of the polygon.
 
@@ -1410,17 +1416,17 @@ class Library(object):
                     str_polygon (unicode) - text line from KiCad Schematic library file.
 
                 """
+                self.component = component
                 items = split_line(str_polygon)
                 self.unit = int(items[2])
                 self.convert = int(items[3])
                 self.thickness = int(items[4])
-                point_index = 5
+                offset = 5
                 self.points = []
                 for point in range(int(items[1])):
-                    x = items[point_index]
-                    y = items[point_index + 1]
-                    self.points.append([x, y])
-                    point_index += 2
+                    x_pos = items[offset + point*2]
+                    y_pos = items[offset + point*2 + 1]
+                    self.points.append([x_pos, y_pos])
                 if items[-1] in (u'F', u'f', u'N'):
                     self.fill = items[-1]
                 else:
@@ -1436,18 +1442,18 @@ class Library(object):
 
                 """
                 polygon_str = u'P {p_count} {unit} {convert} {thickness}'.format(
-                                  p_count = len(self.points),
-                                  unit = self.unit,
-                                  convert = self.convert,
-                                  thickness = self.thickness
+                    p_count=len(self.points),
+                    unit=self.unit,
+                    convert=self.convert,
+                    thickness=self.thickness
                     )
                 for point in self.points:
-                    polygon_str += u' {p[0]} {p[1]}'.format(p = point)
+                    polygon_str += u' {p[0]} {p[1]}'.format(p=point)
                 polygon_str += u' {}\n'.format(self.fill)
                 lib_file.write(polygon_str)
 
 
-        class Rectangle(object):
+        class Rectangle(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
             """
             Description of the rectangle.
 
@@ -1498,20 +1504,20 @@ class Library(object):
                     lib_file (file) - file for writing.
 
                 """
-                rectangle_str = u'S {start_x} {start_y} {end_x} {end_y} {unit} {convert} {thickness} {fill}\n'.format(
-                                    start_x = self.start_x,
-                                    start_y = self.start_y,
-                                    end_x = self.end_x,
-                                    end_y = self.end_y,
-                                    unit = self.unit,
-                                    convert = self.convert,
-                                    thickness = self.thickness,
-                                    fill = self.fill
+                rectangle_str = u'S {start_x} {start_y} {end_x} {end_y} {unit} {convert} {thickness} {fill}\n'.format(  # pylint: disable=line-too-long
+                    start_x=self.start_x,
+                    start_y=self.start_y,
+                    end_x=self.end_x,
+                    end_y=self.end_y,
+                    unit=self.unit,
+                    convert=self.convert,
+                    thickness=self.thickness,
+                    fill=self.fill
                     )
                 lib_file.write(rectangle_str)
 
 
-        class Circle(object):
+        class Circle(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
             """
             Description of the circle.
 
@@ -1560,19 +1566,19 @@ class Library(object):
                     lib_file (file) - file for writing.
 
                 """
-                circle_str = u'C {pos_x} {pos_y} {radius} {unit} {convert} {thickness} {fill}\n'.format(
-                                 pos_x = self.pos_x,
-                                 pos_y = self.pos_y,
-                                 radius = self.radius,
-                                 unit = self.unit,
-                                 convert = self.convert,
-                                 thickness = self.thickness,
-                                 fill = self.fill
+                circle_str = u'C {pos_x} {pos_y} {radius} {unit} {convert} {thickness} {fill}\n'.format(  # pylint: disable=line-too-long
+                    pos_x=self.pos_x,
+                    pos_y=self.pos_y,
+                    radius=self.radius,
+                    unit=self.unit,
+                    convert=self.convert,
+                    thickness=self.thickness,
+                    fill=self.fill
                     )
                 lib_file.write(circle_str)
 
 
-        class Arc(object):
+        class Arc(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
             """
             Description of the arc.
 
@@ -1645,27 +1651,27 @@ class Library(object):
                         and hasattr(self, 'end_x') \
                         and hasattr(self, 'end_y'):
                     start_end_points = ' {start_x} {start_y} {end_x} {end_y}'.format(
-                            start_x = self.start_x,
-                            start_y = self.start_y,
-                            end_x = self.end_x,
-                            end_y = self.end_y
+                        start_x=self.start_x,
+                        start_y=self.start_y,
+                        end_x=self.end_x,
+                        end_y=self.end_y
                         )
-                arc_str = u'A {pos_x} {pos_y} {radius} {start} {end} {unit} {convert} {thickness} {fill}{points}\n'.format(
-                              pos_x = self.pos_x,
-                              pos_y = self.pos_y,
-                              radius = self.radius,
-                              start = self.start,
-                              end = self.end,
-                              unit = self.unit,
-                              convert = self.convert,
-                              thickness = self.thickness,
-                              fill = self.fill,
-                              points = start_end_points
+                arc_str = u'A {pos_x} {pos_y} {radius} {start} {end} {unit} {convert} {thickness} {fill}{points}\n'.format(  # pylint: disable=line-too-long
+                    pos_x=self.pos_x,
+                    pos_y=self.pos_y,
+                    radius=self.radius,
+                    start=self.start,
+                    end=self.end,
+                    unit=self.unit,
+                    convert=self.convert,
+                    thickness=self.thickness,
+                    fill=self.fill,
+                    points=start_end_points
                     )
                 lib_file.write(arc_str)
 
 
-        class Text(object):
+        class Text(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
             """
             Description of the text.
 
@@ -1737,24 +1743,24 @@ class Library(object):
                 text = self.text
                 if u'~' in text or u"''" in text:
                     text = u'"{}"'.format(text)
-                text_str = u'T {angle} {pos_x} {pos_y} {size} {attr} {unit} {convert} {text} {italic} {bold} {hjustify} {vjustify}\n'.format(
-                               angle = self.angle,
-                               pos_x = self.pos_x,
-                               pos_y = self.pos_y,
-                               size = self.size,
-                               attr = self.attr,
-                               unit = self.unit,
-                               convert = self.convert,
-                               text = text,
-                               italic = {True:u'Italic', False:u'Normal'}[self.italic],
-                               bold = {True:1, False:0}[self.bold],
-                               hjustify = self.hjustify,
-                               vjustify = self.vjustify
+                text_str = u'T {angle} {pos_x} {pos_y} {size} {attr} {unit} {convert} {text} {italic} {bold} {hjustify} {vjustify}\n'.format(  # pylint: disable=line-too-long
+                    angle=self.angle,
+                    pos_x=self.pos_x,
+                    pos_y=self.pos_y,
+                    size=self.size,
+                    attr=self.attr,
+                    unit=self.unit,
+                    convert=self.convert,
+                    text=text,
+                    italic={True:u'Italic', False:u'Normal'}[self.italic],
+                    bold={True:1, False:0}[self.bold],
+                    hjustify=self.hjustify,
+                    vjustify=self.vjustify
                     )
                 lib_file.write(text_str)
 
 
-        class Pin(object):
+        class Pin(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
             """
             Description of the pin.
 
@@ -1836,19 +1842,19 @@ class Library(object):
                 shape = u''
                 if hasattr(self, u'shape'):
                     shape = u' {}'.format(self.shape)
-                pin_str = u'X {name} {num} {pos_x} {pos_y} {length} {orient} {num_size} {name_size} {unit} {convert} {el_type}{shape}\n'.format(
-                              name = self.name,
-                              num = self.number,
-                              pos_x = self.pos_x,
-                              pos_y = self.pos_y,
-                              length = self.length,
-                              orient = self.orientation,
-                              num_size = self.number_size,
-                              name_size = self.name_size,
-                              unit = self.unit,
-                              convert = self.convert,
-                              el_type = self.electric_type,
-                              shape = shape
+                pin_str = u'X {name} {num} {pos_x} {pos_y} {length} {orient} {num_size} {name_size} {unit} {convert} {el_type}{shape}\n'.format(  # pylint: disable=line-too-long
+                    name=self.name,
+                    num=self.number,
+                    pos_x=self.pos_x,
+                    pos_y=self.pos_y,
+                    length=self.length,
+                    orient=self.orientation,
+                    num_size=self.number_size,
+                    name_size=self.name_size,
+                    unit=self.unit,
+                    convert=self.convert,
+                    el_type=self.electric_type,
+                    shape=shape
                     )
                 lib_file.write(pin_str)
 

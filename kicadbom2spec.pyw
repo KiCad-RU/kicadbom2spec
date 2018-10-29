@@ -34,13 +34,14 @@ import wx.grid
 
 from odf.opendocument import __version__ as odfpy_version
 
+import gui
+
+from controls import Grid
+from kicadsch import Schematic, Library, ParsingError
+from complist import CompList, REF_REGEXP
+
 EXEC_PATH = os.getcwd()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-import gui
-from complist import *
-from controls import *
-from kicadsch import *
 
 # Set default encoding
 reload(sys)
@@ -54,7 +55,7 @@ SETTINGS_SEPARATOR = ';;;'
 ID_RECENT = 2000
 
 
-class Window(gui.MainFrame):
+class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, too-many-public-methods
     """
     Graphical user interface for kicadbom2spec.
 
@@ -68,10 +69,10 @@ class Window(gui.MainFrame):
         gui.MainFrame.__init__(self, parent)
 
         # FIXME: temporary fix for wx bug (https://trac.wxwidgets.org/ticket/16440)
-        bugDialog = wx.Dialog(self)
-        bugDialog.SetSize(wx.Size(1, 1))
-        bugDialog.Bind(wx.EVT_IDLE, lambda event: bugDialog.Destroy())
-        bugDialog.Show()
+        bug_dialog = wx.Dialog(self)
+        bug_dialog.SetSize(wx.Size(1, 1))
+        bug_dialog.Bind(wx.EVT_IDLE, lambda event: bug_dialog.Destroy())
+        bug_dialog.Show()
 
         # Events
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_toolbar)
@@ -107,8 +108,8 @@ class Window(gui.MainFrame):
 
         # GUI
         self.toolbar.InsertStretchableSpace(
-                self.toolbar.GetToolPos(gui.ID_COMP_FIELDS_PANEL)
-                )
+            self.toolbar.GetToolPos(gui.ID_COMP_FIELDS_PANEL)
+            )
         self.toolbar.Realize()
         self.splitter_main.Initialize(self.panel_components)
         self.init_grid()
@@ -126,11 +127,11 @@ class Window(gui.MainFrame):
             u'примечание':[]
             }
         self.separators_dict = {
-            u'марка':['',''],
-            u'значение':['',''],
-            u'класс точности':['',''],
-            u'тип':['',''],
-            u'стандарт':['','']
+            u'марка':['', ''],
+            u'значение':['', ''],
+            u'класс точности':['', ''],
+            u'тип':['', ''],
+            u'стандарт':['', '']
             }
         self.aliases_dict = {
             u'группа':u'Группа',
@@ -157,66 +158,69 @@ class Window(gui.MainFrame):
             self.SetIcon(icon)
 
             self.config_path = os.path.join(
-                    os.environ['APPDATA'],
-                    'kicadbom2spec'
-                    )
+                os.environ['APPDATA'],
+                'kicadbom2spec'
+                )
         else:
             icon = wx.Icon('bitmaps/icon.xpm', wx.BITMAP_TYPE_XPM)
             self.SetIcon(icon)
 
             self.config_path = os.path.join(
-                    os.path.expanduser('~/.config'),
-                    'kicadbom2spec'
-                    )
+                os.path.expanduser('~/.config'),
+                'kicadbom2spec'
+                )
 
         if not os.path.exists(self.config_path):
             os.makedirs(self.config_path)
 
         # Logging
         logging.basicConfig(
-                filename=os.path.join(
-                    self.config_path,
-                    DEFAULT_LOGGING_FILE_NAME
-                    ),
-                level=logging.INFO,
-                format='\n%(asctime)s %(levelname)s: %(message)s',
-                datefmt='%Y.%m.%d %H:%M:%S'
-                )
+            filename=os.path.join(
+                self.config_path,
+                DEFAULT_LOGGING_FILE_NAME
+                ),
+            level=logging.INFO,
+            format='\n%(asctime)s %(levelname)s: %(message)s',
+            datefmt='%Y.%m.%d %H:%M:%S'
+            )
 
         # Settings
         self.settings_file = os.path.join(
-                self.config_path,
-                DEFAULT_SETTINGS_FILE_NAME
-                )
+            self.config_path,
+            DEFAULT_SETTINGS_FILE_NAME
+            )
 
         if not os.path.exists(self.settings_file):
             shutil.copy2(DEFAULT_SETTINGS_FILE_NAME, self.settings_file)
 
         self.load_settings(self.settings_file)
 
-    def load_settings(self, settings_file_name=DEFAULT_SETTINGS_FILE_NAME, select=False):
+    def load_settings(self, settings_file_name=DEFAULT_SETTINGS_FILE_NAME, select=False):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """
         Loads settings from configuration file.
 
         """
+        # pylint: disable=line-too-long, too-many-nested-blocks
         if os.path.isfile(settings_file_name):
             if not select:
                 # Load settings from file
                 self.settings = SafeConfigParser()
-                self.settings.readfp(codecs.open(
-                    settings_file_name,
-                    'r',
-                    encoding='utf-8'
-                    ))
+                self.settings.readfp(
+                    codecs.open(
+                        settings_file_name,
+                        'r',
+                        encoding='utf-8'
+                        )
+                    )
 
                 if self.settings.has_section('window'):
-                    x, y = self.GetPosition()
+                    pos_x, pos_y = self.GetPosition()
                     width, height = self.GetClientSize()
                     if self.settings.has_option('window', 'x'):
-                        x = self.settings.getint('window', 'x')
+                        pos_x = self.settings.getint('window', 'x')
                     if self.settings.has_option('window', 'y'):
-                        y = self.settings.getint('window', 'y')
-                    self.SetPosition(wx.Point(x, y))
+                        pos_y = self.settings.getint('window', 'y')
+                    self.SetPosition(wx.Point(pos_x, pos_y))
 
                     if self.settings.has_option('window', 'width'):
                         width = self.settings.getint('window', 'width')
@@ -237,7 +241,7 @@ class Window(gui.MainFrame):
                 # in 'splitter_mainOnIdle' event handler
 
                 if self.settings.has_section('values'):
-                    for item in self.values_dict.keys():
+                    for item in self.values_dict.keys():  # pylint: disable=consider-iterating-dictionary
                         if self.settings.has_option('values', item):
                             values_list = self.settings.get('values', item)
                             values_list = values_list.split(SETTINGS_SEPARATOR)
@@ -264,17 +268,17 @@ class Window(gui.MainFrame):
                         self.auto_groups_dict[param.upper()] = value
 
                 if self.settings.has_section('prefixes'):
-                    for item in self.separators_dict.keys():
+                    for item in self.separators_dict.keys():  # pylint: disable=consider-iterating-dictionary
                         if self.settings.has_option('prefixes', item):
                             self.separators_dict[item][0] = self.settings.get('prefixes', item)[1:-1]
 
                 if self.settings.has_section('suffixes'):
-                    for item in self.separators_dict.keys():
+                    for item in self.separators_dict.keys():  # pylint: disable=consider-iterating-dictionary
                         if self.settings.has_option('suffixes', item):
                             self.separators_dict[item][1] = self.settings.get('suffixes', item)[1:-1]
 
                 if self.settings.has_section('aliases'):
-                    for item in self.aliases_dict.keys():
+                    for item in self.aliases_dict.keys():  # pylint: disable=consider-iterating-dictionary
                         if self.settings.has_option('aliases', item):
                             alias_value = self.settings.get('aliases', item)
                             # Empty alias - default value
@@ -294,7 +298,7 @@ class Window(gui.MainFrame):
                     self.build_recent_menu(recent_files, 'lib')
             else:
             # Select settings for importing
-                import_settings= {
+                import_settings = {
                     'size_position':False,
                     'column_sizes':False,
                     'comp_fields_panel':False,
@@ -374,14 +378,14 @@ class Window(gui.MainFrame):
                 selector.dialog_buttonOK.SetFocus()
                 result = selector.ShowModal()
                 if result == wx.ID_OK:
-                    for key in import_settings.keys():
+                    for key in import_settings.keys():  # pylint: disable=consider-iterating-dictionary
                         import_settings[key] = getattr(selector, 'checkbox_' + key).IsChecked()
                     if import_settings['size_position']:
                         if temp_settings.has_option('window', 'x') and \
                             temp_settings.has_option('window', 'y'):
-                            x = temp_settings.getint('window', 'x')
-                            y = temp_settings.getint('window', 'y')
-                            self.SetPosition(wx.Point(x, y))
+                            pos_x = temp_settings.getint('window', 'x')
+                            pos_y = temp_settings.getint('window', 'y')
+                            self.SetPosition(wx.Point(pos_x, pos_y))
                         if temp_settings.has_option('window', 'width') and \
                             temp_settings.has_option('window', 'height'):
                             width = temp_settings.getint('window', 'width')
@@ -429,7 +433,7 @@ class Window(gui.MainFrame):
                         if temp_settings.has_option('general', 'show need adjust mark'):
                             self.show_need_adjust_mark = temp_settings.getboolean('general', 'show need adjust mark')
                     if import_settings['values']:
-                        for item in self.values_dict.keys():
+                        for item in self.values_dict.keys():  # pylint: disable=consider-iterating-dictionary
                             if temp_settings.has_option('values', item):
                                 values_list = temp_settings.get('values', item)
                                 values_list = values_list.split(SETTINGS_SEPARATOR)
@@ -445,19 +449,19 @@ class Window(gui.MainFrame):
                         if not self.settings.has_section('prefixes'):
                             self.settings.add_section('prefixes')
                         if temp_settings.has_section('prefixes'):
-                            for item in self.separators_dict.keys():
+                            for item in self.separators_dict.keys():  # pylint: disable=consider-iterating-dictionary
                                 if temp_settings.has_option('prefixes', item):
                                     self.separators_dict[item][0] = temp_settings.get('prefixes', item)[1:-1]
                         if not self.settings.has_section('suffixes'):
                             self.settings.add_section('suffixes')
                         if temp_settings.has_section('suffixes'):
-                            for item in self.separators_dict.keys():
+                            for item in self.separators_dict.keys():  # pylint: disable=consider-iterating-dictionary
                                 if temp_settings.has_option('suffixes', item):
                                     self.separators_dict[item][1] = temp_settings.get('suffixes', item)[1:-1]
                     if import_settings['aliases']:
                         if not self.settings.has_section('aliases'):
                             self.settings.add_section('aliases')
-                        for item in self.aliases_dict.keys():
+                        for item in self.aliases_dict.keys():  # pylint: disable=consider-iterating-dictionary
                             if temp_settings.has_option('aliases', item):
                                 alias_value = temp_settings.get('aliases', item)
                                 # Empty alias - default value
@@ -487,7 +491,7 @@ class Window(gui.MainFrame):
                             recent_files.append(temp_settings.get('recent lib', recent))
                         self.build_recent_menu(recent_files, 'lib')
 
-    def save_settings(self, settings_file_name=DEFAULT_SETTINGS_FILE_NAME):
+    def save_settings(self, settings_file_name=DEFAULT_SETTINGS_FILE_NAME):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """
         Save settings to configuration file.
 
@@ -498,10 +502,10 @@ class Window(gui.MainFrame):
             self.settings.set('window', 'maximized', '1')
         else:
             self.settings.set('window', 'maximized', '0')
-            x, y = self.GetPosition()
+            pos_x, pos_y = self.GetPosition()
             width, height = self.GetClientSize()
-            self.settings.set('window', 'x', str(x))
-            self.settings.set('window', 'y', str(y))
+            self.settings.set('window', 'x', str(pos_x))
+            self.settings.set('window', 'y', str(pos_y))
             self.settings.set('window', 'width', str(width))
             self.settings.set('window', 'height', str(height))
 
@@ -526,7 +530,7 @@ class Window(gui.MainFrame):
 
         if not self.settings.has_section('values'):
             self.settings.add_section('values')
-        for field in self.values_dict.keys():
+        for field in self.values_dict.keys():  # pylint: disable=consider-iterating-dictionary
             field_values = SETTINGS_SEPARATOR.join(self.values_dict[field])
             field_values = field_values.replace('%', '%%')
             self.settings.set('values', field, field_values)
@@ -563,33 +567,33 @@ class Window(gui.MainFrame):
         self.settings.remove_section('group names plural')
         self.settings.add_section('group names plural')
         for i, names in enumerate(self.group_names_dict.items()):
-                self.settings.set('group names singular', str(i), names[1])
-                self.settings.set('group names plural', str(i), names[0])
+            self.settings.set('group names singular', str(i), names[1])
+            self.settings.set('group names plural', str(i), names[0])
 
         if not self.settings.has_section('general'):
             self.settings.add_section('general')
-        self.settings.set( 'general', 'space as dot', str(self.grid.space_as_dot))
-        self.settings.set( 'general', 'show need adjust mark', str(self.show_need_adjust_mark))
+        self.settings.set('general', 'space as dot', str(self.grid.space_as_dot))
+        self.settings.set('general', 'show need adjust mark', str(self.show_need_adjust_mark))
 
         self.settings.remove_section('recent sch')
         if self.submenu_recent_sch.GetMenuItemCount() > 0:
             self.settings.add_section('recent sch')
             for index, menuitem in enumerate(self.submenu_recent_sch.GetMenuItems()):
                 self.settings.set(
-                        'recent sch',
-                        str(index),
-                        menuitem.GetItemLabel()
-                        )
+                    'recent sch',
+                    str(index),
+                    menuitem.GetItemLabel()
+                    )
 
         self.settings.remove_section('recent lib')
         if self.submenu_recent_lib.GetMenuItemCount() > 0:
             self.settings.add_section('recent lib')
             for index, menuitem in enumerate(self.submenu_recent_lib.GetMenuItems()):
                 self.settings.set(
-                        'recent lib',
-                        str(index),
-                        menuitem.GetItemLabel()
-                        )
+                    'recent lib',
+                    str(index),
+                    menuitem.GetItemLabel()
+                    )
 
         self.settings.write(codecs.open(settings_file_name, 'w', encoding='utf-8'))
 
@@ -600,6 +604,7 @@ class Window(gui.MainFrame):
         """
         # Save grid options
         if hasattr(self, 'grid'):
+            # pylint: disable=access-member-before-definition
             if not self.settings.has_section('column sizes'):
                 self.settings.add_section('column sizes')
             for col in range(self.grid.GetNumberCols()):
@@ -608,7 +613,7 @@ class Window(gui.MainFrame):
 
             if not self.settings.has_section('general'):
                 self.settings.add_section('general')
-            self.settings.set( 'general', 'space as dot', str(self.grid.space_as_dot))
+            self.settings.set('general', 'space as dot', str(self.grid.space_as_dot))
 
             self.GetSizer().Remove(self.panel_components.GetSizer())
             self.grid.Destroy()
@@ -700,7 +705,7 @@ class Window(gui.MainFrame):
                 ref = self.grid.GetCellValue(row, 2)
                 ref = self.grid.get_pure_ref(ref)
                 ref_type = ref.rstrip('0123456789')
-                for pattern in self.auto_groups_dict.keys():
+                for pattern in self.auto_groups_dict.keys():  # pylint: disable=consider-iterating-dictionary
                     re_pattern = pattern.replace('?', '.?')
                     re_pattern = re_pattern.replace('*', '.*')
                     if re.match(re_pattern, ref_type) \
@@ -758,7 +763,7 @@ class Window(gui.MainFrame):
         self.settings.set('comp fields panel', 'width', str(width))
         event.Skip()
 
-    def on_comp_fields_panel_grid_select(self, event):
+    def on_comp_fields_panel_grid_select(self, event):  # pylint: disable=invalid-name, unused-argument
         """
         Clear selection.
 
@@ -772,12 +777,12 @@ class Window(gui.MainFrame):
             self.on_comp_fields_panel_grid_select
             )
 
-    def on_comp_fields_panel_grid_popup(self, event):
+    def on_comp_fields_panel_grid_popup(self, event):  # pylint: disable=unused-argument
         """
         Popup menu for grid from component fields panel.
 
         """
-        def on_copy(event):
+        def on_copy(event):  # pylint: disable=unused-argument
             """
             Copy text from cell.
 
@@ -808,10 +813,10 @@ class Window(gui.MainFrame):
                 width = self.settings.getint('comp fields panel', 'width')
         self.panel_comp_fields.Show()
         self.splitter_main.SplitVertically(
-                self.panel_components,
-                self.panel_comp_fields,
-                width
-                )
+            self.panel_components,
+            self.panel_comp_fields,
+            width
+            )
         self.update_comp_fields_panel()
 
     def hide_comp_fields_panel(self):
@@ -828,6 +833,7 @@ class Window(gui.MainFrame):
         Show all fields for selected component.
 
         """
+        # pylint: disable=line-too-long, too-many-nested-blocks, too-many-branches, too-many-statements
         def component_has_ref(comp, ref):
             """
             Returns true if component has specified reference.
@@ -846,12 +852,12 @@ class Window(gui.MainFrame):
             return
         if self.comp_fields_panel_grid.GetNumberRows():
             self.comp_fields_panel_grid.DeleteRows(
-                    0,
-                    self.comp_fields_panel_grid.GetNumberRows()
-                    )
+                0,
+                self.comp_fields_panel_grid.GetNumberRows()
+                )
         if self.grid.GetNumberRows() > 0:
             self.comp_fields_panel_grid.Show()
-            if row == None:
+            if row is None:
                 row = self.grid.GetGridCursorRow()
             if self.library:
                 name = self.grid.GetCellValue(row, 4)
@@ -979,25 +985,28 @@ class Window(gui.MainFrame):
             menu.Delete(menuitem.GetId())
         if file_names:
             for index, file_name in enumerate(file_names):
-                menu.AppendItem(wx.MenuItem(
-                    menu,
-                    ID_RECENT + id_offset + index,
-                    file_name,
-                    wx.EmptyString,
-                    wx.ITEM_NORMAL
-                    ))
-            self.Bind(
-                    wx.EVT_MENU,
-                    event_handler,
-                    id = ID_RECENT + id_offset,
-                    id2 = ID_RECENT + id_offset + len(file_names) - 1
+                menu.AppendItem(
+                    wx.MenuItem(
+                        menu,
+                        ID_RECENT + id_offset + index,
+                        file_name,
+                        wx.EmptyString,
+                        wx.ITEM_NORMAL
+                        )
                     )
+            self.Bind(
+                wx.EVT_MENU,
+                event_handler,
+                id=ID_RECENT + id_offset,
+                id2=ID_RECENT + id_offset + len(file_names) - 1
+                )
 
     def get_schematic_values(self):
         """
         Returns list of fields values of components from schematic.
 
         """
+        # pylint: disable=line-too-long, too-many-nested-blocks, too-many-branches, too-many-statements
         values = []
         complist = CompList()
         for schematic in self.schematics:
@@ -1083,6 +1092,7 @@ class Window(gui.MainFrame):
         Set values to fields of the components of schematic.
 
         """
+        # pylint: disable=line-too-long, too-many-nested-blocks, too-many-branches, too-many-statements
         sorted_values = sorted(values, key=itemgetter(-1))
         field_names = {
             1:self.aliases_dict[u'группа'],
@@ -1116,12 +1126,13 @@ class Window(gui.MainFrame):
                                                 field.text = value[index]
                                                 break
                                         else:
-                                            field_str = u'F {num} "{text}" H {x} {y} 60 0001 C CNN "{name}"'.format(
-                                                            num = len(item.fields),
-                                                            text = value[index],
-                                                            x = item.pos_x,
-                                                            y = item.pos_y,
-                                                            name = field_name
+                                            # pylint: disable=line-too-long
+                                            field_str = u'F {num} "{text}" H {pos_x} {pos_y} 60 0001 C CNN "{name}"'.format(
+                                                num=len(item.fields),
+                                                text=value[index],
+                                                pos_x=item.pos_x,
+                                                pos_y=item.pos_y,
+                                                name=field_name
                                                 )
                                             item.fields.append(schematic.Comp.Field(item, field_str))
                                     else:
@@ -1138,10 +1149,11 @@ class Window(gui.MainFrame):
                                             break
                                     else:
                                         # Create field
-                                        field_str = u'F {num} "~" H {x} {y} 60 0001 C CNN "Исключён из ПЭ"'.format(
-                                                        num = len(item.fields),
-                                                        x = item.pos_x,
-                                                        y = item.pos_y
+                                        # pylint: disable=line-too-long
+                                        field_str = u'F {num} "~" H {pos_x} {pos_y} 60 0001 C CNN "Исключён из ПЭ"'.format(
+                                            num=len(item.fields),
+                                            pos_x=item.pos_x,
+                                            pos_y=item.pos_y
                                             )
                                         item.fields.append(schematic.Comp.Field(item, field_str))
                                 else:
@@ -1171,18 +1183,18 @@ class Window(gui.MainFrame):
                                         # Orientations that inverts justify of text
                                         if item.fields[0].orientation == 'H':
                                             invert_orient = (
-                                                    (-1, 0, 0, 1),
-                                                    (0, 1, 1, 0),
-                                                    (-1, 0, 0, -1),
-                                                    (0, -1, 1, 0)
-                                                    )
+                                                (-1, 0, 0, 1),
+                                                (0, 1, 1, 0),
+                                                (-1, 0, 0, -1),
+                                                (0, -1, 1, 0)
+                                                )
                                         else:
                                             invert_orient = (
-                                                    (0, -1, -1, 0),
-                                                    (-1, 0, 0, 1),
-                                                    (1, 0, 0, 1),
-                                                    (0, -1, 1, 0)
-                                                    )
+                                                (0, -1, -1, 0),
+                                                (-1, 0, 0, 1),
+                                                (1, 0, 0, 1),
+                                                (0, -1, 1, 0)
+                                                )
                                         # Calculate correct position of "*" mark
                                         # according to field justify and component orientation
                                         if item.fields[0].hjustify == 'L':
@@ -1206,16 +1218,16 @@ class Window(gui.MainFrame):
                                             h_offset = 0
 
                                         field_str = u'F {} "*" {} {} {} {} {} {} {}{}{} "Подбирают при регулировании"'.format(
-                                                        len(item.fields),
-                                                        item.fields[0].orientation,
-                                                        item.fields[0].pos_x + int(h_offset),
-                                                        item.fields[0].pos_y + int(v_offset),
-                                                        item.fields[0].size,
-                                                        {True:'0000', False:'0001'}[self.show_need_adjust_mark],
-                                                        'C',
-                                                        item.fields[0].vjustify,
-                                                        {True:'I', False:'N'}[item.fields[0].italic],
-                                                        {True:'B', False:'N'}[item.fields[0].italic]
+                                            len(item.fields),
+                                            item.fields[0].orientation,
+                                            item.fields[0].pos_x + int(h_offset),
+                                            item.fields[0].pos_y + int(v_offset),
+                                            item.fields[0].size,
+                                            {True:'0000', False:'0001'}[self.show_need_adjust_mark],
+                                            'C',
+                                            item.fields[0].vjustify,
+                                            {True:'I', False:'N'}[item.fields[0].italic],
+                                            {True:'B', False:'N'}[item.fields[0].italic]
                                             )
                                         item.fields.append(schematic.Comp.Field(item, field_str))
                                 else:
@@ -1270,6 +1282,7 @@ class Window(gui.MainFrame):
         Set values to fields of the components of library.
 
         """
+        # pylint: disable=line-too-long, too-many-nested-blocks, too-many-branches, too-many-statements
         sorted_values = values[:]
         field_names = {
             1:self.aliases_dict[u'группа'],
@@ -1291,9 +1304,9 @@ class Window(gui.MainFrame):
                                         break
                                 else:
                                     field_str = u'F{num} "{text}" 0 0 60 H I C CNN "{name}"'.format(
-                                                    num = len(comp.fields),
-                                                    text = value[index],
-                                                    name = field_name
+                                        num=len(comp.fields),
+                                        text=value[index],
+                                        name=field_name
                                         )
                                     comp.fields.append(self.library.Component.Field(comp, field_str))
                             else:
@@ -1309,7 +1322,7 @@ class Window(gui.MainFrame):
 
         """
 
-        def on_checkbox_all_clicked(event):
+        def on_checkbox_all_clicked(event):  # pylint: disable=unused-argument
             """
             Check/uncheck all fields in field selector.
 
@@ -1386,7 +1399,7 @@ class Window(gui.MainFrame):
         if self.grid.is_changed():
             self.on_grid_change()
 
-    def on_grid_change(self, event=None):
+    def on_grid_change(self, event=None):  # pylint: disable=unused-argument
         """
         Update GUI after changes.
 
@@ -1404,7 +1417,7 @@ class Window(gui.MainFrame):
         else:
             self.menuitem_save_sch.Enable(True)
 
-    def on_grid_popup(self, event):
+    def on_grid_popup(self, event):  # pylint: disable=too-many-statements
         """
         Show popup menu for grid.
 
@@ -1499,7 +1512,7 @@ class Window(gui.MainFrame):
         self.grid.undo_buffer.append(self.grid.redo_buffer[-1])
         self.grid.set_values(self.grid.redo_buffer[-1])
         del self.grid.redo_buffer[-1]
-        if len(self.grid.redo_buffer) == 0:
+        if self.grid.redo_buffer:
             self.menuitem_redo.Enable(False)
         self.menuitem_undo.Enable(True)
         self.saved = False
@@ -1537,13 +1550,11 @@ class Window(gui.MainFrame):
         """
         if len(self.grid.GetSelectedRows()) > 1:
             if wx.MessageBox(
-                u'В таблице выделено несколько элементов!\n' \
-                u'Будут скопированы поля только из первого выделенного элемента.\n' \
-                u'Продолжить?',
-                u'Внимание!',
-                wx.ICON_QUESTION|wx.YES_NO, self
-                ) == wx.NO:
-
+                    u'В таблице выделено несколько элементов!\n' \
+                    u'Будут скопированы поля только из первого выделенного элемента.\n' \
+                    u'Продолжить?',
+                    u'Внимание!',
+                    wx.ICON_QUESTION|wx.YES_NO, self) == wx.NO:
                 return
         self.buffer = []
         row = self.grid.GetSelectedRows()[0]
@@ -1566,8 +1577,7 @@ class Window(gui.MainFrame):
                     u'Будут вырезаны поля только из первого выделенного элемента.\n' \
                     u'Продолжить?',
                     u'Внимание!',
-                    wx.ICON_QUESTION|wx.YES_NO, self
-                    ) == wx.NO:
+                    wx.ICON_QUESTION|wx.YES_NO, self) == wx.NO:
                 return
 
         self.buffer = []
@@ -1591,6 +1601,10 @@ class Window(gui.MainFrame):
 
         """
         def on_button(event):
+            """
+            Button OK pressed -- apply changes.
+
+            """
             for row in selected_rows:
                 for col in range(1, col_num):
                     if col == 2:
@@ -1655,7 +1669,7 @@ class Window(gui.MainFrame):
             # Load dialog width
             if self.settings.has_section('window'):
                 if self.settings.has_option('window', 'editor width'):
-                   editor.SetSize(
+                    editor.SetSize(
                         wx.Size(
                             self.settings.getint('window', 'editor width'),
                             -1
@@ -1678,8 +1692,7 @@ class Window(gui.MainFrame):
         selected_rows = self.grid.GetSelectedRows()
         for row in selected_rows:
             if not self.grid.comp_is_copy(
-                    self.grid.GetCellValue(row, 2)
-                    ):
+                    self.grid.GetCellValue(row, 2)):
                 writing_enabled = True
 
         if self.grid.GetSelectedRows():
@@ -1704,7 +1717,7 @@ class Window(gui.MainFrame):
         """
         self.update_comp_fields_panel(event.GetRow())
 
-    def on_open_sch(self, event=None, sch_file_name=''):
+    def on_open_sch(self, event=None, sch_file_name=''):  # pylint: disable=arguments-differ, too-many-branches, too-many-statements
         """
         Load all components from selected schematic
         (include hierarchical sheets) to the table for editing.
@@ -1712,12 +1725,10 @@ class Window(gui.MainFrame):
         """
         if not self.saved:
             if wx.MessageBox(
-                u'Последние изменения в полях компонентов не были сохранены!\n' \
-                u'Продолжить?',
-                u'Внимание!',
-                wx.ICON_QUESTION|wx.YES_NO, self
-                ) == wx.NO:
-
+                    u'Последние изменения в полях компонентов не были сохранены!\n' \
+                    u'Продолжить?',
+                    u'Внимание!',
+                    wx.ICON_QUESTION|wx.YES_NO, self) == wx.NO:
                 return
         if sch_file_name:
             self.schematic_file = sch_file_name
@@ -1770,7 +1781,7 @@ class Window(gui.MainFrame):
             for schematic_name in schematic_names:
                 self.schematics.append(Schematic(schematic_name))
             sch_values = self.get_schematic_values()
-            if len(sch_values) == 0:
+            if not sch_values:
                 wx.MessageBox(
                     u'Похоже, в открываемой схеме компоненты отсутствуют\n' + \
                     u'или имеют неверные обозначения.\n' + \
@@ -1817,14 +1828,14 @@ class Window(gui.MainFrame):
             # Set cursor back to 'normal'
             wx.EndBusyCursor()
 
-        except IOError as e:
+        except IOError as error:
             # Remove bad file from recent
             self.remove_from_recent(self.schematic_file, 'sch')
             wx.MessageBox(
                 u'При открытии файла схемы:\n' +
                 self.schematic_file + '\n' \
                 u'возникла ошибка:\n' + \
-                e.strerror,
+                error.strerror,
                 u'Внимание!',
                 wx.ICON_EXCLAMATION|wx.OK, self
                 )
@@ -1841,7 +1852,7 @@ class Window(gui.MainFrame):
                 wx.ICON_EXCLAMATION|wx.OK, self
                 )
             self.reset_gui()
-        except:
+        except:  # pylint: disable=bare-except
             self.on_error()
 
     def on_save_sch(self, event):
@@ -1870,7 +1881,7 @@ class Window(gui.MainFrame):
                 self.saved = True
                 self.menuitem_save_sch.Enable(False)
                 self.update_comp_fields_panel()
-            except IOError as e:
+            except IOError as error:
                 if os.path.exists(schematic.sch_name + '.tmp') \
                         and os.path.exists(schematic.sch_name):
                     os.remove(schematic.sch_name + '.tmp')
@@ -1878,15 +1889,15 @@ class Window(gui.MainFrame):
                     u'При сохранении файла схемы:\n' +
                     schematic.sch_name + '\n' \
                     u'возникла ошибка:\n' +
-                    e.strerror + '\n\n' +
+                    error.strerror + '\n\n' +
                     u'Файл не сохранен.',
                     u'Внимание!',
                     wx.ICON_EXCLAMATION|wx.OK, self
                     )
-            except:
+            except:  # pylint: disable=bare-except
                 self.on_error()
 
-    def on_save_sch_as(self, event, file_name=None):
+    def on_save_sch_as(self, event, file_name=None):  # pylint: disable=arguments-differ
         """
         Save changes in the fields of the components to the separate
         schematic file(s).
@@ -1895,7 +1906,7 @@ class Window(gui.MainFrame):
         comp_values = self.grid.get_values()
         self.set_schematic_values(comp_values)
 
-        if file_name == None:
+        if file_name is None:
             save_sch_dialog = wx.FileDialog(
                 self,
                 u'Сохранить схему как...',
@@ -1938,7 +1949,7 @@ class Window(gui.MainFrame):
                 if os.path.exists(new_path):
                     os.remove(new_path)
                 os.rename(new_path + '.tmp', new_path)
-            except IOError as e:
+            except IOError as error:
                 if os.path.exists(new_path + '.tmp') \
                         and os.path.exists(new_path):
                     os.remove(new_path + '.tmp')
@@ -1946,15 +1957,15 @@ class Window(gui.MainFrame):
                     u'При сохранении файла схемы:\n' +
                     new_path + '\n' \
                     u'возникла ошибка:\n' +
-                    e.strerror + '\n\n' \
+                    error.strerror + '\n\n' \
                     u'Файл не сохранен.',
                     u'Внимание!',
                     wx.ICON_EXCLAMATION|wx.OK, self
                     )
-            except:
+            except:  # pylint: disable=bare-except
                 self.on_error()
 
-    def on_open_lib(self, event=None, lib_file_name=''):
+    def on_open_lib(self, event=None, lib_file_name=''):  # pylint: disable=arguments-differ, too-many-statements
         """
         Load all components from selected schematic
         (include hierarchical sheets) to the table for editing.
@@ -1962,12 +1973,10 @@ class Window(gui.MainFrame):
         """
         if not self.saved:
             if wx.MessageBox(
-                u'Последние изменения в полях компонентов не были сохранены!\n' \
-                u'Продолжить?',
-                u'Внимание!',
-                wx.ICON_QUESTION|wx.YES_NO, self
-                ) == wx.NO:
-
+                    u'Последние изменения в полях компонентов не были сохранены!\n' \
+                    u'Продолжить?',
+                    u'Внимание!',
+                    wx.ICON_QUESTION|wx.YES_NO, self) == wx.NO:
                 return
         if lib_file_name:
             self.library_file = lib_file_name
@@ -2029,14 +2038,14 @@ class Window(gui.MainFrame):
             # Title
             self.SetTitle('kicadbom2spec - ' + self.library_file)
 
-        except IOError as e:
+        except IOError as error:
             # Remove bad file from recent
             self.remove_from_recent(self.library_file, 'lib')
             wx.MessageBox(
                 u'При открытии файла библиотеки:\n' +
                 self.library_file + '\n' \
                 u'возникла ошибка:\n' + \
-                e.strerror,
+                error.strerror,
                 u'Внимание!',
                 wx.ICON_EXCLAMATION|wx.OK, self
                 )
@@ -2053,7 +2062,7 @@ class Window(gui.MainFrame):
                 wx.ICON_EXCLAMATION|wx.OK, self
                 )
             self.reset_gui()
-        except:
+        except:  # pylint: disable=bare-except
             self.on_error()
 
     def on_save_lib(self, event):
@@ -2072,7 +2081,7 @@ class Window(gui.MainFrame):
             self.saved = True
             self.menuitem_save_lib.Enable(False)
             self.update_comp_fields_panel()
-        except IOError as e:
+        except IOError as error:
             if os.path.exists(self.library_file + '.tmp') \
                     and os.path.exists(self.library_file):
                 os.remove(self.library_file + '.tmp')
@@ -2080,12 +2089,12 @@ class Window(gui.MainFrame):
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
                 u'возникла ошибка:\n' +
-                e.strerror + '\n\n' \
+                error.strerror + '\n\n' \
                 u'Файл не сохранен.',
                 u'Внимание!',
                 wx.ICON_EXCLAMATION|wx.OK, self
                 )
-        except:
+        except:  # pylint: disable=bare-except
             self.on_error()
 
     def on_save_lib_as(self, event):
@@ -2116,7 +2125,7 @@ class Window(gui.MainFrame):
             if os.path.exists(new_library_file):
                 os.remove(new_library_file)
             os.rename(new_library_file + '.tmp', new_library_file)
-        except IOError as e:
+        except IOError as error:
             if os.path.exists(new_library_file + '.tmp') \
                     and os.path.exists(new_library_file):
                 os.remove(new_library_file + '.tmp')
@@ -2124,12 +2133,12 @@ class Window(gui.MainFrame):
                 u'При сохранении файла библиотеки:\n' +
                 self.library_file + '\n' \
                 u'возникла ошибка:\n' +
-                e.strerror + '\n\n' \
+                error.strerror + '\n\n' \
                 u'Файл не сохранен.',
                 u'Внимание!',
                 wx.ICON_EXCLAMATION|wx.OK, self
                 )
-        except:
+        except:  # pylint: disable=bare-except
             self.on_error()
 
     def get_singular_group_name(self, group_name):
@@ -2138,27 +2147,26 @@ class Window(gui.MainFrame):
         """
         if self.group_names_dict.has_key(group_name):
             return self.group_names_dict[group_name]
-        else:
-            request_dialog = gui.SingularGroupNameDialog(self)
-            request_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
-            request_dialog.group_name_text.SetValue(group_name)
-            request_dialog.singular_group_name_text.SetValue(group_name)
-            request_dialog.group_name_text.SetEditable(False)
-            request_dialog.group_name_text.Enable(False)
-            result = request_dialog.ShowModal()
-            singular = request_dialog.singular_group_name_text.GetValue()
-            if result == wx.ID_OK and singular != u'':
-                self.group_names_dict[group_name] = singular
-                return singular
-            else:
-                return group_name
+        request_dialog = gui.SingularGroupNameDialog(self)
+        request_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
+        request_dialog.group_name_text.SetValue(group_name)
+        request_dialog.singular_group_name_text.SetValue(group_name)
+        request_dialog.group_name_text.SetEditable(False)
+        request_dialog.group_name_text.Enable(False)
+        result = request_dialog.ShowModal()
+        singular = request_dialog.singular_group_name_text.GetValue()
+        if result == wx.ID_OK and singular != u'':
+            self.group_names_dict[group_name] = singular
+            return singular
+        return group_name
 
     def on_complist(self, event):
         """
         Make list of the components.
 
         """
-        def on_file_name_changed(event):
+        # pylint: disable=line-too-long, too-many-locals, too-many-branches, too-many-statements
+        def on_file_name_changed(event):  # pylint: disable=unused-argument
             """
             Update file format.
             """
@@ -2170,7 +2178,7 @@ class Window(gui.MainFrame):
             elif file_name.endswith(u'.csv'):
                 complist_dialog.rbutton_csv.SetValue(True)
 
-        def on_decimal_num_changed(event):
+        def on_decimal_num_changed(event):  # pylint: disable=unused-argument
             """
             Show converted value of decimal number.
 
@@ -2179,7 +2187,7 @@ class Window(gui.MainFrame):
             value = complist.convert_decimal_num(value)
             complist_dialog.stamp_decimal_num_converted.SetLabel(value)
 
-        def on_title_changed(event):
+        def on_title_changed(event):  # pylint: disable=unused-argument
             """
             Show converted value of title.
 
@@ -2193,22 +2201,22 @@ class Window(gui.MainFrame):
             dialog_width = complist_dialog.GetSize().GetWidth()
             dialog_height = complist_dialog.GetSize().GetHeight()
             complist_dialog.SetSizeHints(
-                    -1,
-                    -1,
-                    -1,
-                    -1
+                -1,
+                -1,
+                -1,
+                -1
                 )
             complist_dialog.Fit()
             complist_dialog.SetSizeHints(
                 complist_dialog.GetSize().GetWidth(),
                 complist_dialog.GetSize().GetHeight(),
-                    -1,
-                    -1
+                -1,
+                -1
                 )
             complist_dialog.SetSize(
-                    wx.Size(
-                        dialog_width,
-                        dialog_height
+                wx.Size(
+                    dialog_width,
+                    dialog_height
                     )
                 )
 
@@ -2236,6 +2244,7 @@ class Window(gui.MainFrame):
             """
             Set file extension in filepicker.
             """
+            # pylint: disable=line-too-long
             complist_dialog.filepicker_complist.Unbind(wx.EVT_FILEPICKER_CHANGED)
             file_name = complist_dialog.filepicker_complist.GetPath()
             name_and_ext = os.path.splitext(file_name)
@@ -2243,19 +2252,19 @@ class Window(gui.MainFrame):
             complist_dialog.filepicker_complist.Bind(wx.EVT_FILEPICKER_CHANGED, on_file_name_changed)
             complist_dialog.filepicker_complist.SetFocus()
 
-        def on_rbutton_odt(event):
+        def on_rbutton_odt(event):  # pylint: disable=unused-argument
             """
             Update file extension.
             """
             set_file_ext(u'.odt')
 
-        def on_rbutton_ods(event):
+        def on_rbutton_ods(event):  # pylint: disable=unused-argument
             """
             Update file extension.
             """
             set_file_ext(u'.ods')
 
-        def on_rbutton_csv(event):
+        def on_rbutton_csv(event):  # pylint: disable=unused-argument
             """
             Update file extension.
             """
@@ -2279,9 +2288,9 @@ class Window(gui.MainFrame):
         # Set min size of dialog
         complist_dialog.Fit()
         complist_dialog.SetMinSize(
-                wx.Size(
-                    complist_dialog.GetSize().GetWidth(),
-                    complist_dialog.GetSize().GetHeight()
+            wx.Size(
+                complist_dialog.GetSize().GetWidth(),
+                complist_dialog.GetSize().GetHeight()
                 )
             )
 
@@ -2392,7 +2401,7 @@ class Window(gui.MainFrame):
         complist_dialog.checkbox_open.SetValue(open_complist)
 
         # Stamp
-        for field in self.stamp_dict.keys():
+        for field in self.stamp_dict.keys():  # pylint: disable=consider-iterating-dictionary
             field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
             value = self.stamp_dict[field]
             value = value.replace('\\\\n', '\n')
@@ -2422,11 +2431,11 @@ class Window(gui.MainFrame):
             wx.SafeYield()
 
             # File name and format
-            if complist_dialog.rbutton_odt.GetValue() == True:
+            if complist_dialog.rbutton_odt.GetValue():
                 complist.file_format = u'.odt'
-            elif complist_dialog.rbutton_ods.GetValue() == True:
+            elif complist_dialog.rbutton_ods.GetValue():
                 complist.file_format = u'.ods'
-            elif complist_dialog.rbutton_csv.GetValue() == True:
+            elif complist_dialog.rbutton_csv.GetValue():
                 complist.file_format = u'.csv'
             self.complist_file = complist_dialog.filepicker_complist.GetPath()
             self.complist_file = os.path.splitext(self.complist_file)[0] + complist.file_format
@@ -2457,7 +2466,7 @@ class Window(gui.MainFrame):
             open_complist = complist_dialog.checkbox_open.GetValue()
 
             # Stamp
-            for field in self.stamp_dict.keys():
+            for field in self.stamp_dict.keys():  # pylint: disable=consider-iterating-dictionary
                 field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
                 value = field_text.GetValue()
                 value = value.replace('\n', '\\\\n')
@@ -2520,12 +2529,12 @@ class Window(gui.MainFrame):
                 complist.save(self.complist_file)
                 # Remove temporary directory
                 shutil.rmtree(temp_dir, ignore_errors=True)
-            except IOError as e:
+            except IOError as error:
                 wx.MessageBox(
                     u'При создании перечня элементов:\n' +
                     self.complist_file + '\n' \
                     u'возникла ошибка:\n' + \
-                    e.strerror + '\n\n' \
+                    error.strerror + '\n\n' \
                     u'Не удалось создать перечень элементов.',
                     u'Внимание!',
                     wx.ICON_EXCLAMATION|wx.OK, self
@@ -2533,7 +2542,7 @@ class Window(gui.MainFrame):
                 # Set cursor back to 'normal'
                 if wx.IsBusy():
                     wx.EndBusyCursor()
-            except:
+            except:  # pylint: disable=bare-except
                 self.on_error()
                 # Set cursor back to 'normal'
                 if wx.IsBusy():
@@ -2544,7 +2553,7 @@ class Window(gui.MainFrame):
                     if sys.platform == 'linux2':
                         subprocess.Popen(["xdg-open", self.complist_file])
                     else:
-                        os.startfile(self.complist_file)
+                        os.startfile(self.complist_file)  # pylint: disable=no-member
                 else:
                     wx.MessageBox(
                         u'Перечень элементов успешно создан и сохранен!',
@@ -2571,6 +2580,10 @@ class Window(gui.MainFrame):
 
         """
         def on_button(event):
+            """
+            Button OK pressed -- apply changes.
+
+            """
             for row in selected_rows:
                 if editor.checkbox.IsChecked():
                     self.grid.set_cell_value(row, 0, '1')
@@ -2646,7 +2659,7 @@ class Window(gui.MainFrame):
         # Load dialog width
         if self.settings.has_section('window'):
             if self.settings.has_option('window', 'editor width'):
-               editor.SetSize(
+                editor.SetSize(
                     wx.Size(
                         self.settings.getint('window', 'editor width'),
                         -1
@@ -2665,6 +2678,7 @@ class Window(gui.MainFrame):
         Open settings manager.
 
         """
+        # pylint: disable=line-too-long, too-many-locals, too-many-branches, too-many-statements
 
         def split_auto_groups_item(string):
             """
@@ -2675,10 +2689,9 @@ class Window(gui.MainFrame):
             matches = re.search(r'^(.+) - "(.*)"$', string)
             if matches:
                 return matches.groups()
-            else:
-                return None
+            return None
 
-        def on_auto_groups_checklistbox_selected(event):
+        def on_auto_groups_checklistbox_selected(event):  # pylint: disable=invalid-name, unused-argument
             """
             Enable buttons when item selected.
 
@@ -2686,7 +2699,7 @@ class Window(gui.MainFrame):
             settings_editor.auto_groups_edit_button.Enable(True)
             settings_editor.auto_groups_remove_button.Enable(True)
 
-        def on_auto_groups_add_button_clicked(event):
+        def on_auto_groups_add_button_clicked(event):  # pylint: disable=invalid-name, unused-argument
             """
             Add an element to auto_groups_checklistbox.
 
@@ -2701,7 +2714,7 @@ class Window(gui.MainFrame):
                 item = u'{} - "{}"'.format(param, value)
                 settings_editor.auto_groups_checklistbox.Append(item)
 
-        def on_auto_groups_edit_button_clicked(event):
+        def on_auto_groups_edit_button_clicked(event):  # pylint: disable=invalid-name, unused-argument
             """
             Edit selected element in auto_groups_checklistbox.
 
@@ -2721,7 +2734,7 @@ class Window(gui.MainFrame):
                 item = u'{} - "{}"'.format(param, value)
                 settings_editor.auto_groups_checklistbox.SetString(index, item)
 
-        def on_auto_groups_remove_button_clicked(event):
+        def on_auto_groups_remove_button_clicked(event):  # pylint: disable=invalid-name, unused-argument
             """
             Remove selected element from auto_groups_checklistbox.
 
@@ -2812,7 +2825,7 @@ class Window(gui.MainFrame):
                 settings_editor.s_gost_statictext.Show(state)
             settings_editor.separators_panel.Layout()
 
-        def on_group_names_listctrl_selected(event):
+        def on_group_names_listctrl_selected(event):  # pylint: disable=invalid-name, unused-argument
             """
             Enable buttons when item selected.
 
@@ -2820,7 +2833,7 @@ class Window(gui.MainFrame):
             settings_editor.group_names_edit_button.Enable(True)
             settings_editor.group_names_remove_button.Enable(True)
 
-        def on_group_names_listctrl_unselected(event):
+        def on_group_names_listctrl_unselected(event):  # pylint: disable=invalid-name, unused-argument
             """
             Disable buttons when item selected.
 
@@ -2828,7 +2841,7 @@ class Window(gui.MainFrame):
             settings_editor.group_names_edit_button.Enable(False)
             settings_editor.group_names_remove_button.Enable(False)
 
-        def on_group_names_add_button_clicked(event):
+        def on_group_names_add_button_clicked(event):  # pylint: disable=invalid-name, unused-argument
             """
             Add an names pair to group_names_listbox.
 
@@ -2841,7 +2854,7 @@ class Window(gui.MainFrame):
                 plural = add_dialog.group_name_text.GetValue()
                 settings_editor.group_names_listctrl.Append((plural, singular))
 
-        def on_group_names_edit_button_clicked(event):
+        def on_group_names_edit_button_clicked(event):  # pylint: disable=invalid-name, unused-argument
             """
             Edit selected element in group_names_listbox.
 
@@ -2860,7 +2873,7 @@ class Window(gui.MainFrame):
                 settings_editor.group_names_listctrl.SetStringItem(index, 0, plural)
                 settings_editor.group_names_listctrl.SetStringItem(index, 1, singular)
 
-        def on_group_names_remove_button_clicked(event):
+        def on_group_names_remove_button_clicked(event):  # pylint: disable=invalid-name, unused-argument
             """
             Remove selected element from group_names_listbox.
 
@@ -2900,7 +2913,7 @@ class Window(gui.MainFrame):
             u'стандарт',
             u'примечание',
             )
-        for i in range(len(field_names)):
+        for i, _ in enumerate(field_names):
             field_text = getattr(settings_editor, 'field{}_text'.format(i + 1))
             alias_text = getattr(settings_editor, 'alias{}_text'.format(i + 1))
             values = self.values_dict[field_names[i]]
@@ -2921,7 +2934,7 @@ class Window(gui.MainFrame):
             u'тип',
             u'стандарт',
             )
-        for i in range(len(separators_field_names)):
+        for i, _ in enumerate(separators_field_names):
             prefix_text = getattr(settings_editor, 'separator{}_prefix_text'.format(i + 1))
             suffix_text = getattr(settings_editor, 'separator{}_suffix_text'.format(i + 1))
             # names is needed for syncing the values with preview panel
@@ -2952,14 +2965,14 @@ class Window(gui.MainFrame):
         listctrl_width = settings_editor.group_names_listctrl.GetSize().GetWidth()
         settings_editor.group_names_listctrl.SetColumnWidth(0, listctrl_width / 2)
         settings_editor.group_names_listctrl.SetColumnWidth(1, listctrl_width / 2)
-        for plural in self.group_names_dict.keys():
+        for plural in self.group_names_dict.keys():  # pylint: disable=consider-iterating-dictionary
             singular = self.group_names_dict[plural]
             settings_editor.group_names_listctrl.Append((plural, singular))
 
         settings_editor.dialog_buttonsOK.SetFocus()
         result = settings_editor.ShowModal()
         if result == wx.ID_OK:
-            for i in range(len(field_names)):
+            for i, _ in enumerate(field_names):
                 field_text = getattr(settings_editor, 'field{}_text'.format(i + 1))
                 alias_text = getattr(settings_editor, 'alias{}_text'.format(i + 1))
                 self.values_dict[field_names[i]] = []
@@ -2975,10 +2988,10 @@ class Window(gui.MainFrame):
                     self.aliases_dict[field_names[i]] = alias_value
 
 
-            for i in range(len(separators_field_names)):
+            for i, _ in enumerate(separators_field_names):
                 prefix_text = getattr(settings_editor, 'separator{}_prefix_text'.format(i + 1))
                 suffix_text = getattr(settings_editor, 'separator{}_suffix_text'.format(i + 1))
-                self.separators_dict[separators_field_names[i]] = ['','']
+                self.separators_dict[separators_field_names[i]] = ['', '']
                 prefix = prefix_text.GetValue()
                 suffix = suffix_text.GetValue()
                 prefix = prefix.replace('·', ' ')
@@ -2988,7 +3001,7 @@ class Window(gui.MainFrame):
 
             if not self.settings.has_section('values'):
                 self.settings.add_section('values')
-            for field in self.values_dict.keys():
+            for field in self.values_dict.keys():  # pylint: disable=consider-iterating-dictionary
                 field_values = SETTINGS_SEPARATOR.join(self.values_dict[field])
                 field_values = field_values.replace('%', '%%')
                 if field_values:
@@ -3032,7 +3045,8 @@ class Window(gui.MainFrame):
 
         """
         try:
-            settings_import_dialog = wx.FileDialog( self,
+            settings_import_dialog = wx.FileDialog(
+                self,
                 u'Загрузить параметры из файла...',
                 os.path.dirname(DEFAULT_SETTINGS_FILE_NAME),
                 os.path.basename(DEFAULT_SETTINGS_FILE_NAME),
@@ -3043,17 +3057,17 @@ class Window(gui.MainFrame):
                 return
             settings_file_name = settings_import_dialog.GetPath()
             self.load_settings(settings_file_name, True)
-        except IOError as e:
+        except IOError as error:
             wx.MessageBox(
                 u'При загрузке параметров из файла:\n' +
                 settings_file_name + '\n' \
                 u'возникла ошибка:\n' +
-                e.strerror + '\n\n' \
+                error.strerror + '\n\n' \
                 'Параметры не загружены или загружены не полностью.',
                 u'Внимание!',
                 wx.ICON_EXCLAMATION|wx.OK, self
                 )
-        except:
+        except:  # pylint: disable=bare-except
             self.on_error()
 
     def on_settings_export(self, event):
@@ -3062,7 +3076,8 @@ class Window(gui.MainFrame):
 
         """
         try:
-            settings_export_dialog = wx.FileDialog( self,
+            settings_export_dialog = wx.FileDialog(
+                self,
                 u'Сохранить параметры в файл...',
                 os.path.dirname(DEFAULT_SETTINGS_FILE_NAME),
                 os.path.basename(DEFAULT_SETTINGS_FILE_NAME),
@@ -3073,17 +3088,17 @@ class Window(gui.MainFrame):
                 return
             settings_file_name = settings_export_dialog.GetPath()
             self.save_settings(settings_file_name)
-        except IOError as e:
+        except IOError as error:
             wx.MessageBox(
                 u'При сохранении параметров в файл:\n' +
                 settings_file_name + '\n' \
                 u'возникла ошибка:\n' +
-                e.strerror + '\n\n' \
+                error.strerror + '\n\n' \
                 u'Параметры не сохранены или сохранены не полностью.',
                 u'Внимание!',
                 wx.ICON_EXCLAMATION|wx.OK, self
                 )
-        except:
+        except:  # pylint: disable=bare-except
             self.on_error()
 
     def on_exit(self, event):
@@ -3093,11 +3108,9 @@ class Window(gui.MainFrame):
         """
         if not self.saved:
             if wx.MessageBox(
-                u'Имеются не сохранённые изменения!\nВыйти из приложения?',
-                u'Внимание!',
-                wx.ICON_QUESTION|wx.YES_NO, self
-                ) == wx.NO:
-
+                    u'Имеются не сохранённые изменения!\nВыйти из приложения?',
+                    u'Внимание!',
+                    wx.ICON_QUESTION|wx.YES_NO, self) == wx.NO:
                 return
 
         self.save_settings(self.settings_file)
@@ -3155,11 +3168,9 @@ class Window(gui.MainFrame):
                         self.grid.SetFocus()
                         return
             if not self.not_found and wx.MessageBox(
-                u'Достигнут конец таблицы.\nПродолжить сначала?',
-                u'Поиск',
-                wx.ICON_QUESTION | wx.YES_NO, self
-                ) == wx.YES:
-
+                    u'Достигнут конец таблицы.\nПродолжить сначала?',
+                    u'Поиск',
+                    wx.ICON_QUESTION | wx.YES_NO, self) == wx.YES:
                 self.not_found = True
                 self.grid.SetGridCursor(0, 0)
                 on_find_next(event)
@@ -3202,12 +3213,10 @@ class Window(gui.MainFrame):
                         self.grid.SetFocus()
                         return
             if not self.not_found and wx.MessageBox(
-                u'Достигнуто начало таблицы.\nПродолжить с конца?',
-                u'Поиск',
-                wx.ICON_QUESTION | wx.YES_NO,
-                self
-                ) == wx.YES:
-
+                    u'Достигнуто начало таблицы.\nПродолжить с конца?',
+                    u'Поиск',
+                    wx.ICON_QUESTION | wx.YES_NO,
+                    self) == wx.YES:
                 self.not_found = True
                 self.grid.SetGridCursor(rows, cols)
                 on_find_prev(event)
@@ -3218,7 +3227,7 @@ class Window(gui.MainFrame):
                     wx.ICON_INFORMATION | wx.OK, self
                     )
 
-        def on_replace(event):
+        def on_replace(event):  # pylint: disable=unused-argument
             """
             Replace the text in selected cell.
 
@@ -3279,19 +3288,19 @@ class Window(gui.MainFrame):
         about_dialog = gui.AboutDialog(self)
         about_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
         py_version = 'Python: {}.{}.{}-{}'.format(
-                        sys.version_info[0],
-                        sys.version_info[1],
-                        sys.version_info[2],
-                        sys.version_info[3]
+            sys.version_info[0],
+            sys.version_info[1],
+            sys.version_info[2],
+            sys.version_info[3]
             )
         wx_version = 'wxWidgets: ' + wx.version()
         odf_version = 'odfpy: ' + odfpy_version.split('/')[-1]
         about_dialog.statictext_version.SetLabel(
-                about_dialog.statictext_version.GetLabel() + \
-                str(VERSION) + '\n' + \
-                py_version + '\n' + \
-                wx_version + '\n' + \
-                odf_version
+            about_dialog.statictext_version.GetLabel() + \
+            str(VERSION) + '\n' + \
+            py_version + '\n' + \
+            wx_version + '\n' + \
+            odf_version
             )
         email_link = about_dialog.hyperlink_email.GetURL() + '%20v' + VERSION
         about_dialog.hyperlink_email.SetURL(email_link)
@@ -3310,7 +3319,8 @@ class Window(gui.MainFrame):
         help_file = os.path.join(exec_dir, 'doc', 'user_manual.html')
         webbrowser.open_new(help_file)
 
-    def on_esc_key(self, event):
+    @staticmethod
+    def on_esc_key(event):
         """
         Close  dialog if ESC key pressed.
 
@@ -3335,16 +3345,16 @@ class Window(gui.MainFrame):
             trace_frame = inspect.trace()[-1]
             arg_values = inspect.getargvalues(trace_frame[0])
             last_call = u'\n\t{fname}{aval}'.format(
-                    fname = trace_frame[3],
-                    aval = inspect.formatargvalues(*arg_values)
-                    )
-        except:
+                fname=trace_frame[3],
+                aval=inspect.formatargvalues(*arg_values)
+                )
+        except:  # pylint: disable=bare-except
             last_call = ''
         logging.exception(last_call)
         log_filename = os.path.join(
-                self.config_path,
-                DEFAULT_LOGGING_FILE_NAME
-                )
+            self.config_path,
+            DEFAULT_LOGGING_FILE_NAME
+            )
         log_text = '...\n'
         if os.path.exists(log_filename):
             with codecs.open(log_filename, 'r', encoding='utf-8') as log_file:
@@ -3360,19 +3370,19 @@ class Window(gui.MainFrame):
                     elif line_num > 9:
                         break
         error_message = wx.MessageDialog(
-                self,
-                u'В программе произошёл сбой!\n' +
-                u'Подробное описание ошибки записано в файл\n' +
-                log_filename,
-                u'Внимание!',
-                wx.ICON_ERROR|wx.OK|wx.CANCEL
-                )
+            self,
+            u'В программе произошёл сбой!\n' +
+            u'Подробное описание ошибки записано в файл\n' +
+            log_filename,
+            u'Внимание!',
+            wx.ICON_ERROR|wx.OK|wx.CANCEL
+            )
         error_message.SetExtendedMessage(log_text)
         error_message.SetOKLabel(u'Открыть файл...')
         result = error_message.ShowModal()
         if result == wx.ID_OK:
             webbrowser.open_new(log_filename)
-        raise
+        raise  # pylint: disable=misplaced-bare-raise
 
 
 def main():
@@ -3410,7 +3420,7 @@ def main():
 
     # Current version
     version_file = codecs.open('version', 'r', 'utf-8')
-    global VERSION
+    global VERSION  # pylint: disable=global-statement
     VERSION = version_file.read()
     VERSION = VERSION.replace('\n', '')
     version_file.close()
@@ -3439,13 +3449,12 @@ def main():
                 os.chdir(os.path.dirname(os.path.abspath(__file__)))
         else:
             if wx.MessageBox(
-                u'Указанный файл схемы:\n' +
-                sch_file_name + '\n' \
-                u'не найден!\n' + \
-                u'Выбрать нужный файл вручную?',
-                u'Внимание!',
-                wx.ICON_QUESTION|wx.YES_NO, window
-                ) == wx.YES:
+                    u'Указанный файл схемы:\n' +
+                    sch_file_name + '\n' \
+                    u'не найден!\n' + \
+                    u'Выбрать нужный файл вручную?',
+                    u'Внимание!',
+                    wx.ICON_QUESTION|wx.YES_NO, window) == wx.YES:
                 window.on_open_sch()
             else:
                 exit()

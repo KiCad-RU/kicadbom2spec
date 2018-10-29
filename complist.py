@@ -15,6 +15,12 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
+"""
+Module for generating formatted list of components
+as *.odf, *.ods or *.csv file for KiCad Schematics.
+
+"""
+
 import csv
 import codecs
 import os
@@ -25,196 +31,196 @@ from operator import itemgetter
 
 import odf.opendocument
 from odf.draw import Frame
-from odf.style import Style, ParagraphProperties, TextProperties
-from odf.table import *
-from odf.text import P, LineBreak
-from odf import dc, meta
+from odf.style import ParagraphProperties, TextProperties
+from odf.table import Table, TableRow, TableColumn, TableCell
+from odf.text import P
+from odf import meta
 
-from kicadsch import *
+from kicadsch import Schematic
 
-REF_REGEXP = re.compile(u'([^0-9]+)([0-9]+)', re.U)
-NUM_REGEXP = re.compile(u'([А-ЯA-Z0-9]+(?:[^А-ЯA-Z0-9][0-9\.\-\s]+)?)(Э[1-7])?', re.U)
+REF_REGEXP = re.compile(ur'([^0-9]+)([0-9]+)', re.U)
+NUM_REGEXP = re.compile(ur'([А-ЯA-Z0-9]+(?:[^А-ЯA-Z0-9][0-9\.\-\s]+)?)(Э[1-7])?', re.U)
 CHAR_WIDTH_MM = {
-u" ":{12:1.58565153734, 14:1.84992679356},
-u"!":{12:0.792825768668, 14:0.792825768668},
-u"\"":{12:1.05710102489, 14:1.32137628111},
-u"#":{12:2.11420204978, 14:2.64275256223},
-u"$":{12:2.11420204978, 14:2.378477306},
-u"%":{12:3.69985358712, 14:4.22840409956},
-u"&":{12:2.11420204978, 14:2.64275256223},
-u"'":{12:0.528550512445, 14:0.792825768668},
-u"(":{12:1.05710102489, 14:1.05710102489},
-u")":{12:1.05710102489, 14:1.05710102489},
-u"*":{12:1.32137628111, 14:1.32137628111},
-u"+":{12:1.84992679356, 14:2.11420204978},
-u",":{12:0.792825768668, 14:0.792825768668},
-u"-":{12:1.84992679356, 14:2.11420204978},
-u".":{12:0.792825768668, 14:0.792825768668},
-u"/":{12:2.11420204978, 14:2.378477306},
-u"0":{12:1.84992679356, 14:2.11420204978},
-u"1":{12:1.05710102489, 14:1.32137628111},
-u"2":{12:1.84992679356, 14:2.11420204978},
-u"3":{12:1.84992679356, 14:2.11420204978},
-u"4":{12:1.84992679356, 14:2.11420204978},
-u"5":{12:1.84992679356, 14:2.11420204978},
-u"6":{12:1.84992679356, 14:2.11420204978},
-u"7":{12:1.84992679356, 14:2.11420204978},
-u"8":{12:1.84992679356, 14:2.11420204978},
-u"9":{12:1.84992679356, 14:2.11420204978},
-u":":{12:0.792825768668, 14:0.792825768668},
-u";":{12:0.792825768668, 14:0.792825768668},
-u"<":{12:1.84992679356, 14:2.11420204978},
-u"=":{12:1.84992679356, 14:2.11420204978},
-u">":{12:1.84992679356, 14:2.11420204978},
-u"?":{12:1.84992679356, 14:2.11420204978},
-u"@":{12:3.17130307467, 14:3.69985358712},
-u"A":{12:2.11420204978, 14:2.378477306},
-u"B":{12:1.84992679356, 14:2.378477306},
-u"C":{12:1.58565153734, 14:1.84992679356},
-u"D":{12:1.84992679356, 14:2.378477306},
-u"E":{12:1.58565153734, 14:1.84992679356},
-u"F":{12:1.58565153734, 14:1.84992679356},
-u"G":{12:1.84992679356, 14:2.378477306},
-u"H":{12:2.11420204978, 14:2.378477306},
-u"I":{12:0.792825768668, 14:0.792825768668},
-u"J":{12:1.32137628111, 14:1.58565153734},
-u"K":{12:1.84992679356, 14:2.378477306},
-u"L":{12:1.58565153734, 14:1.84992679356},
-u"M":{12:2.11420204978, 14:2.64275256223},
-u"N":{12:2.11420204978, 14:2.378477306},
-u"O":{12:1.84992679356, 14:2.378477306},
-u"P":{12:1.84992679356, 14:2.378477306},
-u"Q":{12:1.84992679356, 14:2.378477306},
-u"R":{12:1.84992679356, 14:2.378477306},
-u"S":{12:1.84992679356, 14:2.11420204978},
-u"T":{12:1.84992679356, 14:2.11420204978},
-u"U":{12:2.11420204978, 14:2.378477306},
-u"V":{12:2.11420204978, 14:2.378477306},
-u"W":{12:2.378477306, 14:2.90702781845},
-u"X":{12:2.11420204978, 14:2.378477306},
-u"Y":{12:2.11420204978, 14:2.378477306},
-u"Z":{12:1.84992679356, 14:2.11420204978},
-u"[":{12:1.05710102489, 14:1.05710102489},
-u"\\":{12:2.11420204978, 14:2.378477306},
-u"]":{12:1.05710102489, 14:1.05710102489},
-u"^":{12:1.32137628111, 14:1.32137628111},
-u"_":{12:2.11420204978, 14:2.64275256223},
-u"`":{12:0.528550512445, 14:0.792825768668},
-u"a":{12:1.84992679356, 14:2.11420204978},
-u"b":{12:1.84992679356, 14:2.11420204978},
-u"c":{12:1.32137628111, 14:1.58565153734},
-u"d":{12:1.84992679356, 14:2.11420204978},
-u"e":{12:1.58565153734, 14:1.84992679356},
-u"f":{12:1.05710102489, 14:1.32137628111},
-u"g":{12:1.84992679356, 14:2.11420204978},
-u"h":{12:1.84992679356, 14:2.11420204978},
-u"i":{12:0.792825768668, 14:0.792825768668},
-u"j":{12:0.792825768668, 14:0.792825768668},
-u"k":{12:1.58565153734, 14:1.84992679356},
-u"l":{12:1.05710102489, 14:1.05710102489},
-u"m":{12:2.11420204978, 14:2.64275256223},
-u"n":{12:1.84992679356, 14:2.11420204978},
-u"o":{12:1.58565153734, 14:1.84992679356},
-u"p":{12:1.84992679356, 14:2.11420204978},
-u"q":{12:1.84992679356, 14:2.11420204978},
-u"r":{12:1.32137628111, 14:1.58565153734},
-u"s":{12:1.58565153734, 14:1.84992679356},
-u"t":{12:1.05710102489, 14:1.32137628111},
-u"u":{12:1.84992679356, 14:2.11420204978},
-u"v":{12:1.58565153734, 14:1.84992679356},
-u"w":{12:2.11420204978, 14:2.378477306},
-u"x":{12:1.58565153734, 14:1.84992679356},
-u"y":{12:1.58565153734, 14:1.84992679356},
-u"z":{12:1.58565153734, 14:1.84992679356},
-u"{":{12:1.32137628111, 14:1.32137628111},
-u"|":{12:0.792825768668, 14:0.792825768668},
-u"}":{12:1.32137628111, 14:1.32137628111},
-u"~":{12:2.11420204978, 14:2.378477306},
-u"«":{12:1.84992679356, 14:2.11420204978},
-u"°":{12:1.58565153734, 14:1.84992679356},
-u"±":{12:1.84992679356, 14:2.11420204978},
-u"µ":{12:1.84992679356, 14:2.11420204978},
-u"·":{12:0.792825768668, 14:0.792825768668},
-u"»":{12:1.84992679356, 14:2.11420204978},
-u"А":{12:2.11420204978, 14:2.378477306},
-u"Б":{12:1.84992679356, 14:2.378477306},
-u"В":{12:1.84992679356, 14:2.378477306},
-u"Г":{12:1.58565153734, 14:1.84992679356},
-u"Д":{12:1.84992679356, 14:2.11420204978},
-u"Е":{12:1.58565153734, 14:1.84992679356},
-u"Ж":{12:2.378477306, 14:2.64275256223},
-u"З":{12:1.58565153734, 14:1.84992679356},
-u"И":{12:2.11420204978, 14:2.378477306},
-u"Й":{12:2.11420204978, 14:2.378477306},
-u"К":{12:1.84992679356, 14:2.378477306},
-u"Л":{12:1.84992679356, 14:2.11420204978},
-u"М":{12:2.11420204978, 14:2.64275256223},
-u"Н":{12:2.11420204978, 14:2.378477306},
-u"О":{12:1.84992679356, 14:2.378477306},
-u"П":{12:2.11420204978, 14:2.378477306},
-u"Р":{12:1.84992679356, 14:2.378477306},
-u"С":{12:1.58565153734, 14:1.84992679356},
-u"Т":{12:1.84992679356, 14:2.11420204978},
-u"У":{12:1.84992679356, 14:2.378477306},
-u"Ф":{12:2.11420204978, 14:2.64275256223},
-u"Х":{12:2.11420204978, 14:2.378477306},
-u"Ц":{12:2.11420204978, 14:2.378477306},
-u"Ч":{12:1.84992679356, 14:2.378477306},
-u"Ш":{12:2.378477306, 14:2.90702781845},
-u"Щ":{12:2.64275256223, 14:2.90702781845},
-u"Ъ":{12:2.378477306, 14:2.64275256223},
-u"Ы":{12:2.11420204978, 14:2.64275256223},
-u"Ь":{12:1.84992679356, 14:2.378477306},
-u"Э":{12:1.84992679356, 14:2.11420204978},
-u"Ю":{12:2.11420204978, 14:2.64275256223},
-u"Я":{12:1.84992679356, 14:2.378477306},
-u"а":{12:1.84992679356, 14:2.11420204978},
-u"б":{12:1.58565153734, 14:1.84992679356},
-u"в":{12:1.84992679356, 14:2.11420204978},
-u"г":{12:1.58565153734, 14:1.84992679356},
-u"д":{12:1.84992679356, 14:2.11420204978},
-u"е":{12:1.58565153734, 14:1.84992679356},
-u"ж":{12:2.11420204978, 14:2.378477306},
-u"з":{12:1.32137628111, 14:1.58565153734},
-u"и":{12:1.84992679356, 14:2.11420204978},
-u"й":{12:1.84992679356, 14:2.11420204978},
-u"к":{12:1.58565153734, 14:1.84992679356},
-u"л":{12:1.58565153734, 14:1.84992679356},
-u"м":{12:2.11420204978, 14:2.378477306},
-u"н":{12:1.84992679356, 14:2.11420204978},
-u"о":{12:1.58565153734, 14:1.84992679356},
-u"п":{12:1.84992679356, 14:2.11420204978},
-u"р":{12:1.84992679356, 14:2.11420204978},
-u"с":{12:1.32137628111, 14:1.58565153734},
-u"т":{12:2.11420204978, 14:2.64275256223},
-u"у":{12:1.84992679356, 14:2.11420204978},
-u"ф":{12:2.11420204978, 14:2.378477306},
-u"х":{12:1.58565153734, 14:1.84992679356},
-u"ц":{12:1.84992679356, 14:2.11420204978},
-u"ч":{12:1.84992679356, 14:2.11420204978},
-u"ш":{12:2.11420204978, 14:2.64275256223},
-u"щ":{12:2.378477306, 14:2.64275256223},
-u"ъ":{12:1.84992679356, 14:2.11420204978},
-u"ы":{12:2.11420204978, 14:2.378477306},
-u"ь":{12:1.58565153734, 14:1.84992679356},
-u"э":{12:1.58565153734, 14:1.84992679356},
-u"ю":{12:1.84992679356, 14:2.378477306},
-u"я":{12:1.84992679356, 14:2.11420204978},
-u"Ё":{12:1.58565153734, 14:1.84992679356},
-u"Є":{12:1.84992679356, 14:2.11420204978},
-u"І":{12:0.792825768668, 14:0.792825768668},
-u"Ї":{12:1.05710102489, 14:1.05710102489},
-u"ё":{12:1.58565153734, 14:1.84992679356},
-u"є":{12:1.58565153734, 14:1.84992679356},
-u"і":{12:0.792825768668, 14:0.792825768668},
-u"ї":{12:1.05710102489, 14:1.05710102489},
-u"℃":{12:2.90702781845, 14:3.43557833089},
-u"℉":{12:2.90702781845, 14:3.43557833089},
-u"№":{12:2.90702781845, 14:3.43557833089},
-u"max":{12:3.69985358712, 14:4.22840409956},
-}
+    u" ":{12:1.58565153734, 14:1.84992679356},
+    u"!":{12:0.792825768668, 14:0.792825768668},
+    u"\"":{12:1.05710102489, 14:1.32137628111},
+    u"#":{12:2.11420204978, 14:2.64275256223},
+    u"$":{12:2.11420204978, 14:2.378477306},
+    u"%":{12:3.69985358712, 14:4.22840409956},
+    u"&":{12:2.11420204978, 14:2.64275256223},
+    u"'":{12:0.528550512445, 14:0.792825768668},
+    u"(":{12:1.05710102489, 14:1.05710102489},
+    u")":{12:1.05710102489, 14:1.05710102489},
+    u"*":{12:1.32137628111, 14:1.32137628111},
+    u"+":{12:1.84992679356, 14:2.11420204978},
+    u",":{12:0.792825768668, 14:0.792825768668},
+    u"-":{12:1.84992679356, 14:2.11420204978},
+    u".":{12:0.792825768668, 14:0.792825768668},
+    u"/":{12:2.11420204978, 14:2.378477306},
+    u"0":{12:1.84992679356, 14:2.11420204978},
+    u"1":{12:1.05710102489, 14:1.32137628111},
+    u"2":{12:1.84992679356, 14:2.11420204978},
+    u"3":{12:1.84992679356, 14:2.11420204978},
+    u"4":{12:1.84992679356, 14:2.11420204978},
+    u"5":{12:1.84992679356, 14:2.11420204978},
+    u"6":{12:1.84992679356, 14:2.11420204978},
+    u"7":{12:1.84992679356, 14:2.11420204978},
+    u"8":{12:1.84992679356, 14:2.11420204978},
+    u"9":{12:1.84992679356, 14:2.11420204978},
+    u":":{12:0.792825768668, 14:0.792825768668},
+    u";":{12:0.792825768668, 14:0.792825768668},
+    u"<":{12:1.84992679356, 14:2.11420204978},
+    u"=":{12:1.84992679356, 14:2.11420204978},
+    u">":{12:1.84992679356, 14:2.11420204978},
+    u"?":{12:1.84992679356, 14:2.11420204978},
+    u"@":{12:3.17130307467, 14:3.69985358712},
+    u"A":{12:2.11420204978, 14:2.378477306},
+    u"B":{12:1.84992679356, 14:2.378477306},
+    u"C":{12:1.58565153734, 14:1.84992679356},
+    u"D":{12:1.84992679356, 14:2.378477306},
+    u"E":{12:1.58565153734, 14:1.84992679356},
+    u"F":{12:1.58565153734, 14:1.84992679356},
+    u"G":{12:1.84992679356, 14:2.378477306},
+    u"H":{12:2.11420204978, 14:2.378477306},
+    u"I":{12:0.792825768668, 14:0.792825768668},
+    u"J":{12:1.32137628111, 14:1.58565153734},
+    u"K":{12:1.84992679356, 14:2.378477306},
+    u"L":{12:1.58565153734, 14:1.84992679356},
+    u"M":{12:2.11420204978, 14:2.64275256223},
+    u"N":{12:2.11420204978, 14:2.378477306},
+    u"O":{12:1.84992679356, 14:2.378477306},
+    u"P":{12:1.84992679356, 14:2.378477306},
+    u"Q":{12:1.84992679356, 14:2.378477306},
+    u"R":{12:1.84992679356, 14:2.378477306},
+    u"S":{12:1.84992679356, 14:2.11420204978},
+    u"T":{12:1.84992679356, 14:2.11420204978},
+    u"U":{12:2.11420204978, 14:2.378477306},
+    u"V":{12:2.11420204978, 14:2.378477306},
+    u"W":{12:2.378477306, 14:2.90702781845},
+    u"X":{12:2.11420204978, 14:2.378477306},
+    u"Y":{12:2.11420204978, 14:2.378477306},
+    u"Z":{12:1.84992679356, 14:2.11420204978},
+    u"[":{12:1.05710102489, 14:1.05710102489},
+    u"\\":{12:2.11420204978, 14:2.378477306},
+    u"]":{12:1.05710102489, 14:1.05710102489},
+    u"^":{12:1.32137628111, 14:1.32137628111},
+    u"_":{12:2.11420204978, 14:2.64275256223},
+    u"`":{12:0.528550512445, 14:0.792825768668},
+    u"a":{12:1.84992679356, 14:2.11420204978},
+    u"b":{12:1.84992679356, 14:2.11420204978},
+    u"c":{12:1.32137628111, 14:1.58565153734},
+    u"d":{12:1.84992679356, 14:2.11420204978},
+    u"e":{12:1.58565153734, 14:1.84992679356},
+    u"f":{12:1.05710102489, 14:1.32137628111},
+    u"g":{12:1.84992679356, 14:2.11420204978},
+    u"h":{12:1.84992679356, 14:2.11420204978},
+    u"i":{12:0.792825768668, 14:0.792825768668},
+    u"j":{12:0.792825768668, 14:0.792825768668},
+    u"k":{12:1.58565153734, 14:1.84992679356},
+    u"l":{12:1.05710102489, 14:1.05710102489},
+    u"m":{12:2.11420204978, 14:2.64275256223},
+    u"n":{12:1.84992679356, 14:2.11420204978},
+    u"o":{12:1.58565153734, 14:1.84992679356},
+    u"p":{12:1.84992679356, 14:2.11420204978},
+    u"q":{12:1.84992679356, 14:2.11420204978},
+    u"r":{12:1.32137628111, 14:1.58565153734},
+    u"s":{12:1.58565153734, 14:1.84992679356},
+    u"t":{12:1.05710102489, 14:1.32137628111},
+    u"u":{12:1.84992679356, 14:2.11420204978},
+    u"v":{12:1.58565153734, 14:1.84992679356},
+    u"w":{12:2.11420204978, 14:2.378477306},
+    u"x":{12:1.58565153734, 14:1.84992679356},
+    u"y":{12:1.58565153734, 14:1.84992679356},
+    u"z":{12:1.58565153734, 14:1.84992679356},
+    u"{":{12:1.32137628111, 14:1.32137628111},
+    u"|":{12:0.792825768668, 14:0.792825768668},
+    u"}":{12:1.32137628111, 14:1.32137628111},
+    u"~":{12:2.11420204978, 14:2.378477306},
+    u"«":{12:1.84992679356, 14:2.11420204978},
+    u"°":{12:1.58565153734, 14:1.84992679356},
+    u"±":{12:1.84992679356, 14:2.11420204978},
+    u"µ":{12:1.84992679356, 14:2.11420204978},
+    u"·":{12:0.792825768668, 14:0.792825768668},
+    u"»":{12:1.84992679356, 14:2.11420204978},
+    u"А":{12:2.11420204978, 14:2.378477306},
+    u"Б":{12:1.84992679356, 14:2.378477306},
+    u"В":{12:1.84992679356, 14:2.378477306},
+    u"Г":{12:1.58565153734, 14:1.84992679356},
+    u"Д":{12:1.84992679356, 14:2.11420204978},
+    u"Е":{12:1.58565153734, 14:1.84992679356},
+    u"Ж":{12:2.378477306, 14:2.64275256223},
+    u"З":{12:1.58565153734, 14:1.84992679356},
+    u"И":{12:2.11420204978, 14:2.378477306},
+    u"Й":{12:2.11420204978, 14:2.378477306},
+    u"К":{12:1.84992679356, 14:2.378477306},
+    u"Л":{12:1.84992679356, 14:2.11420204978},
+    u"М":{12:2.11420204978, 14:2.64275256223},
+    u"Н":{12:2.11420204978, 14:2.378477306},
+    u"О":{12:1.84992679356, 14:2.378477306},
+    u"П":{12:2.11420204978, 14:2.378477306},
+    u"Р":{12:1.84992679356, 14:2.378477306},
+    u"С":{12:1.58565153734, 14:1.84992679356},
+    u"Т":{12:1.84992679356, 14:2.11420204978},
+    u"У":{12:1.84992679356, 14:2.378477306},
+    u"Ф":{12:2.11420204978, 14:2.64275256223},
+    u"Х":{12:2.11420204978, 14:2.378477306},
+    u"Ц":{12:2.11420204978, 14:2.378477306},
+    u"Ч":{12:1.84992679356, 14:2.378477306},
+    u"Ш":{12:2.378477306, 14:2.90702781845},
+    u"Щ":{12:2.64275256223, 14:2.90702781845},
+    u"Ъ":{12:2.378477306, 14:2.64275256223},
+    u"Ы":{12:2.11420204978, 14:2.64275256223},
+    u"Ь":{12:1.84992679356, 14:2.378477306},
+    u"Э":{12:1.84992679356, 14:2.11420204978},
+    u"Ю":{12:2.11420204978, 14:2.64275256223},
+    u"Я":{12:1.84992679356, 14:2.378477306},
+    u"а":{12:1.84992679356, 14:2.11420204978},
+    u"б":{12:1.58565153734, 14:1.84992679356},
+    u"в":{12:1.84992679356, 14:2.11420204978},
+    u"г":{12:1.58565153734, 14:1.84992679356},
+    u"д":{12:1.84992679356, 14:2.11420204978},
+    u"е":{12:1.58565153734, 14:1.84992679356},
+    u"ж":{12:2.11420204978, 14:2.378477306},
+    u"з":{12:1.32137628111, 14:1.58565153734},
+    u"и":{12:1.84992679356, 14:2.11420204978},
+    u"й":{12:1.84992679356, 14:2.11420204978},
+    u"к":{12:1.58565153734, 14:1.84992679356},
+    u"л":{12:1.58565153734, 14:1.84992679356},
+    u"м":{12:2.11420204978, 14:2.378477306},
+    u"н":{12:1.84992679356, 14:2.11420204978},
+    u"о":{12:1.58565153734, 14:1.84992679356},
+    u"п":{12:1.84992679356, 14:2.11420204978},
+    u"р":{12:1.84992679356, 14:2.11420204978},
+    u"с":{12:1.32137628111, 14:1.58565153734},
+    u"т":{12:2.11420204978, 14:2.64275256223},
+    u"у":{12:1.84992679356, 14:2.11420204978},
+    u"ф":{12:2.11420204978, 14:2.378477306},
+    u"х":{12:1.58565153734, 14:1.84992679356},
+    u"ц":{12:1.84992679356, 14:2.11420204978},
+    u"ч":{12:1.84992679356, 14:2.11420204978},
+    u"ш":{12:2.11420204978, 14:2.64275256223},
+    u"щ":{12:2.378477306, 14:2.64275256223},
+    u"ъ":{12:1.84992679356, 14:2.11420204978},
+    u"ы":{12:2.11420204978, 14:2.378477306},
+    u"ь":{12:1.58565153734, 14:1.84992679356},
+    u"э":{12:1.58565153734, 14:1.84992679356},
+    u"ю":{12:1.84992679356, 14:2.378477306},
+    u"я":{12:1.84992679356, 14:2.11420204978},
+    u"Ё":{12:1.58565153734, 14:1.84992679356},
+    u"Є":{12:1.84992679356, 14:2.11420204978},
+    u"І":{12:0.792825768668, 14:0.792825768668},
+    u"Ї":{12:1.05710102489, 14:1.05710102489},
+    u"ё":{12:1.58565153734, 14:1.84992679356},
+    u"є":{12:1.58565153734, 14:1.84992679356},
+    u"і":{12:0.792825768668, 14:0.792825768668},
+    u"ї":{12:1.05710102489, 14:1.05710102489},
+    u"℃":{12:2.90702781845, 14:3.43557833089},
+    u"℉":{12:2.90702781845, 14:3.43557833089},
+    u"№":{12:2.90702781845, 14:3.43557833089},
+    u"max":{12:3.69985358712, 14:4.22840409956},
+    }
 
-class CompList():
+class CompList(object):  # pylint: disable=too-many-instance-attributes
     """
     Generating list of the components from KiCad Schematic
     and save it to *.ods file.
@@ -267,11 +273,11 @@ class CompList():
 
         # Additional data
         self.separators_dict = {
-            u'марка':['',''],
-            u'значение':['',''],
-            u'класс точности':['',''],
-            u'тип':['',''],
-            u'стандарт':['','']
+            u'марка':['', ''],
+            u'значение':['', ''],
+            u'класс точности':['', ''],
+            u'тип':['', ''],
+            u'стандарт':['', '']
             }
         self.aliases_dict = {
             u'группа':u'Группа',
@@ -299,13 +305,23 @@ class CompList():
         self._cur_page_num = 1
         self._cur_page = None
         self._rows_per_page = 0
+        # Patterns for first page
+        self._first_page_pattern_v1 = None
+        self._first_page_pattern_v2 = None
+        self._first_page_pattern_v3 = None
+        self._first_page_pattern_v4 = None
+        # Pattern for other pages
+        self._other_pages_pattern = None
+        # Pattern for last pages (the changes sheet)
+        self._last_page_pattern = None
 
-    def _get_width_factor(self, label, text):
+    @staticmethod
+    def _get_width_factor(label, text):  # pylint: disable=too-many-return-statements, too-many-branches
         """
         Returns width factor in % if text is not fit in table column.
 
         """
-        if len(text) == 0:
+        if not text:
             return 100
         elif label.startswith('#1:'):
             # Size of text that fits in any case
@@ -345,7 +361,7 @@ class CompList():
             char_width = 0
             try:
                 char_width = CHAR_WIDTH_MM[char][font_size]
-            except:
+            except KeyError:
                 char_width = CHAR_WIDTH_MM[u'max'][font_size]
             text_width += char_width
 
@@ -357,7 +373,8 @@ class CompList():
 
         return width_factor_int
 
-    def _get_unescaped_text(self, text):
+    @staticmethod
+    def _get_unescaped_text(text):
         """
         Remove any escapes in text.
 
@@ -368,7 +385,7 @@ class CompList():
         pure_text = pure_text.decode('string_escape')
         return unicode(pure_text)
 
-    def _replace_text(self, page, label, text, center=False, underline=False):
+    def _replace_text(self, page, label, text, center=False, underline=False):  # pylint: disable=too-many-arguments
         """
         Replace 'label' (like #1:1) to 'text' in every table on 'page'.
         If 'center' is set to 'True' text will be aligned by center of the cell.
@@ -381,17 +398,17 @@ class CompList():
             for table in page.body.getElementsByType(Table):
                 self._replace_text_in_table(table, label, text, center, underline)
 
-    def _replace_text_in_table(self, table, label, text, center=False, underline=False):
+    def _replace_text_in_table(self, table, label, text, center=False, underline=False):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
         """
         Replace 'label' (like #1:1) to 'text' in 'table'.
         If 'center' is set to 'True' text will be aligned by center of the cell.
         If 'underline' is set to 'True' text will be underlined.
 
         """
-        for row in table.getElementsByType(TableRow):
+        for row in table.getElementsByType(TableRow):  # pylint: disable=too-many-nested-blocks
             for cell in row.getElementsByType(TableCell):
-                for p in cell.getElementsByType(P):
-                    for p_data in p.childNodes:
+                for paragraph in cell.getElementsByType(P):
+                    for p_data in paragraph.childNodes:
                         if p_data.tagName == u'Text':
                             if p_data.data == label:
                                 text = self._get_unescaped_text(text)
@@ -399,61 +416,62 @@ class CompList():
                                 p_data.data = text_lines[0]
                                 # Line breaks
                                 if len(text_lines) > 1:
-                                    p_style = p.getAttribute(u'stylename')
+                                    p_style = paragraph.getAttribute(u'stylename')
                                     for line in text_lines[1:]:
                                         new_p = P(text=line)
                                         if self.file_format == u'.odt':
                                             new_p.setAttribute(u'stylename', p_style)
                                         cell.addElement(new_p)
-                                if center == True or underline == True:
+                                if center or underline:
                                     suffix = u''
-                                    if center == True:
+                                    if center:
                                         suffix += u'_c'
-                                    if underline == True:
+                                    if underline:
                                         suffix += u'_u'
                                     # Set center align and/or underline
                                     if self.file_format == u'.ods':
                                         # If used ODS format the text properties stored
                                         # in cell style.
-                                        groupStyleName = cell.getAttribute(u'stylename') + suffix
+                                        group_style_name = cell.getAttribute(u'stylename') + suffix
                                     elif self.file_format == u'.odt':
                                         # But if used ODT format the text properties stored
                                         # in paragraph style inside cell.
-                                        groupStyleName = suffix
+                                        group_style_name = suffix
                                     try:
-                                        groupStyle = self.complist.getStyleByName(groupStyleName)
-                                        # Needed for backwards compatibility
-                                        if groupStyle == None:
-                                            raise
-                                    except:
+                                        group_style = self.complist.getStyleByName(group_style_name)
+                                    except AssertionError:
+                                        group_style = None
+                                    if group_style is None:
                                         if self.file_format == u'.ods':
-                                            groupStyleName = cell.getAttribute(u'stylename')
+                                            group_style_name = cell.getAttribute(u'stylename')
                                         elif self.file_format == u'.odt':
-                                            groupStyleName = p.getAttribute(u'stylename')
-                                        groupStyle = deepcopy(self.complist.getStyleByName(groupStyleName))
+                                            group_style_name = paragraph.getAttribute(u'stylename')
+                                        group_style = deepcopy(
+                                            self.complist.getStyleByName(group_style_name)
+                                            )
                                         if self.file_format == u'.ods':
-                                            groupStyleName += suffix
-                                            groupStyle.setAttribute(u'name', groupStyleName)
+                                            group_style_name += suffix
+                                            group_style.setAttribute(u'name', group_style_name)
                                         elif self.file_format == u'.odt':
-                                            groupStyle.setAttribute(u'name', suffix)
-                                        if center == True:
-                                            groupStyle.addElement(
+                                            group_style.setAttribute(u'name', suffix)
+                                        if center:
+                                            group_style.addElement(
                                                 ParagraphProperties(
                                                     textalign=u'center'
                                                     )
                                                 )
-                                        if underline == True:
-                                            groupStyle.addElement(
+                                        if underline:
+                                            group_style.addElement(
                                                 TextProperties(
                                                     textunderlinetype=u'single',
                                                     textunderlinestyle=u'solid'
                                                     )
                                                 )
-                                        self.complist.automaticstyles.addElement(groupStyle)
+                                        self.complist.automaticstyles.addElement(group_style)
                                     if self.file_format == u'.ods':
-                                        cell.setAttribute(u'stylename', groupStyleName)
+                                        cell.setAttribute(u'stylename', group_style_name)
                                     elif self.file_format == u'.odt':
-                                        p.setAttribute(u'stylename', suffix)
+                                        paragraph.setAttribute(u'stylename', suffix)
 
                                 # Fit text to cell in *.odt (*.ods does it automatically)
                                 if self.file_format == u'.odt':
@@ -461,23 +479,24 @@ class CompList():
 
                                     if width_factor < 100:
                                         suffix = u'_%d' % width_factor
-                                        curStyleName = p.getAttribute(u'stylename')
-                                        newStyleName = curStyleName + suffix
+                                        cur_style_name = paragraph.getAttribute(u'stylename')
+                                        new_style_name = cur_style_name + suffix
                                         try:
-                                            newStyle = self.complist.getStyleByName(newStyleName)
-                                            # Needed for backwards compatibility
-                                            if newStyle == None:
-                                                raise
-                                        except:
-                                            newStyle = deepcopy(self.complist.getStyleByName(curStyleName))
-                                            newStyle.setAttribute(u'name', newStyleName)
-                                            newStyle.addElement(
+                                            new_style = self.complist.getStyleByName(new_style_name)
+                                        except AssertionError:
+                                            new_style = None
+                                        if new_style is None:
+                                            new_style = deepcopy(
+                                                self.complist.getStyleByName(cur_style_name)
+                                                )
+                                            new_style.setAttribute(u'name', new_style_name)
+                                            new_style.addElement(
                                                 TextProperties(
                                                     textscale=u'%d%%' % width_factor
                                                     )
                                                 )
-                                            self.complist.automaticstyles.addElement(newStyle)
-                                        p.setAttribute(u'stylename', newStyleName)
+                                            self.complist.automaticstyles.addElement(new_style)
+                                        paragraph.setAttribute(u'stylename', new_style_name)
 
                                 return
 
@@ -492,19 +511,20 @@ class CompList():
             for table in page.body.getElementsByType(Table):
                 self._clear_table(table)
 
-    def _clear_table(self, table):
+    @staticmethod
+    def _clear_table(table):
         """
         Clear 'table' of labels.
 
         """
         rows = table.getElementsByType(TableRow)
-        for row in rows:
+        for row in rows:  # pylint: disable=too-many-nested-blocks
             cells = row.getElementsByType(TableCell)
             for cell in cells:
-                for p in cell.getElementsByType(P):
-                    for p_data in p.childNodes:
+                for paragraph in cell.getElementsByType(P):
+                    for p_data in paragraph.childNodes:
                         if p_data.tagName == u'Text':
-                            if re.search(u'#\d+:\d+', p_data.data) != None:
+                            if re.search(ur'#\d+:\d+', p_data.data) is not None:
                                 p_data.data = u''
 
     def _next_row(self):
@@ -523,7 +543,7 @@ class CompList():
                 self._cur_page.setAttribute(u'name', u'стр. %d' % self._cur_page_num)
             self.complist_pages.append(self._cur_page)
 
-            self._cur_page = deepcopy(self._otherPagesPattern)
+            self._cur_page = deepcopy(self._other_pages_pattern)
             if self.file_format == u'.odt':
                 # Needed for getting styles in _replace_text_in_table
                 self.complist = self._cur_page
@@ -531,7 +551,7 @@ class CompList():
             self._cur_row = 1
             self._rows_per_page = 32
 
-    def _get_final_values(self, element, with_group=False):
+    def _get_final_values(self, element, with_group=False):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """
         Get list with final fields values of component.
         """
@@ -557,7 +577,7 @@ class CompList():
             counter = 0
             separator = ', '
             ref = ref_type + str(prev_num)
-            if need_adjust_flag == True:
+            if need_adjust_flag:
                 ref += u'*'
             for num in ref_num[1:]:
                 if num == (prev_num + 1):
@@ -569,38 +589,38 @@ class CompList():
                 else:
                     if counter > 0:
                         ref += separator + ref_type + str(prev_num)
-                        if need_adjust_flag == True:
+                        if need_adjust_flag:
                             ref += u'*'
                     separator = ', '
                     ref += separator + ref_type + str(num)
-                    if need_adjust_flag == True:
+                    if need_adjust_flag:
                         ref += u'*'
                     prev_num = num
                     counter = 0
             if counter > 0:
                 ref += separator + ref_type + str(prev_num)
-                if need_adjust_flag == True:
+                if need_adjust_flag:
                     ref += u'*'
         else:
             # Reference: 'R5'; 'VT13' etc.
             ref = ref_type + ref_num
             # Add "*" mark if component "needs adjusting"
-            if need_adjust_flag == True:
+            if need_adjust_flag:
                 ref = ref + u'*'
         values.append(ref)
 
         # Name
         name = u''
         # Adding separators
-        if mark != u'':
+        if mark:
             name += "{prefix}{value}{suffix}".format(
-                    prefix = self.separators_dict[u'марка'][0],
-                    value = mark,
-                    suffix = self.separators_dict[u'марка'][1]
-                    )
-        if value != u'':
+                prefix=self.separators_dict[u'марка'][0],
+                value=mark,
+                suffix=self.separators_dict[u'марка'][1]
+                )
+        if value:
             # Automatically units addition
-            if self.add_units == True:
+            if self.add_units:
                 num_value = u''
                 multiplier = u''
                 units = u''
@@ -608,15 +628,21 @@ class CompList():
                 multipliers = mult_keys + mult_values
                 multipliers = list(set(multipliers))
                 # 2u7, 2н7, 4m7, 5k1 etc.
-                regexp_1= re.compile(u'^(\d+)({})(\d+)$'.format(u'|'.join(multipliers)), re.U)
+                regexp_1 = re.compile(
+                    ur'^(\d+)({})(\d+)$'.format(u'|'.join(multipliers)),
+                    re.U
+                    )
                 # 2.7 u, 2700p, 4.7 m, 470u, 5.1 k, 510 etc.
-                regexp_2= re.compile(u'^(\d+(?:[\.,]\d+)?)\s*({})?$'.format(u'|'.join(multipliers)), re.U)
+                regexp_2 = re.compile(
+                    ur'^(\d+(?:[\.,]\d+)?)\s*({})?$'.format(u'|'.join(multipliers)),
+                    re.U
+                    )
                 if ref_type.startswith(u'C') and not value.endswith(u'Ф'):
                     units = u'Ф'
-                    if re.match(u'^\d+$', value):
+                    if re.match(ur'^\d+$', value):
                         num_value = value
                         multiplier = u'п'
-                    elif re.match(u'^\d+[\.,]\d+$', value):
+                    elif re.match(ur'^\d+[\.,]\d+$', value):
                         num_value = value
                         multiplier = u'мк'
                     else:
@@ -643,7 +669,7 @@ class CompList():
                     elif re.match(regexp_2, num_value):
                         search_res = re.search(regexp_2, num_value).groups()
                         num_value = search_res[0]
-                        if search_res[1] == None:
+                        if search_res[1] is None:
                             multiplier = u'мк'
                         else:
                             multiplier = search_res[1]
@@ -655,9 +681,9 @@ class CompList():
                     if num_value.endswith(u'Ohm') or num_value.endswith(u'ohm'):
                         num_value = num_value[:-3]
                     num_value = num_value.strip()
-                    if re.match(u'R\d+', num_value):
+                    if re.match(ur'R\d+', num_value):
                         num_value = num_value.replace(u'R', u'0,')
-                    elif re.match(u'\d+R\d+', num_value):
+                    elif re.match(ur'\d+R\d+', num_value):
                         num_value = num_value.replace(u'R', u',')
                     elif re.match(regexp_1, num_value):
                         search_res = re.search(regexp_1, num_value).groups()
@@ -666,46 +692,46 @@ class CompList():
                     elif re.match(regexp_2, num_value):
                         search_res = re.search(regexp_2, num_value).groups()
                         num_value = search_res[0]
-                        if search_res[1] != None:
+                        if search_res[1] is not None:
                             multiplier = search_res[1]
                     else:
                         num_value = u''
-                if num_value != u'':
+                if num_value:
                     # Translate multiplier
                     if multiplier in self.multipliers_dict.keys():
                         multiplier = self.multipliers_dict[multiplier]
                     value = num_value.replace(u'.', u',')
-                    if self.space_before_units == True:
+                    if self.space_before_units:
                         value += u' '
                     value += multiplier
                     value += units
             name += "{prefix}{value}{suffix}".format(
-                    prefix = self.separators_dict[u'значение'][0],
-                    value = value,
-                    suffix = self.separators_dict[u'значение'][1]
-                    )
-        if accuracy != u'':
+                prefix=self.separators_dict[u'значение'][0],
+                value=value,
+                suffix=self.separators_dict[u'значение'][1]
+                )
+        if accuracy:
             name += "{prefix}{value}{suffix}".format(
-                    prefix = self.separators_dict[u'класс точности'][0],
-                    value = accuracy,
-                    suffix = self.separators_dict[u'класс точности'][1]
-                    )
-        if type_ != u'':
+                prefix=self.separators_dict[u'класс точности'][0],
+                value=accuracy,
+                suffix=self.separators_dict[u'класс точности'][1]
+                )
+        if type_:
             name += "{prefix}{value}{suffix}".format(
-                    prefix = self.separators_dict[u'тип'][0],
-                    value = type_,
-                    suffix = self.separators_dict[u'тип'][1]
-                    )
-        if gost != u'':
+                prefix=self.separators_dict[u'тип'][0],
+                value=type_,
+                suffix=self.separators_dict[u'тип'][1]
+                )
+        if gost:
             name += "{prefix}{value}{suffix}".format(
-                    prefix = self.separators_dict[u'стандарт'][0],
-                    value = gost,
-                    suffix = self.separators_dict[u'стандарт'][1]
-                                )
-        if with_group == True:
+                prefix=self.separators_dict[u'стандарт'][0],
+                value=gost,
+                suffix=self.separators_dict[u'стандарт'][1]
+                )
+        if with_group:
             try:
-                singular_group_name = self.get_singular_group_name(group)
-            except:
+                singular_group_name = self.get_singular_group_name(group)  # pylint: disable=not-callable
+            except TypeError:
                 singular_group_name = group
             name = singular_group_name + u' ' + name
         values.append(name)
@@ -718,7 +744,8 @@ class CompList():
 
         return values
 
-    def _get_group_names_with_gost(self, group):
+    @staticmethod
+    def _get_group_names_with_gost(group):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """
         Get list of group names with GOST for every mark of components
         and prepared components (without GOST).
@@ -732,6 +759,11 @@ class CompList():
             if comp[8] != gost:
                 break
         else:
+            # All components with same GOST
+            if not gost:
+                # If GOST is empty in every component:
+                # group title is just Groupname
+                return [group_name], components
             # Clear GOST in every component
             for comp in components:
                 comp[8] = u''
@@ -743,13 +775,13 @@ class CompList():
         multi_components_in_group = False
         for comp in components:
             mark = comp[4]
-            if mark == u'':
+            if not mark:
                 # If Mark field is empty to use Value instead
                 mark = comp[5]
             gost = comp[8]
-            if mark != u'' and gost != u'':
+            if mark and gost:
                 group_name_parts = [group_name, mark, gost]
-                if not group_name_parts in group_names_parts_with_gost:
+                if group_name_parts not in group_names_parts_with_gost:
                     group_names_parts_with_gost.append(group_name_parts)
                 else:
                     multi_components_in_group = True
@@ -763,16 +795,22 @@ class CompList():
             mark_string = group_name_parts[1]
             mark_parts = []
             # First part without prefix
-            res = re.search(u'[^A-Za-zА-Яа-я0-9]*([A-Za-zА-Яа-я0-9]+)($|[^A-Za-zА-Яа-я0-9].*)', mark_string)
-            if res == None:
+            res = re.search(
+                ur'[^A-Za-zА-Яа-я0-9]*([A-Za-zА-Яа-я0-9]+)($|[^A-Za-zА-Яа-я0-9].*)',
+                mark_string
+                )
+            if res is None:
                 group_name_parts[1] = [mark_string]
                 continue
             mark_parts.append(res.groups()[0])
             mark_string = res.groups()[1]
             # Other parts with delimiters as prefix
             while True:
-                res = re.search(u'([^A-Za-zА-Яа-я0-9]+[A-Za-zА-Яа-я0-9_\.,]+)($|[^A-Za-zА-Яа-я0-9].*)', mark_string)
-                if res != None:
+                res = re.search(
+                    ur'([^A-Za-zА-Яа-я0-9]+[A-Za-zА-Яа-я0-9_\.,]+)($|[^A-Za-zА-Яа-я0-9].*)',
+                    mark_string
+                    )
+                if res is not None:
                     mark_parts.append(res.groups()[0])
                     mark_string = res.groups()[1]
                 else:
@@ -781,7 +819,7 @@ class CompList():
 
         # Create set of groupname, mark and gost with unique GOST
         # and common part of Mark
-        group_names_parts_with_unique_gost = []
+        group_names_parts_with_unique_gost = []  # pylint: disable=invalid-name
         for group_name_parts in group_names_parts_with_gost:
             group_name, mark_parts, gost = group_name_parts
             for group_name_unique_parts in group_names_parts_with_unique_gost:
@@ -821,7 +859,7 @@ class CompList():
 
         return group_names, components
 
-    def _normalize_row(self, columns):
+    def _normalize_row(self, columns):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """
         If value of a cell does not fit, it will be splitted and moved to
         extra row.
@@ -838,9 +876,9 @@ class CompList():
         width_factors = [100, 100, 100, 100]
         for index, value in enumerate(columns):
             width_factors[index] = self._get_width_factor(
-                    '#{}:{}'.format(index + 1, self._cur_row),
-                    value
-                    )
+                '#{}:{}'.format(index + 1, self._cur_row),
+                value
+                )
         # Reference column
         if width_factors[0] < self.extremal_width_factor:
             ref = columns[0]
@@ -893,21 +931,21 @@ class CompList():
                 norm_columns[3] = comment[:pos]
                 extra_comment = comment[(pos + 1):]
 
-        if extra_ref != None or extra_name != None or extra_comment != None:
+        if extra_ref is not None or extra_name is not None or extra_comment is not None:
             extra_row = []
-            if extra_ref == None:
+            if extra_ref is None:
                 extra_row.append(u'')
             else:
                 extra_row.append(extra_ref)
-            if extra_name == None:
+            if extra_name is None:
                 extra_row.append(u'')
             else:
                 extra_row.append(extra_name)
-            if extra_count == None:
+            if extra_count is None:
                 extra_row.append(u'')
             else:
                 extra_row.append(extra_count)
-            if extra_comment == None:
+            if extra_comment is None:
                 extra_row.append(u'')
             else:
                 extra_row.append(extra_comment)
@@ -938,13 +976,13 @@ class CompList():
                     value,
                     center=center
                     )
-            if extra_row == None:
+            if extra_row is None:
                 break
             else:
                 columns = extra_row
                 self._next_row()
 
-    def load(self, sch_file_name):
+    def load(self, sch_file_name):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """
         Load values of the fields from all components of
         KiCad Schematic file.
@@ -957,9 +995,8 @@ class CompList():
 
             """
             for field in comp.fields:
-                if hasattr(field, u'name'):
-                    if field.name == field_name:
-                        return field.text
+                if field.name == field_name:
+                    return field.text
             return u''
 
         def apply_substitution(comp, ref, field_value):
@@ -967,8 +1004,8 @@ class CompList():
             Replace ${field_name} with value from field with name "field_name".
 
             """
-            match = re.search(u'\$\{([^{}]*)\}', field_value)
-            if match == None:
+            match = re.search(ur'\$\{([^{}]*)\}', field_value)
+            if match is None:
                 return field_value
             else:
                 substitution_value = u''
@@ -1022,90 +1059,92 @@ class CompList():
             # Skip components with not supported ref type
             if not re.match(REF_REGEXP, comp.fields[0].text):
                 continue
+            exclude = False
             # Skip components excluded manually
-            if self.all_components == False:
-                try:
-                    for field in comp.fields:
-                        if hasattr(field, u'name'):
-                            if field.name == u'Исключён из ПЭ':
-                                raise
-                except:
+            if not self.all_components:
+                for field in comp.fields:
+                    if field.name == u'Исключён из ПЭ':
+                        exclude = True
+                        break
+                if exclude:
                     continue
             # Skip parts of the same component
             for row in comp_array:
                 if comp.fields[0].text == (row[1] + row[2]):
+                    exclude = True
                     break
-            else:
-                temp = []
-                temp.append(get_text_from_field(
-                    comp,
-                    self.aliases_dict[u'группа']
-                    ))
-                ref_type = re.search(REF_REGEXP, comp.fields[0].text).group(1)
-                temp.append(ref_type)
-                ref_num = re.search(REF_REGEXP, comp.fields[0].text).group(2)
-                temp.append(ref_num)
-                for field in comp.fields:
-                    if hasattr(field, u'name'):
-                        if field.name == u'Подбирают при регулировании':
-                            temp.append(True)
-                            break
-                else:
-                    temp.append(False)
-                temp.append(get_text_from_field(
-                    comp,
-                    self.aliases_dict[u'марка']
-                    ))
-                if self.aliases_dict[u'значение'] == u'':
-                    temp.append(comp.fields[1].text)
-                else:
-                    temp.append(get_text_from_field(
-                        comp,
-                        self.aliases_dict[u'значение']
-                        ))
-                temp.append(get_text_from_field(
-                    comp,
-                    self.aliases_dict[u'класс точности']
-                    ))
-                temp.append(get_text_from_field(
-                    comp,
-                    self.aliases_dict[u'тип']
-                    ))
-                temp.append(get_text_from_field(
-                    comp,
-                    self.aliases_dict [u'стандарт']
-                    ))
-                temp.append(get_text_from_field(
-                    comp,
-                    self.aliases_dict [u'примечание']
-                    ))
-                temp.append(u'1')
-                if hasattr(comp, u'path_and_ref'):
-                    for ref in comp.path_and_ref:
-                        # Skip components with not supported ref type
-                        if not re.match(REF_REGEXP, ref[1]):
-                            continue
-                        # Skip parts of the same comp from different sheets
-                        for value in comp_array:
-                            tmp_ref = value[1] + value[2]
-                            if tmp_ref == ref[1]:
-                                break
-                        else:
-                            new_temp = list(temp)
-                            new_temp[1] = re.search(REF_REGEXP, ref[1]).group(1)
-                            new_temp[2] = re.search(REF_REGEXP, ref[1]).group(2)
-                            comp_array.append(new_temp)
-                else:
-                    comp_array.append(temp)
+            if exclude:
+                continue
 
-        if len(comp_array) == 0:
+            temp = []
+            temp.append(get_text_from_field(
+                comp,
+                self.aliases_dict[u'группа']
+                ))
+            ref_type = re.search(REF_REGEXP, comp.fields[0].text).group(1)
+            temp.append(ref_type)
+            ref_num = re.search(REF_REGEXP, comp.fields[0].text).group(2)
+            temp.append(ref_num)
+            need_adjust = False
+            for field in comp.fields:
+                if field.name == u'Подбирают при регулировании':
+                    need_adjust = True
+                    break
+            temp.append(need_adjust)
+            temp.append(get_text_from_field(
+                comp,
+                self.aliases_dict[u'марка']
+                ))
+            if not self.aliases_dict[u'значение']:
+                temp.append(comp.fields[1].text)
+            else:
+                temp.append(get_text_from_field(
+                    comp,
+                    self.aliases_dict[u'значение']
+                    ))
+            temp.append(get_text_from_field(
+                comp,
+                self.aliases_dict[u'класс точности']
+                ))
+            temp.append(get_text_from_field(
+                comp,
+                self.aliases_dict[u'тип']
+                ))
+            temp.append(get_text_from_field(
+                comp,
+                self.aliases_dict[u'стандарт']
+                ))
+            temp.append(get_text_from_field(
+                comp,
+                self.aliases_dict[u'примечание']
+                ))
+            temp.append(u'1')
+            if hasattr(comp, u'path_and_ref'):
+                for ref in comp.path_and_ref:
+                    # Skip components with not supported ref type
+                    if not re.match(REF_REGEXP, ref[1]):
+                        continue
+                    # Skip parts of the same comp from different sheets
+                    for value in comp_array:
+                        tmp_ref = value[1] + value[2]
+                        if tmp_ref == ref[1]:
+                            break
+                    else:
+                        new_temp = list(temp)
+                        new_temp[1] = re.search(REF_REGEXP, ref[1]).group(1)
+                        new_temp[2] = re.search(REF_REGEXP, ref[1]).group(2)
+                        comp_array.append(new_temp)
+            else:
+                comp_array.append(temp)
+
+        if not comp_array:
             self.components_array = None
             return
 
         # Apply substitution
-        for i in range(len(comp_array)):
+        for i, _ in enumerate(comp_array):
             comp = get_comp_by_ref(comp_array[i][1] + comp_array[i][2])
-            for ii in range(len(comp_array[i])):
+            for ii, _ in enumerate(comp_array[i]):  # pylint: disable=invalid-name
                 # Skip for ref_type, ref_num, need_adjust_flag and count
                 if ii in (1, 2, 3, 10):
                     continue
@@ -1122,14 +1161,15 @@ class CompList():
 
         # Split elements into groups based on ref_type
         # input: list of components;
-        # every component represent as [group, ref_type, ref_number, need_adjust_flag, mark, value, accuracy, type, GOST, comment, count];
+        # every component represent as
+        # [group, ref_type, ref_number, need_adjust_flag, mark, value, accuracy, type, GOST, comment, count]
         # output: list of groups;
         # every group represent as list of components.
         group_array = []
         grouped_comp_array = []
         cur_ref = None
         for comp in comp_array:
-            if cur_ref == None:
+            if cur_ref is None:
                 # First component
                 group_array.append(comp)
                 cur_ref = comp[1]
@@ -1156,7 +1196,7 @@ class CompList():
             cur_name = None
             group_array = []
             for comp in group:
-                if cur_name == None:
+                if cur_name is None:
                     # First component
                     group_array.append(comp)
                     cur_name = comp[0]
@@ -1173,7 +1213,7 @@ class CompList():
 
         # If sequential groups has the same name but different ref_type
         # they may be joined in single group.
-        if self.join_same_name_groups == True \
+        if self.join_same_name_groups \
                 and len(grouped_comp_array) > 1:
             temp_array = [grouped_comp_array[0]]
             for group in grouped_comp_array[1:]:
@@ -1182,7 +1222,7 @@ class CompList():
                 # group name of first comp from current group
                 cur_groupname = group[0][0]
                 if cur_groupname == prev_groupname \
-                        and cur_groupname != u'':
+                        and cur_groupname:
                     temp_array[-1].extend(group)
                 else:
                     temp_array.append(group)
@@ -1195,7 +1235,6 @@ class CompList():
         for group in grouped_comp_array:
             ref_nums = []
             prev = None
-            first_index = 0
             last_index = 0
             temp_group = []
             for element in group:
@@ -1226,7 +1265,6 @@ class CompList():
                         # next different element
                         temp_group.append(prev)
                     ref_nums = [int(element[2])]
-                    first_index = last_index = group.index(element)
 
                 if group.index(element) == len(group) - 1:
                     # last element in the group
@@ -1243,12 +1281,12 @@ class CompList():
                 prev = element[:]
         self.components_array = temp_array
 
-    def save(self, complist_file_name):
+    def save(self, complist_file_name):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """
         Save created list of the components to the file.
 
         """
-        if self.components_array == None:
+        if self.components_array is None:
             return
 
         base_path = os.path.dirname(os.path.realpath(__file__))
@@ -1263,7 +1301,7 @@ class CompList():
 
                 # Fill list of the components
                 prev_ref_type = self.components_array[0][0][1]
-                for group in self.components_array:
+                for group in self.components_array:  # pylint: disable=too-many-nested-blocks
                     group_name = group[0][0]
                     ref_type = group[0][1]
 
@@ -1272,17 +1310,17 @@ class CompList():
                     if self.components_array.index(group) == 0:
                         # Before first group not needed
                         add_empty_rows = False
-                    if self.empty_rows_everywhere == False \
+                    if self.empty_rows_everywhere \
                             and prev_ref_type == ref_type:
                         # Between elements of the same type not needed
                         add_empty_rows = False
-                    if add_empty_rows == True:
+                    if add_empty_rows:
                         for _ in range(self.empty_rows_after_group):
                             csv_writer.writerow(empty_row)
                     prev_ref_type = ref_type
 
-                    if group_name != u'':
-                        if len(group) == 1 and self.singular_group_name == True:
+                    if group_name:
+                        if len(group) == 1 and self.singular_group_name:
                             # Place group name with name of component
                             comp_values = self._get_final_values(group[0], True)
                             for value in comp_values:
@@ -1291,14 +1329,14 @@ class CompList():
                             continue
                         else:
                             # New group title
-                            if self.gost_in_group_name == True:
+                            if self.gost_in_group_name:
                                 group_names_with_gost, components = self._get_group_names_with_gost(group)
                                 # Write group names with GOST
                                 for group_name_with_gost in group_names_with_gost:
                                     group_name_with_gost = self._get_unescaped_text(group_name_with_gost)
                                     csv_writer.writerow([u'', group_name_with_gost, u'', u''])
                                 # Empty row after group name
-                                if self.empty_row_after_name == True:
+                                if self.empty_row_after_name:
                                     csv_writer.writerow(empty_row)
                                 # Write to table prepared components
                                 for comp in components:
@@ -1311,7 +1349,7 @@ class CompList():
                             else:
                                 csv_writer.writerow([u'', group_name, u'', u''])
                                 # Empty row after group name
-                                if self.empty_row_after_name == True:
+                                if self.empty_row_after_name:
                                     csv_writer.writerow(empty_row)
 
                     for comp in group:
@@ -1322,26 +1360,26 @@ class CompList():
                         csv_writer.writerow(comp_values)
             return
 
-        elif self.file_format == u'.ods':
+        if self.file_format == u'.ods':
             # Load the pattern
             pattern = odf.opendocument.load(os.path.join(
                 base_path, u'patterns', u'all_in_one.ods'))
             for sheet in pattern.spreadsheet.getElementsByType(Table):
                 # Patterns for first page
                 if sheet.getAttribute(u'name') == u'First1':
-                    self._firstPagePatternV1 = sheet
+                    self._first_page_pattern_v1 = sheet
                 elif sheet.getAttribute(u'name') == u'First2':
-                    self._firstPagePatternV2 = sheet
+                    self._first_page_pattern_v2 = sheet
                 elif sheet.getAttribute(u'name') == u'First3':
-                    self._firstPagePatternV3 = sheet
+                    self._first_page_pattern_v3 = sheet
                 elif sheet.getAttribute(u'name') == u'First4':
-                    self._firstPagePatternV4 = sheet
+                    self._first_page_pattern_v4 = sheet
                 # Pattern for other pages
                 elif sheet.getAttribute(u'name') == u'Other':
-                    self._otherPagesPattern = sheet
+                    self._other_pages_pattern = sheet
                 # Pattern for last pages (the changes sheet)
                 elif sheet.getAttribute(u'name') == u'Last':
-                    self._lastPagePattern = sheet
+                    self._last_page_pattern = sheet
 
             # Create list of the components file object
             self.complist = odf.opendocument.OpenDocumentSpreadsheet()
@@ -1359,33 +1397,33 @@ class CompList():
                 self.complist.settings.addElement(setting)
         elif self.file_format == u'.odt':
             # Patterns for first page
-            self._firstPagePatternV1 = odf.opendocument.load(os.path.join(
+            self._first_page_pattern_v1 = odf.opendocument.load(os.path.join(
                 base_path, u'patterns', u'first1.odt'))
-            self._firstPagePatternV2 = odf.opendocument.load(os.path.join(
+            self._first_page_pattern_v2 = odf.opendocument.load(os.path.join(
                 base_path, u'patterns', u'first2.odt'))
-            self._firstPagePatternV3 = odf.opendocument.load(os.path.join(
+            self._first_page_pattern_v3 = odf.opendocument.load(os.path.join(
                 base_path, u'patterns', u'first3.odt'))
-            self._firstPagePatternV4 = odf.opendocument.load(os.path.join(
+            self._first_page_pattern_v4 = odf.opendocument.load(os.path.join(
                 base_path, u'patterns', u'first4.odt'))
             # Pattern for other pages
-            self._otherPagesPattern = odf.opendocument.load(os.path.join(
+            self._other_pages_pattern = odf.opendocument.load(os.path.join(
                 base_path, u'patterns', u'other.odt'))
             # Pattern for last pages (the changes sheet)
-            self._lastPagePattern = odf.opendocument.load(os.path.join(
+            self._last_page_pattern = odf.opendocument.load(os.path.join(
                 base_path, u'patterns', u'last.odt'))
 
         # Select pattern for first page
         if not self.add_first_usage and not self.add_customer_fields:
-            self._cur_page = self._firstPagePatternV1
+            self._cur_page = self._first_page_pattern_v1
             self._rows_per_page = 29
         elif self.add_first_usage and not self.add_customer_fields:
-            self._cur_page = self._firstPagePatternV2
+            self._cur_page = self._first_page_pattern_v2
             self._rows_per_page = 29
         elif not self.add_first_usage and self.add_customer_fields:
-            self._cur_page = self._firstPagePatternV3
+            self._cur_page = self._first_page_pattern_v3
             self._rows_per_page = 26
         elif self.add_first_usage and self.add_customer_fields:
-            self._cur_page = self._firstPagePatternV4
+            self._cur_page = self._first_page_pattern_v4
             self._rows_per_page = 26
 
         if self.file_format == u'.odt':
@@ -1394,7 +1432,7 @@ class CompList():
 
         # Fill list of the components
         prev_ref_type = self.components_array[0][0][1]
-        for group in self.components_array:
+        for group in self.components_array:  # pylint: disable=too-many-nested-blocks
             group_name = group[0][0]
             ref_type = group[0][1]
 
@@ -1403,20 +1441,19 @@ class CompList():
             if self.components_array.index(group) == 0:
                 # Before first group not needed
                 add_empty_rows = False
-            if self.empty_rows_everywhere == False \
+            if self.empty_rows_everywhere \
                     and prev_ref_type == ref_type:
                 # Between elements of the same type not needed
                 add_empty_rows = False
-            if add_empty_rows == True:
+            if add_empty_rows:
                 for _ in range(self.empty_rows_after_group):
-                    if self.prohibit_empty_rows_on_top == True and \
-                            self._cur_row == 1:
+                    if self.prohibit_empty_rows_on_top and self._cur_row == 1:
                         break
                     self._next_row()
             prev_ref_type = ref_type
 
-            if group_name != u'':
-                if len(group) == 1 and self.singular_group_name == True:
+            if group_name:
+                if len(group) == 1 and self.singular_group_name:
                     # Place group name with name of component
                     columns = self._get_final_values(group[0], with_group=True)
                     self._set_row(columns)
@@ -1424,10 +1461,10 @@ class CompList():
                     continue
                 else:
                     # New group title
-                    if self.gost_in_group_name == True:
+                    if self.gost_in_group_name:
                         group_names_with_gost, components = self._get_group_names_with_gost(group)
                         # If name of group at bottom of page - move it to next page
-                        if self.prohibit_group_name_at_bottom == True \
+                        if self.prohibit_group_name_at_bottom \
                                 and (self._cur_row + len(group_names_with_gost)) >= self._rows_per_page:
                             while self._cur_row != 1:
                                 self._next_row()
@@ -1442,8 +1479,8 @@ class CompList():
                                 )
                             self._next_row()
                         # Empty row after group name
-                        if self.empty_row_after_name == True:
-                            if not (self.prohibit_empty_rows_on_top == True and self._cur_row == 1):
+                        if self.empty_row_after_name:
+                            if not (self.prohibit_empty_rows_on_top and self._cur_row == 1):
                                 self._next_row()
                         # Write to table prepared components
                         for comp in components:
@@ -1455,7 +1492,7 @@ class CompList():
 
                     else:
                         # If name of group at bottom of page - move it to next page
-                        if self.prohibit_group_name_at_bottom == True \
+                        if self.prohibit_group_name_at_bottom \
                                 and self._cur_row == self._rows_per_page:
                             self._next_row()
                         self._replace_text(
@@ -1467,8 +1504,8 @@ class CompList():
                             )
                         self._next_row()
                         # Empty row after group name
-                        if self.empty_row_after_name == True:
-                            if not (self.prohibit_empty_rows_on_top == True and self._cur_row == 1):
+                        if self.empty_row_after_name:
+                            if not (self.prohibit_empty_rows_on_top and self._cur_row == 1):
                                 self._next_row()
 
             for comp in group:
@@ -1486,9 +1523,9 @@ class CompList():
 
         # If the sheet of changes is needed - append it
         pg_cnt = len(self.complist_pages)
-        if self.add_changes_sheet == True \
+        if self.add_changes_sheet \
                 and pg_cnt > self.count_for_changes_sheet:
-            self._cur_page = self._lastPagePattern
+            self._cur_page = self._last_page_pattern
             if self.file_format == u'.ods':
                 self._cur_page.setAttribute(u'name', u'стр. %d' % self._cur_page_num)
             self.complist_pages.append(self._cur_page)
@@ -1515,7 +1552,7 @@ class CompList():
                 self._replace_text(page, u'#5:9', self.company)
                 if self.fill_first_usage:
                     first_usage = re.search(NUM_REGEXP, self.decimal_num)
-                    if first_usage != None:
+                    if first_usage is not None:
                         self._replace_text(page, u'#6:1', first_usage.group(1).strip())
 
             # Other pages - small stamp
@@ -1533,7 +1570,7 @@ class CompList():
             for table in self.complist_pages:
                 self.complist.spreadsheet.addElement(table)
         # ODT
-        elif self.file_format == u'.odt':
+        elif self.file_format == u'.odt':  # pylint: disable=too-many-nested-blocks
             self.complist = self.complist_pages[0]
             if len(self.complist_pages) > 1:
                 # Every style, frame or table must have unique name
@@ -1571,10 +1608,10 @@ class CompList():
                                         stylename = cell.getAttribute(u'stylename')
                                         stylename = u'_{}_{}'.format(num + 2, stylename)
                                         cell.setAttribute(u'stylename', stylename)
-                                        for p in cell.getElementsByType(P):
-                                            stylename = p.getAttribute(u'stylename')
+                                        for paragraph in cell.getElementsByType(P):
+                                            stylename = paragraph.getAttribute(u'stylename')
                                             stylename = u'_{}_{}'.format(num + 2, stylename)
-                                            p.setAttribute(u'stylename', stylename)
+                                            paragraph.setAttribute(u'stylename', stylename)
                         self.complist.body.addElement(body)
 
         # Add meta data
@@ -1583,25 +1620,25 @@ class CompList():
         version = version.replace('\n', '')
         version_file.close()
         creation_time = time.localtime()
-        creation_time_str = u'{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{min:02d}:{sec:02d}'.format(
-                year = creation_time.tm_year,
-                month = creation_time.tm_mon,
-                day = creation_time.tm_mday,
-                hour = creation_time.tm_hour,
-                min = creation_time.tm_min,
-                sec = creation_time.tm_sec
-                )
+        creation_time_str = u'{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{minutes:02d}:{sec:02d}'.format(
+            year=creation_time.tm_year,
+            month=creation_time.tm_mon,
+            day=creation_time.tm_mday,
+            hour=creation_time.tm_hour,
+            minutes=creation_time.tm_min,
+            sec=creation_time.tm_sec
+            )
         self.complist.meta.addElement(meta.CreationDate(text=creation_time_str))
         self.complist.meta.addElement(meta.InitialCreator(text='kicadbom2spec v{}'.format(version)))
 
         # Set font style
         styles = self.complist.automaticstyles.childNodes + self.complist.styles.childNodes
-        for style in styles:
+        for style in styles:  # pylint: disable=too-many-nested-blocks
             for node in style.childNodes:
                 if node.tagName == u'style:text-properties':
                     for attr_key in node.attributes.keys():
                         if attr_key[-1] == u'font-style':
-                            if self.italic == True:
+                            if self.italic:
                                 node.attributes[attr_key] = u'italic'
                             else:
                                 node.attributes[attr_key] = u'regular'
@@ -1612,22 +1649,21 @@ class CompList():
         file_name = os.path.splitext(complist_file_name)[0] + self.file_format
         self.complist.save(file_name)
 
-    def convert_decimal_num(self, num):
+    @staticmethod
+    def convert_decimal_num(num):
         """
         The correction of the decimal number (adding symbol "П" before the code
         of the schematic type).
 
         """
         num_parts = re.search(NUM_REGEXP, num)
-        if num_parts != None:
-            if num_parts.group(1) != None and num_parts.group(2) != None:
+        if num_parts is not None:
+            if num_parts.group(1) is not None and num_parts.group(2) is not None:
                 return u'П'.join(num_parts.groups())
-            else:
-                return num
-        else:
-            return num
+        return num
 
-    def convert_title(self, title):
+    @staticmethod
+    def convert_title(title):
         """
         The correction of the title.
 
@@ -1648,7 +1684,7 @@ class CompList():
                 suffix = u'\\n' + suffix
             return title_parts[0] + suffix
         else:
-            if title != u'':
+            if title:
                 suffix = u'\\n' + suffix
             return title + suffix
 
@@ -1664,8 +1700,16 @@ class CompList():
         sch = Schematic(sch_file_name)
         for item in sch.items:
             if item.__class__.__name__ == u'Sheet':
-                sheets.append(os.path.abspath(os.path.join(cur_path, item.file_name)))
-                sheets.extend(self.get_sheets(os.path.abspath(os.path.join(cur_path, item.file_name))))
+                sheets.append(
+                    os.path.abspath(
+                        os.path.join(cur_path, item.file_name)
+                        )
+                    )
+                sheets.extend(
+                    self.get_sheets(
+                        os.path.abspath(os.path.join(cur_path, item.file_name))
+                        )
+                    )
         os.chdir(exec_path)
         return list(set(sheets))
 
