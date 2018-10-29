@@ -977,21 +977,9 @@ class Grid(wx.grid.Grid):  # pylint: disable=too-many-ancestors
         Returns True if values of the grid was changed.
 
         """
-        rows = self.GetNumberRows()
-        cols = self.GetNumberCols()
-        old_values = self.undo_buffer[-1][:]
-        for row in range(rows):
-            ref = self.get_pure_ref(self.GetCellValue(row, 2))
-            for old_row, _ in enumerate(old_values):
-                if ref == self.get_pure_ref(old_values[old_row][2]):
-                    for col in range(cols):
-                        old_value = old_values[old_row][col].replace(u'\\"', u'"')
-                        value = self.GetCellValue(row, col)
-                        if old_value != value:
-                            return True
-                    del old_values[old_row]
-                    break
-        return False
+        if self.undo_buffer[-1] == self.get_values():
+            return False
+        return True
 
     def set_cell_value(self, row, col, value):
         """

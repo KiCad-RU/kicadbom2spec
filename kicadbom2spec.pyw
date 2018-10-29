@@ -1407,10 +1407,9 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         self.grid.undo_buffer.append(self.grid.get_values())
         self.grid.redo_buffer = []
         self.menuitem_redo.Enable(False)
-        if len(self.grid.undo_buffer) > 1:
-            self.menuitem_undo.Enable(True)
-        else:
-            self.menuitem_undo.Enable(False)
+        self.menuitem_undo.Enable(
+            bool(len(self.grid.undo_buffer) > 1)
+            )
         self.saved = False
         if self.library:
             self.menuitem_save_lib.Enable(True)
@@ -1493,11 +1492,12 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
 
         """
         self.grid.redo_buffer.append(self.grid.undo_buffer[-1])
+        self.menuitem_redo.Enable(True)
         del self.grid.undo_buffer[-1]
         self.grid.set_values(self.grid.undo_buffer[-1])
-        if len(self.grid.undo_buffer) == 1:
-            self.menuitem_undo.Enable(False)
-        self.menuitem_redo.Enable(True)
+        self.menuitem_undo.Enable(
+            bool(len(self.grid.undo_buffer) > 1)
+            )
         self.saved = False
         if self.library:
             self.menuitem_save_lib.Enable(True)
@@ -1510,11 +1510,12 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
 
         """
         self.grid.undo_buffer.append(self.grid.redo_buffer[-1])
+        self.menuitem_undo.Enable(True)
         self.grid.set_values(self.grid.redo_buffer[-1])
         del self.grid.redo_buffer[-1]
-        if self.grid.redo_buffer:
-            self.menuitem_redo.Enable(False)
-        self.menuitem_undo.Enable(True)
+        self.menuitem_redo.Enable(
+            bool(self.grid.redo_buffer)
+            )
         self.saved = False
         if self.library:
             self.menuitem_save_lib.Enable(True)
