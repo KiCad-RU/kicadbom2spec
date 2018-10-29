@@ -1090,7 +1090,7 @@ class Grid(wx.grid.Grid):  # pylint: disable=too-many-ancestors
             values_temp.append(rows_temp)
         return values_temp
 
-    def set_values(self, grid_values, accordingly=True):
+    def set_values(self, grid_values, accordingly=True, ignore_check_col=False):
         """
         Set values from 'values' to cells of grid.
 
@@ -1106,8 +1106,10 @@ class Grid(wx.grid.Grid):  # pylint: disable=too-many-ancestors
                 else:
                     comp1 = self.get_pure_ref(self.GetCellValue(row, 2))
                     comp2 = self.get_pure_ref(values_row[2])
-                if (comp1 == comp2 or not comp1) | (not accordingly):
+                if not comp1 or comp1 == comp2 or not accordingly:
                     for col in range(cols):
+                        if ignore_check_col and col == 0:
+                            continue
                         value = values_row[col].replace(u'\\"', u'"')
                         self.SetCellValue(row, col, value)
                     self.SetRowLabelValue(row, values_row[-1])
@@ -1284,7 +1286,7 @@ class Grid(wx.grid.Grid):  # pylint: disable=too-many-ancestors
                 sorted_data.reverse()
         else:
             self.reversed_sorting = False
-        self.set_values(sorted_data, False)
+        self.set_values(sorted_data, accordingly=False)
         self.last_sorted_col = sort_col
         self.update_attributes()
         if event:

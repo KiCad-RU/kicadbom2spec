@@ -1411,10 +1411,6 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
             bool(len(self.grid.undo_buffer) > 1)
             )
         self.saved = False
-        if self.library:
-            self.menuitem_save_lib.Enable(True)
-        else:
-            self.menuitem_save_sch.Enable(True)
 
     def on_grid_popup(self, event):  # pylint: disable=too-many-statements
         """
@@ -1494,15 +1490,11 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         self.grid.redo_buffer.append(self.grid.undo_buffer[-1])
         self.menuitem_redo.Enable(True)
         del self.grid.undo_buffer[-1]
-        self.grid.set_values(self.grid.undo_buffer[-1])
+        self.grid.set_values(self.grid.undo_buffer[-1], ignore_check_col=True)
         self.menuitem_undo.Enable(
             bool(len(self.grid.undo_buffer) > 1)
             )
         self.saved = False
-        if self.library:
-            self.menuitem_save_lib.Enable(True)
-        else:
-            self.menuitem_save_sch.Enable(True)
 
     def on_redo(self, event):
         """
@@ -1511,16 +1503,12 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         """
         self.grid.undo_buffer.append(self.grid.redo_buffer[-1])
         self.menuitem_undo.Enable(True)
-        self.grid.set_values(self.grid.redo_buffer[-1])
+        self.grid.set_values(self.grid.redo_buffer[-1], ignore_check_col=True)
         del self.grid.redo_buffer[-1]
         self.menuitem_redo.Enable(
             bool(self.grid.redo_buffer)
             )
         self.saved = False
-        if self.library:
-            self.menuitem_save_lib.Enable(True)
-        else:
-            self.menuitem_save_sch.Enable(True)
 
     def on_tool(self, event):
         """
@@ -1813,7 +1801,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
 
                 # Menu & Toolbar
                 self.menuitem_complist.Enable(True)
-                self.menuitem_save_sch.Enable(False)
+                self.menuitem_save_sch.Enable(True)
                 self.menuitem_save_sch_as.Enable(True)
                 self.menuitem_find.Enable(True)
                 self.menuitem_replace.Enable(True)
@@ -1880,7 +1868,6 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 os.remove(schematic.sch_name)
                 os.rename(schematic.sch_name + '.tmp', schematic.sch_name)
                 self.saved = True
-                self.menuitem_save_sch.Enable(False)
                 self.update_comp_fields_panel()
             except IOError as error:
                 if os.path.exists(schematic.sch_name + '.tmp') \
@@ -2026,7 +2013,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
             self.saved = True
 
             # Menu & Toolbar
-            self.menuitem_save_lib.Enable(False)
+            self.menuitem_save_lib.Enable(True)
             self.menuitem_save_lib_as.Enable(True)
             self.menuitem_find.Enable(True)
             self.menuitem_replace.Enable(True)
@@ -2080,7 +2067,6 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
             os.remove(self.library_file)
             os.rename(self.library_file + '.tmp', self.library_file)
             self.saved = True
-            self.menuitem_save_lib.Enable(False)
             self.update_comp_fields_panel()
         except IOError as error:
             if os.path.exists(self.library_file + '.tmp') \
@@ -2476,7 +2462,6 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                     self.stamp_dict[field] = value
                     if field != 'inspector':
                         self.saved = False
-                        self.menuitem_save_sch.Enable(True)
 
             # Save settings
             if not self.settings.has_section('complist'):
