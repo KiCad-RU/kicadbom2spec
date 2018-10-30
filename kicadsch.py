@@ -535,16 +535,14 @@ class Schematic(object):
                 self.flags = items[7]
                 self.hjustify = items[8]
                 self.vjustify = items[9][0]
+                self.italic = False
+                self.bold = False
                 if len(items[9]) == 3:
                     self.italic = {u'I':True, u'N':False}[items[9][1]]
                     self.bold = {u'B':True, u'N':False}[items[9][2]]
-                else:
-                    self.italic = False
-                    self.bold = False
+                self.name = u''
                 if len(items) == 11:
                     self.name = items[10]
-                else:
-                    self.name = u''
 
             def save(self, sch_file):
                 """
@@ -1225,11 +1223,10 @@ class Library(object):
                     # In version 2.2 and earlier parameter 'unit_locked' not
                     # used and always had value '0' (just place holder).
                     self.units_locked = {u'L':True, u'F':False, u'0':False}[parts[8]]
+                    self.power_flag = False
                     if len(parts) > 9:
                         # Power flag is optional
                         self.power_flag = {u'P':True, u'N':False}[parts[9]]
-                    else:
-                        self.power_flag = False
                 elif parts[0] == u'ALIAS':
                     self.aliases = parts[1:]
                 elif parts[0].startswith(u'F'):
@@ -1351,16 +1348,14 @@ class Library(object):
                 self.visibility = {u'V':True, u'I':False}[items[6]]
                 self.hjustify = items[7]
                 self.vjustify = items[8][0]
+                self.italic = False
+                self.bold = False
                 if len(items[8]) == 3:
                     self.italic = {u'I':True, u'N':False}[items[8][1]]
                     self.bold = {u'B':True, u'N':False}[items[8][2]]
-                else:
-                    self.italic = False
-                    self.bold = False
+                self.name = u''
                 if len(items) > 9:
                     self.name = items[9]
-                else:
-                    self.name = u''
 
             def save(self, lib_file):
                 """
@@ -1490,10 +1485,9 @@ class Library(object):
                 self.unit = int(items[5])
                 self.convert = int(items[6])
                 self.thickness = int(items[7])
+                self.fill = u'N'
                 if len(items) > 8:
                     self.fill = items[8]
-                else:
-                    self.fill = u'N'
 
             def save(self, lib_file):
                 """
@@ -1552,10 +1546,9 @@ class Library(object):
                 self.unit = int(items[4])
                 self.convert = int(items[5])
                 self.thickness = int(items[6])
+                self.fill = u'N'
                 if len(items) > 7:
                     self.fill = items[7]
-                else:
-                    self.fill = u'N'
 
             def save(self, lib_file):
                 """
