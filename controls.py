@@ -327,11 +327,9 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
         # Text control
         self.text_ctrl = wx.TextCtrl(
             parent=self,
-            style=wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL
+            style=wx.TE_PROCESS_ENTER
             )
         # Events
-        self.text_ctrl.Bind(wx.EVT_SET_FOCUS, self.on_text_ctrl_set_focus)
-        self.text_ctrl.Bind(wx.EVT_IDLE, self.on_text_ctrl_idle)
         self.text_ctrl.Bind(wx.EVT_CONTEXT_MENU, self.on_text_ctrl_popup)
         self.text_ctrl.Bind(wx.EVT_TEXT, self.on_text_changed)
         self.text_ctrl.Bind(wx.EVT_TEXT_COPY, self.on_copy)
@@ -355,9 +353,6 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
         self.values = []
         self.std_values = []
         self.default_value = None
-
-        self.skip_selecting = False
-        self.select_all = False
 
         # Context menu ID
         self.copy_id = wx.NewId()
@@ -438,26 +433,29 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
         Controls from keyboard.
 
         """
-        # Show popup
         if event.GetKeyCode() == wx.WXK_DOWN:
+            # Show popup
             if self.button.IsEnabled():
                 self.on_button(None)
-        # Skip UP key
         elif event.GetKeyCode() == wx.WXK_UP:
+            # Skip UP key
             pass
-        # Grid specific events
+        elif event.GetKeyCode() == wx.WXK_TAB and sys.platform == 'win32':
+            if isinstance(event.EventObject, wx.TextCtrl):
+                event.EventObject.GetParent().Navigate()
         elif self.GetGrandParent().GetClassName() == 'wxGrid':
+            # Grid specific events
             row = self.GetGrandParent().GetGridCursorRow()
             col = self.GetGrandParent().GetGridCursorCol()
             cur_value = self.GetGrandParent().GetCellValue(row, col)
-            # Close editor and restore previous value
             if event.GetKeyCode() == wx.WXK_ESCAPE:
+                # Close editor and restore previous value
                 self.text_ctrl.SetValue(cur_value)
                 self.GetGrandParent().DisableCellEditControl()
                 self.GetGrandParent().SetGridCursor(row, col)
                 self.GetGrandParent().SetFocusIgnoringChildren()
-            # Close editor and apply new value
             elif event.GetKeyCode() == wx.WXK_RETURN:
+                # Close editor and apply new value
                 self.GetGrandParent().DisableCellEditControl()
                 self.GetGrandParent().SetGridCursor(row, col)
                 self.GetGrandParent().SetFocusIgnoringChildren()
@@ -465,25 +463,6 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
                 event.Skip()
         else:
             event.Skip()
-
-    def on_text_ctrl_set_focus(self, event):
-        """
-        Set flag for selecting all text on activating text control.
-
-        """
-        self.select_all = not self.skip_selecting
-        self.skip_selecting = False
-        event.Skip()
-
-    def on_text_ctrl_idle(self, event):
-        """
-        Select all text in text control after activating.
-
-        """
-        if self.select_all:
-            self.select_all = False
-            self.text_ctrl.SelectAll()
-        event.Skip()
 
     def on_text_changed(self, event):
         """
@@ -514,7 +493,6 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
             self.text_ctrl.Unbind(wx.EVT_TEXT_COPY)
             self.text_ctrl.Copy()
             self.text_ctrl.Bind(wx.EVT_TEXT_COPY, self.on_copy)
-        self.skip_selecting = True
 
     def on_cut(self, event):  # pylint: disable=unused-argument
         """
@@ -536,7 +514,6 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
             self.text_ctrl.Unbind(wx.EVT_TEXT_CUT)
             self.text_ctrl.Cut()
             self.text_ctrl.Bind(wx.EVT_TEXT_CUT, self.on_cut)
-        self.skip_selecting = True
 
     def on_paste(self, event):  # pylint: disable=unused-argument
         """
@@ -544,7 +521,6 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
 
         """
         self.text_ctrl.Paste()
-        self.skip_selecting = True
 
     def on_delete(self, event):  # pylint: disable=unused-argument
         """
@@ -552,7 +528,6 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
 
         """
         self.text_ctrl.WriteText(u'')
-        self.skip_selecting = True
 
     def on_select_all(self, event):  # pylint: disable=unused-argument
         """
@@ -560,7 +535,6 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
 
         """
         self.text_ctrl.SelectAll()
-        self.skip_selecting = True
 
     def on_text_ctrl_popup(self, event):  # pylint: disable=too-many-statements
         """
@@ -701,7 +675,6 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
         """
         cur_value = self.get_value()
         self.std_values.append(cur_value)
-        self.skip_selecting = True
 
     def on_remove_std_value(self, event):  # pylint: disable=unused-argument
         """
@@ -710,7 +683,6 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
         """
         cur_value = self.get_value()
         self.std_values.remove(cur_value)
-        self.skip_selecting = True
 
     def on_insert(self, event):
         """
@@ -718,7 +690,6 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
 
         """
         cur_id = event.GetId()
-        self.skip_selecting = True
         if cur_id == self.ref_id:
             self.text_ctrl.WriteText(u'${Обозначение}')
         elif cur_id == self.value_id:
@@ -764,7 +735,7 @@ class CellEditor(wx.grid.PyGridCellEditor):
         self.control = None
         self.start_value = u''
 
-    def Create(self, parent, id, evtHandler):  # pylint: disable=redefined-builtin, arguments-differ
+    def Create(self, parent, id, evtHandler):  # pylint: disable=redefined-builtin, arguments-differ, unused-argument
         self.control = EditorCtrl(parent)
         self.SetControl(self.control)
 
@@ -779,7 +750,6 @@ class CellEditor(wx.grid.PyGridCellEditor):
 
     def BeginEdit(self, row, col, grid):  # pylint: disable=arguments-differ
         self.start_value = grid.GetTable().GetValue(row, col)
-        self.control.skip_selecting = True
         self.control.text_ctrl.SetValue(self.start_value)
         self.control.text_ctrl.SetInsertionPointEnd()
         self.control.SetFocus()
@@ -804,7 +774,6 @@ class CellEditor(wx.grid.PyGridCellEditor):
         self.control.clear_items()
 
     def Reset(self):  # pylint: disable=arguments-differ
-        self.control.skip_selecting = True
         self.control.text_ctrl.SetValue(self.start_value)
         self.control.text_ctrl.SetInsertionPointEnd()
 
