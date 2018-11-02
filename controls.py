@@ -288,6 +288,10 @@ class EditorCtrlPopup(wx.Dialog):
         elif event.GetKeyCode() == wx.WXK_DOWN:
             if index < len(self.items) - 1:
                 self.select_item(index + 1)
+        elif event.GetKeyCode() == wx.WXK_TAB and sys.platform == 'win32':
+            # On Windows with single item in popup
+            # app freezes when TAB key pressed.
+            pass
         else:
             event.Skip()
 
