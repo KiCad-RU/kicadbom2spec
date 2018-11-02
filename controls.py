@@ -318,8 +318,8 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
 
     """
 
-    def __init__(self, parent, id=wx.ID_ANY):  # pylint: disable=redefined-builtin
-        wx.Control.__init__(self, parent, id, style=wx.NO_BORDER)
+    def __init__(self, parent):  # pylint: disable=redefined-builtin
+        wx.Control.__init__(self, parent, style=wx.NO_BORDER)
 
         self.SetCanFocus(False)
         self.Bind(wx.EVT_CHAR_HOOK, self.on_key)
@@ -765,10 +765,8 @@ class CellEditor(wx.grid.PyGridCellEditor):
         self.start_value = u''
 
     def Create(self, parent, id, evtHandler):  # pylint: disable=redefined-builtin, arguments-differ
-        self.control = EditorCtrl(parent, id)
+        self.control = EditorCtrl(parent)
         self.SetControl(self.control)
-        if evtHandler:
-            self.control.PushEventHandler(evtHandler)
 
     def SetSize(self, rect):  # pylint: disable=arguments-differ
         self.control.SetDimensions(
