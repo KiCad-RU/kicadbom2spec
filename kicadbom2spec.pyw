@@ -241,7 +241,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 # in 'splitter_mainOnIdle' event handler
 
                 if self.settings.has_section('values'):
-                    for item in self.values_dict.keys():  # pylint: disable=consider-iterating-dictionary
+                    for item in self.values_dict:
                         if self.settings.has_option('values', item):
                             values_list = self.settings.get('values', item)
                             values_list = values_list.split(SETTINGS_SEPARATOR)
@@ -268,17 +268,17 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                         self.auto_groups_dict[param.upper()] = value
 
                 if self.settings.has_section('prefixes'):
-                    for item in self.separators_dict.keys():  # pylint: disable=consider-iterating-dictionary
+                    for item in self.separators_dict:
                         if self.settings.has_option('prefixes', item):
                             self.separators_dict[item][0] = self.settings.get('prefixes', item)[1:-1]
 
                 if self.settings.has_section('suffixes'):
-                    for item in self.separators_dict.keys():  # pylint: disable=consider-iterating-dictionary
+                    for item in self.separators_dict:
                         if self.settings.has_option('suffixes', item):
                             self.separators_dict[item][1] = self.settings.get('suffixes', item)[1:-1]
 
                 if self.settings.has_section('aliases'):
-                    for item in self.aliases_dict.keys():  # pylint: disable=consider-iterating-dictionary
+                    for item in self.aliases_dict:
                         if self.settings.has_option('aliases', item):
                             alias_value = self.settings.get('aliases', item)
                             # Empty alias - default value
@@ -378,7 +378,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 selector.dialog_buttonOK.SetFocus()
                 result = selector.ShowModal()
                 if result == wx.ID_OK:
-                    for key in import_settings.keys():  # pylint: disable=consider-iterating-dictionary
+                    for key in import_settings:
                         import_settings[key] = getattr(selector, 'checkbox_' + key).IsChecked()
                     if import_settings['size_position']:
                         if temp_settings.has_option('window', 'x') and \
@@ -433,7 +433,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                         if temp_settings.has_option('general', 'show need adjust mark'):
                             self.show_need_adjust_mark = temp_settings.getboolean('general', 'show need adjust mark')
                     if import_settings['values']:
-                        for item in self.values_dict.keys():  # pylint: disable=consider-iterating-dictionary
+                        for item in self.values_dict:
                             if temp_settings.has_option('values', item):
                                 values_list = temp_settings.get('values', item)
                                 values_list = values_list.split(SETTINGS_SEPARATOR)
@@ -449,19 +449,19 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                         if not self.settings.has_section('prefixes'):
                             self.settings.add_section('prefixes')
                         if temp_settings.has_section('prefixes'):
-                            for item in self.separators_dict.keys():  # pylint: disable=consider-iterating-dictionary
+                            for item in self.separators_dict:
                                 if temp_settings.has_option('prefixes', item):
                                     self.separators_dict[item][0] = temp_settings.get('prefixes', item)[1:-1]
                         if not self.settings.has_section('suffixes'):
                             self.settings.add_section('suffixes')
                         if temp_settings.has_section('suffixes'):
-                            for item in self.separators_dict.keys():  # pylint: disable=consider-iterating-dictionary
+                            for item in self.separators_dict:
                                 if temp_settings.has_option('suffixes', item):
                                     self.separators_dict[item][1] = temp_settings.get('suffixes', item)[1:-1]
                     if import_settings['aliases']:
                         if not self.settings.has_section('aliases'):
                             self.settings.add_section('aliases')
-                        for item in self.aliases_dict.keys():  # pylint: disable=consider-iterating-dictionary
+                        for item in self.aliases_dict:
                             if temp_settings.has_option('aliases', item):
                                 alias_value = temp_settings.get('aliases', item)
                                 # Empty alias - default value
@@ -530,7 +530,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
 
         if not self.settings.has_section('values'):
             self.settings.add_section('values')
-        for field in self.values_dict.keys():  # pylint: disable=consider-iterating-dictionary
+        for field in self.values_dict:
             field_values = SETTINGS_SEPARATOR.join(self.values_dict[field])
             field_values = field_values.replace('%', '%%')
             self.settings.set('values', field, field_values)
@@ -705,7 +705,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 ref = self.grid.GetCellValue(row, 2)
                 ref = self.grid.get_pure_ref(ref)
                 ref_type = ref.rstrip('0123456789')
-                for pattern in self.auto_groups_dict.keys():  # pylint: disable=consider-iterating-dictionary
+                for pattern in self.auto_groups_dict:
                     re_pattern = pattern.replace('?', '.?')
                     re_pattern = re_pattern.replace('*', '.*')
                     if re.match(re_pattern, ref_type) \
@@ -2388,7 +2388,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         complist_dialog.checkbox_open.SetValue(open_complist)
 
         # Stamp
-        for field in self.stamp_dict.keys():  # pylint: disable=consider-iterating-dictionary
+        for field in self.stamp_dict:
             field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
             value = self.stamp_dict[field]
             value = value.replace('\\\\n', '\n')
@@ -2453,7 +2453,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
             open_complist = complist_dialog.checkbox_open.GetValue()
 
             # Stamp
-            for field in self.stamp_dict.keys():  # pylint: disable=consider-iterating-dictionary
+            for field in self.stamp_dict:
                 field_text = getattr(complist_dialog, 'stamp_{}_text'.format(field))
                 value = field_text.GetValue()
                 value = value.replace('\n', '\\\\n')
@@ -2951,7 +2951,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         listctrl_width = settings_editor.group_names_listctrl.GetSize().GetWidth()
         settings_editor.group_names_listctrl.SetColumnWidth(0, listctrl_width / 2)
         settings_editor.group_names_listctrl.SetColumnWidth(1, listctrl_width / 2)
-        for plural in self.group_names_dict.keys():  # pylint: disable=consider-iterating-dictionary
+        for plural in self.group_names_dict:
             singular = self.group_names_dict[plural]
             settings_editor.group_names_listctrl.Append((plural, singular))
 
@@ -2987,7 +2987,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
 
             if not self.settings.has_section('values'):
                 self.settings.add_section('values')
-            for field in self.values_dict.keys():  # pylint: disable=consider-iterating-dictionary
+            for field in self.values_dict:
                 field_values = SETTINGS_SEPARATOR.join(self.values_dict[field])
                 field_values = field_values.replace('%', '%%')
                 if field_values:

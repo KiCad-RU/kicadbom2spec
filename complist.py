@@ -698,7 +698,7 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
                         num_value = u''
                 if num_value:
                     # Translate multiplier
-                    if multiplier in self.multipliers_dict.keys():
+                    if multiplier in self.multipliers_dict:
                         multiplier = self.multipliers_dict[multiplier]
                     value = num_value.replace(u'.', u',')
                     if self.space_before_units:
@@ -1636,7 +1636,7 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
         for style in styles:  # pylint: disable=too-many-nested-blocks
             for node in style.childNodes:
                 if node.tagName == u'style:text-properties':
-                    for attr_key in node.attributes.keys():
+                    for attr_key in node.attributes:
                         if attr_key[-1] == u'font-style':
                             if self.italic:
                                 node.attributes[attr_key] = u'italic'
