@@ -3368,6 +3368,8 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         result = error_message.ShowModal()
         if result == wx.ID_OK:
             webbrowser.open_new(log_filename)
+        # Set cursor back to 'normal'
+        wx.EndBusyCursor()
         raise  # pylint: disable=misplaced-bare-raise
 
 
