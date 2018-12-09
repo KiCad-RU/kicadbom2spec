@@ -867,7 +867,7 @@ class CompListDialog ( wx.Dialog ):
 		sizer_options_comp.Add( sizer_space_before_units, 1, wx.EXPAND, 5 )
 		
 		
-		sizer_options.Add( sizer_options_comp, 0, wx.EXPAND|wx.ALL, 5 )
+		sizer_options.Add( sizer_options_comp, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		sizer_groups = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Группы элементов" ), wx.VERTICAL )
 		
@@ -881,16 +881,16 @@ class CompListDialog ( wx.Dialog ):
 		choice_after_groupsChoices = [ u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9" ]
 		self.choice_after_groups = wx.Choice( sizer_groups.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_after_groupsChoices, 0 )
 		self.choice_after_groups.SetSelection( 1 )
-		sizer_empty_rows_groups.Add( self.choice_after_groups, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_empty_rows_groups.Add( self.choice_after_groups, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.empty_rows_groups_label = wx.StaticText( sizer_groups.GetStaticBox(), wx.ID_ANY, u"пустых строк между разными типами элементов", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.empty_rows_groups_label.Wrap( -1 )
 		self.empty_rows_groups_label.SetToolTipString( u"Между группами элементов с разным обозначением будет вставлено указанное число пустых строк." )
 		
-		sizer_empty_rows_groups.Add( self.empty_rows_groups_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_empty_rows_groups.Add( self.empty_rows_groups_label, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		
-		sizer_groups.Add( sizer_empty_rows_groups, 1, wx.EXPAND, 5 )
+		sizer_groups.Add( sizer_empty_rows_groups, 1, 0, 5 )
 		
 		self.checkbox_empty_rows_everywhere = wx.CheckBox( sizer_groups.GetStaticBox(), wx.ID_ANY, u"Вставлять пустые строки между разными группами", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.checkbox_empty_rows_everywhere.SetToolTipString( u"Если параметр отмечен, то пустые строки будут вставлены не только между разными типами элементов, но и между элементами, которые имеют разное наименование группы." )
@@ -923,7 +923,7 @@ class CompListDialog ( wx.Dialog ):
 		sizer_groups.Add( self.checkbox_prohibit_group_name_at_bottom, 0, wx.BOTTOM|wx.RIGHT|wx.LEFT|wx.EXPAND, 5 )
 		
 		
-		sizer_options.Add( sizer_groups, 1, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		sizer_options.Add( sizer_groups, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
 		
 		sizer_options_format = wx.StaticBoxSizer( wx.StaticBox( self.option_scrolledwindow, wx.ID_ANY, u"Формат" ), wx.VERTICAL )
 		
@@ -1020,6 +1020,9 @@ class CompListDialog ( wx.Dialog ):
 		
 		
 		sizer_options.Add( sizer_options_other, 0, wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT, 5 )
+		
+		
+		sizer_options.AddSpacer( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		
 		self.option_scrolledwindow.SetSizer( sizer_options )
@@ -1529,7 +1532,7 @@ class SettingsDialog ( wx.Dialog ):
 		
 		separators_preview_values_sizer.Add( self.s_gost_statictext, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.BOTTOM, 5 )
 		
-		self.dummy_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, u" ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.dummy_statictext = wx.StaticText( separators_preview_sizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.dummy_statictext.Wrap( -1 )
 		self.dummy_statictext.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString ) )
 		self.dummy_statictext.SetForegroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
