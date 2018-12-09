@@ -1308,11 +1308,12 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
                     # Empty rows between groups
                     add_empty_rows = True
                     if self.components_array.index(group) == 0:
-                        # Before first group not needed
+                        # Not needed before first group
                         add_empty_rows = False
-                    if self.empty_rows_everywhere \
-                            and prev_ref_type == ref_type:
-                        # Between elements of the same type not needed
+                    if prev_ref_type == ref_type \
+                            and not self.empty_rows_everywhere:
+                        # Not needed between elements of the same type,
+                        # except it is required by user.
                         add_empty_rows = False
                     if add_empty_rows:
                         for _ in range(self.empty_rows_after_group):
@@ -1439,11 +1440,12 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
             # Empty rows between groups
             add_empty_rows = True
             if self.components_array.index(group) == 0:
-                # Before first group not needed
+                # Not needed before first group
                 add_empty_rows = False
-            if self.empty_rows_everywhere \
-                    and prev_ref_type == ref_type:
-                # Between elements of the same type not needed
+            if prev_ref_type == ref_type \
+                    and not self.empty_rows_everywhere:
+                # Not needed between elements of the same type,
+                # except it is required by user.
                 add_empty_rows = False
             if add_empty_rows:
                 for _ in range(self.empty_rows_after_group):
