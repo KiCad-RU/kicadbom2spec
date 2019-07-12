@@ -282,7 +282,7 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
         self.aliases_dict = {
             u'группа':u'Группа',
             u'марка':u'Марка',
-            u'значение':u'',
+            u'значение':u'Значение',
             u'класс точности':u'Класс точности',
             u'тип':u'Тип',
             u'стандарт':u'Стандарт',
@@ -384,6 +384,98 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
         # Decoding escapes from KiCad
         pure_text = pure_text.decode('string_escape')
         return unicode(pure_text)
+
+    def _get_value_with_units(self, ref, value):
+        """
+        Automatic units addition.
+
+        """
+        if self.add_units:
+            num_value = u''
+            multiplier = u''
+            units = u''
+            mult_keys, mult_values = zip(*self.multipliers_dict.items())
+            multipliers = mult_keys + mult_values
+            multipliers = list(set(multipliers))
+            # 2u7, 2н7, 4m7, 5k1 etc.
+            regexp_1 = re.compile(
+                ur'^(\d+)({})(\d+)$'.format(u'|'.join(multipliers)),
+                re.U
+                )
+            # 2.7 u, 2700p, 4.7 m, 470u, 5.1 k, 510 etc.
+            regexp_2 = re.compile(
+                ur'^(\d+(?:[\.,]\d+)?)\s*({})?$'.format(u'|'.join(multipliers)),
+                re.U
+                )
+            if ref.startswith(u'C') and not value.endswith(u'Ф'):
+                units = u'Ф'
+                if re.match(ur'^\d+$', value):
+                    num_value = value
+                    multiplier = u'п'
+                elif re.match(ur'^\d+[\.,]\d+$', value):
+                    num_value = value
+                    multiplier = u'мк'
+                else:
+                    num_value = value.rstrip(u'F')
+                    num_value = num_value.strip()
+                    if re.match(regexp_1, num_value):
+                        search_res = re.search(regexp_1, num_value).groups()
+                        num_value = search_res[0] + ',' + search_res[2]
+                        multiplier = search_res[1]
+                    elif re.match(regexp_2, num_value):
+                        search_res = re.search(regexp_2, num_value).groups()
+                        num_value = search_res[0]
+                        multiplier = search_res[1]
+                    else:
+                        num_value = u''
+            elif ref.startswith(u'L') and not value.endswith(u'Гн'):
+                units = u'Гн'
+                num_value = value.rstrip(u'H')
+                num_value = num_value.strip()
+                if re.match(regexp_1, num_value):
+                    search_res = re.search(regexp_1, num_value).groups()
+                    num_value = search_res[0] + ',' + search_res[2]
+                    multiplier = search_res[1]
+                elif re.match(regexp_2, num_value):
+                    search_res = re.search(regexp_2, num_value).groups()
+                    num_value = search_res[0]
+                    if search_res[1] is None:
+                        multiplier = u'мк'
+                    else:
+                        multiplier = search_res[1]
+                else:
+                    num_value = u''
+            elif ref.startswith(u'R') and not value.endswith(u'Ом'):
+                units = u'Ом'
+                num_value = value.rstrip(u'Ω')
+                if num_value.endswith(u'Ohm') or num_value.endswith(u'ohm'):
+                    num_value = num_value[:-3]
+                num_value = num_value.strip()
+                if re.match(ur'R\d+', num_value):
+                    num_value = num_value.replace(u'R', u'0,')
+                elif re.match(ur'\d+R\d+', num_value):
+                    num_value = num_value.replace(u'R', u',')
+                elif re.match(regexp_1, num_value):
+                    search_res = re.search(regexp_1, num_value).groups()
+                    num_value = search_res[0] + ',' + search_res[2]
+                    multiplier = search_res[1]
+                elif re.match(regexp_2, num_value):
+                    search_res = re.search(regexp_2, num_value).groups()
+                    num_value = search_res[0]
+                    if search_res[1] is not None:
+                        multiplier = search_res[1]
+                else:
+                    num_value = u''
+            if num_value:
+                # Translate multiplier
+                if multiplier in self.multipliers_dict:
+                    multiplier = self.multipliers_dict[multiplier]
+                value = num_value.replace(u'.', u',')
+                if self.space_before_units:
+                    value += u' '
+                value += multiplier
+                value += units
+        return value
 
     def _replace_text(self, page, label, text, center=False, underline=False):  # pylint: disable=too-many-arguments
         """
@@ -619,95 +711,9 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
                 suffix=self.separators_dict[u'марка'][1]
                 )
         if value:
-            # Automatically units addition
-            if self.add_units:
-                num_value = u''
-                multiplier = u''
-                units = u''
-                mult_keys, mult_values = zip(*self.multipliers_dict.items())
-                multipliers = mult_keys + mult_values
-                multipliers = list(set(multipliers))
-                # 2u7, 2н7, 4m7, 5k1 etc.
-                regexp_1 = re.compile(
-                    ur'^(\d+)({})(\d+)$'.format(u'|'.join(multipliers)),
-                    re.U
-                    )
-                # 2.7 u, 2700p, 4.7 m, 470u, 5.1 k, 510 etc.
-                regexp_2 = re.compile(
-                    ur'^(\d+(?:[\.,]\d+)?)\s*({})?$'.format(u'|'.join(multipliers)),
-                    re.U
-                    )
-                if ref_type.startswith(u'C') and not value.endswith(u'Ф'):
-                    units = u'Ф'
-                    if re.match(ur'^\d+$', value):
-                        num_value = value
-                        multiplier = u'п'
-                    elif re.match(ur'^\d+[\.,]\d+$', value):
-                        num_value = value
-                        multiplier = u'мк'
-                    else:
-                        num_value = value.rstrip(u'F')
-                        num_value = num_value.strip()
-                        if re.match(regexp_1, num_value):
-                            search_res = re.search(regexp_1, num_value).groups()
-                            num_value = search_res[0] + ',' + search_res[2]
-                            multiplier = search_res[1]
-                        elif re.match(regexp_2, num_value):
-                            search_res = re.search(regexp_2, num_value).groups()
-                            num_value = search_res[0]
-                            multiplier = search_res[1]
-                        else:
-                            num_value = u''
-                elif ref_type.startswith(u'L') and not value.endswith(u'Гн'):
-                    units = u'Гн'
-                    num_value = value.rstrip(u'H')
-                    num_value = num_value.strip()
-                    if re.match(regexp_1, num_value):
-                        search_res = re.search(regexp_1, num_value).groups()
-                        num_value = search_res[0] + ',' + search_res[2]
-                        multiplier = search_res[1]
-                    elif re.match(regexp_2, num_value):
-                        search_res = re.search(regexp_2, num_value).groups()
-                        num_value = search_res[0]
-                        if search_res[1] is None:
-                            multiplier = u'мк'
-                        else:
-                            multiplier = search_res[1]
-                    else:
-                        num_value = u''
-                elif ref_type.startswith(u'R') and not value.endswith(u'Ом'):
-                    units = u'Ом'
-                    num_value = value.rstrip(u'Ω')
-                    if num_value.endswith(u'Ohm') or num_value.endswith(u'ohm'):
-                        num_value = num_value[:-3]
-                    num_value = num_value.strip()
-                    if re.match(ur'R\d+', num_value):
-                        num_value = num_value.replace(u'R', u'0,')
-                    elif re.match(ur'\d+R\d+', num_value):
-                        num_value = num_value.replace(u'R', u',')
-                    elif re.match(regexp_1, num_value):
-                        search_res = re.search(regexp_1, num_value).groups()
-                        num_value = search_res[0] + ',' + search_res[2]
-                        multiplier = search_res[1]
-                    elif re.match(regexp_2, num_value):
-                        search_res = re.search(regexp_2, num_value).groups()
-                        num_value = search_res[0]
-                        if search_res[1] is not None:
-                            multiplier = search_res[1]
-                    else:
-                        num_value = u''
-                if num_value:
-                    # Translate multiplier
-                    if multiplier in self.multipliers_dict:
-                        multiplier = self.multipliers_dict[multiplier]
-                    value = num_value.replace(u'.', u',')
-                    if self.space_before_units:
-                        value += u' '
-                    value += multiplier
-                    value += units
             name += "{prefix}{value}{suffix}".format(
                 prefix=self.separators_dict[u'значение'][0],
-                value=value,
+                value=self._get_value_with_units(ref_type, value),
                 suffix=self.separators_dict[u'значение'][1]
                 )
         if accuracy:
@@ -994,10 +1000,23 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
             If field has 'name' then get text from it.
 
             """
-            for field in comp.fields:
-                if field.name == field_name:
-                    return field.text
-            return u''
+            text = u''
+            if field_name == u'Обозначение':
+                text = ref
+            elif field_name == u'Значение':
+                text = self._get_value_with_units(
+                    comp.fields[0].text,
+                    comp.fields[1].text
+                )
+            elif field_name == u'Посад.место':
+                text = comp.fields[2].text
+            elif field_name == u'Документация':
+                text = comp.fields[3].text
+            else:
+                for field in comp.fields:
+                    if field.name == field_name:
+                        text = field.text
+            return text
 
         def apply_substitution(comp, ref, field_value):
             """
@@ -1008,21 +1027,9 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
             if match is None:
                 return field_value
             else:
-                substitution_value = u''
-                if match.group(1) == u'Обозначение':
-                    substitution_value = ref
-                elif match.group(1) == u'Значение':
-                    substitution_value = comp.fields[1].text
-                elif match.group(1) == u'Посад.место':
-                    substitution_value = comp.fields[2].text
-                elif match.group(1) == u'Документация':
-                    substitution_value = comp.fields[3].text
-                else:
-                    substitution_value = get_text_from_field(comp, match.group(1))
-
                 new_field_value = field_value.replace(
                     u'${%s}' % match.group(1),
-                    substitution_value,
+                    get_text_from_field(comp, match.group(1)),
                     1
                     )
                 new_field_value = apply_substitution(comp, ref, new_field_value)
@@ -1095,13 +1102,10 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
                 comp,
                 self.aliases_dict[u'марка']
                 ))
-            if not self.aliases_dict[u'значение']:
-                temp.append(comp.fields[1].text)
-            else:
-                temp.append(get_text_from_field(
-                    comp,
-                    self.aliases_dict[u'значение']
-                    ))
+            temp.append(get_text_from_field(
+                comp,
+                self.aliases_dict[u'значение']
+                ))
             temp.append(get_text_from_field(
                 comp,
                 self.aliases_dict[u'класс точности']

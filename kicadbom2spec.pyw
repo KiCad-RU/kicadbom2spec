@@ -136,7 +136,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         self.aliases_dict = {
             u'группа':u'Группа',
             u'марка':u'Марка',
-            u'значение':u'',
+            u'значение':u'Значение',
             u'класс точности':u'Класс точности',
             u'тип':u'Тип',
             u'стандарт':u'Стандарт',
@@ -555,7 +555,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         if not self.settings.has_section('aliases'):
             self.settings.add_section('aliases')
         for field, alias in self.aliases_dict.items():
-            if field.capitalize() == alias and field != u'значение':
+            if field.capitalize() == alias:
                 # Default value stored as empty string
                 self.settings.set('aliases', field, '')
             else:
@@ -1022,7 +1022,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                     row = [
                         u'1', # Used
                         u'',  # Group
-                        comp.fields[0].text,  # Reference
+                        u'',  # Reference
                         u'',  # Mark
                         u'',  # Value
                         u'',  # Accuracy
@@ -1031,27 +1031,38 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                         u'',  # Comment
                         schematic.sch_name  # Schematic file name
                         ]
-                    if self.aliases_dict[u'значение'] == u'':
-                        row[4] = comp.fields[1].text
-                    for field in comp.fields:
-                        if field.name == u'Исключён из ПЭ':
+                    for index, field in enumerate(comp.fields):
+                        name = field.name
+                        # Standard fields have no name.
+                        # They are detected by index.
+                        if index == 0:
+                            name = u'Обозначение'
+                        elif index == 1:
+                            name = u'Значение'
+                        elif index == 2:
+                            name = u'Посад.место'
+                        elif index == 3:
+                            name = u'Документация'
+
+                        if name == u'Исключён из ПЭ':
                             row[0] = u'0'
-                        if field.name == self.aliases_dict[u'группа']:
+                        elif name == self.aliases_dict[u'группа']:
                             row[1] = field.text
-                        if field.name == u'Подбирают при регулировании':
+                        elif name == u'Обозначение':
+                            row[2] = field.text
+                        elif name == u'Подбирают при регулировании':
                             row[2] += '*'
-                        if field.name == self.aliases_dict[u'марка']:
+                        elif name == self.aliases_dict[u'марка']:
                             row[3] = field.text
-                        if self.aliases_dict[u'значение'] != u'' and \
-                                field.name == self.aliases_dict[u'значение']:
+                        elif name == self.aliases_dict[u'значение']:
                             row[4] = field.text
-                        if field.name == self.aliases_dict[u'класс точности']:
+                        elif name == self.aliases_dict[u'класс точности']:
                             row[5] = field.text
-                        if field.name == self.aliases_dict[u'тип']:
+                        elif name == self.aliases_dict[u'тип']:
                             row[6] = field.text
-                        if field.name == self.aliases_dict[u'стандарт']:
+                        elif name == self.aliases_dict[u'стандарт']:
                             row[7] = field.text
-                        if field.name == self.aliases_dict[u'примечание']:
+                        elif name == self.aliases_dict[u'примечание']:
                             row[8] = field.text
                     if hasattr(comp, 'path_and_ref'):
                         prefix = '(*)'
@@ -1113,33 +1124,38 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                             if self.grid.comp_is_copy(value[2]):
                                 continue
                             if self.grid.get_pure_ref(value[2]) == item.fields[0].text:
-                                # Default field of "value"
-                                if field_names[4] == u'':
-                                    item.fields[1].text = value[4]
                                 for index, field_name in field_names.items():
-                                    # Skip "value" if used standard field for it
-                                    if index == 4 and field_name == u'':
-                                        continue
-                                    if value[index] != u'':
-                                        for field in item.fields:
-                                            if field.name == field_name:
-                                                field.text = value[index]
-                                                break
-                                        else:
-                                            # pylint: disable=line-too-long
-                                            field_str = u'F {num} "{text}" H {pos_x} {pos_y} 60 0001 C CNN "{name}"'.format(
-                                                num=len(item.fields),
-                                                text=value[index],
-                                                pos_x=item.pos_x,
-                                                pos_y=item.pos_y,
-                                                name=field_name
-                                                )
-                                            item.fields.append(schematic.Comp.Field(item, field_str))
+                                    # Standard fields
+                                    if field_name == u'Обозначение':
+                                        # Reference is read only
+                                        pass
+                                    elif field_name == u'Значение':
+                                        item.fields[1].text = value[index]
+                                    elif field_name == u'Посад.место':
+                                        item.fields[2].text = value[index]
+                                    elif field_name == u'Документация':
+                                        item.fields[3].text = value[index]
                                     else:
-                                        for field_index, field in enumerate(item.fields):
-                                            if field.name == field_name:
-                                                del item.fields[field_index]
-                                                break
+                                        if value[index] != u'':
+                                            for field in item.fields:
+                                                if field.name == field_name:
+                                                    field.text = value[index]
+                                                    break
+                                            else:
+                                                # pylint: disable=line-too-long
+                                                field_str = u'F {num} "{text}" H {pos_x} {pos_y} 60 0001 C CNN "{name}"'.format(
+                                                    num=len(item.fields),
+                                                    text=value[index],
+                                                    pos_x=item.pos_x,
+                                                    pos_y=item.pos_y,
+                                                    name=field_name
+                                                    )
+                                                item.fields.append(schematic.Comp.Field(item, field_str))
+                                        else:
+                                            for field_index, field in enumerate(item.fields):
+                                                if field.name == field_name:
+                                                    del item.fields[field_index]
+                                                    break
 
                                 if value[0] == '0':
                                     # Check if field present
@@ -1163,9 +1179,9 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                                             del item.fields[field_index]
                                             break
 
-                                # By default, every time create new field with correct position.
-                                # But if field is already present and its value was changed,
-                                # then leave field as is ("manual mode")
+                                # By default, field with correct position recreates every time.
+                                # If field is already present but field's value has been changed,
+                                # field will leave as is ("manual mode" - position was edited by user)
                                 if value[2].endswith('*'):
                                     for field_index, field in enumerate(item.fields):
                                         if field.name == u'Подбирают при регулировании':
@@ -1252,27 +1268,43 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
             row = [
                 u'1', # Used
                 u'',  # Group
-                comp.fields[0].text,  # Reference
+                u'',  # Reference
                 u'',  # Mark
-                comp.fields[1].text,  # Value
+                u'',  # Value
                 u'',  # Acceracy
                 u'',  # Type
                 u'',  # GOST
                 u'',  # Comment
                 self.library.lib_name  # Library name
                 ]
-            for field in comp.fields:
-                if field.name == self.aliases_dict[u'группа']:
+            for index, field in enumerate(comp.fields):
+                name = field.name
+                # Standard fields have no name.
+                # They are detected by index.
+                if index == 0:
+                    name = u'Обозначение'
+                elif index == 1:
+                    name = u'Значение'
+                elif index == 2:
+                    name = u'Посад.место'
+                elif index == 3:
+                    name = u'Документация'
+
+                if name == self.aliases_dict[u'группа']:
                     row[1] = field.text
-                if field.name == self.aliases_dict[u'марка']:
+                elif name == u'Обозначение':
+                    row[2] = field.text
+                elif name == self.aliases_dict[u'марка']:
                     row[3] = field.text
-                if field.name == self.aliases_dict[u'класс точности']:
+                elif name == u'Значение':
+                    row[4] = field.text
+                elif name == self.aliases_dict[u'класс точности']:
                     row[5] = field.text
-                if field.name == self.aliases_dict[u'тип']:
+                elif name == self.aliases_dict[u'тип']:
                     row[6] = field.text
-                if field.name == self.aliases_dict[u'стандарт']:
+                elif name == self.aliases_dict[u'стандарт']:
                     row[7] = field.text
-                if field.name == self.aliases_dict[u'примечание']:
+                elif name == self.aliases_dict[u'примечание']:
                     row[8] = field.text
             values.append(row)
         return values
@@ -1297,22 +1329,34 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 for value in sorted_values:
                     if value[4] == comp.name:
                         for index, field_name in field_names.items():
-                            if value[index] != u'':
-                                for field in comp.fields:
-                                    if field.name == field_name:
-                                        field.text = value[index]
-                                        break
-                                else:
-                                    field_str = u'F{num} "{text}" 0 0 60 H I C CNN "{name}"'.format(
-                                        num=len(comp.fields),
-                                        text=value[index],
-                                        name=field_name
-                                        )
-                                    comp.fields.append(self.library.Component.Field(comp, field_str))
+                            # Standard fields
+                            if field_name == u'Обозначение':
+                                # Reference is read only
+                                pass
+                            elif field_name == u'Значение':
+                                # Value is read only
+                                pass
+                            elif field_name == u'Посад.место':
+                                item.fields[2].text = value[index]
+                            elif field_name == u'Документация':
+                                item.fields[3].text = value[index]
                             else:
-                                for field_index, field in enumerate(comp.fields):
-                                    if field.name == field_name:
-                                        del comp.fields[field_index]
+                                if value[index] != u'':
+                                    for field in comp.fields:
+                                        if field.name == field_name:
+                                            field.text = value[index]
+                                            break
+                                    else:
+                                        field_str = u'F{num} "{text}" 0 0 60 H I C CNN "{name}"'.format(
+                                            num=len(comp.fields),
+                                            text=value[index],
+                                            name=field_name
+                                            )
+                                        comp.fields.append(self.library.Component.Field(comp, field_str))
+                                else:
+                                    for field_index, field in enumerate(comp.fields):
+                                        if field.name == field_name:
+                                            del comp.fields[field_index]
                         for field_index, field in enumerate(comp.fields):
                             field.number = field_index
 
@@ -2907,10 +2951,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 field_text.AppendText(value + '\n')
             alias_value = self.aliases_dict[field_names[i]]
             # Default alias shows as empty field
-            if field_names[i] == u'значение':
-                # "Value" field accessed by index
-                alias_text.SetValue(self.aliases_dict[field_names[i]])
-            elif alias_value != field_names[i].capitalize():
+            if alias_value != field_names[i].capitalize():
                 alias_text.SetValue(self.aliases_dict[field_names[i]])
 
         separators_field_names = (
@@ -2967,7 +3008,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                     if line_text:
                         self.values_dict[field_names[i]].append(line_text)
                 alias_value = alias_text.GetValue()
-                if alias_value == '' and field_names[i] != u'значение':
+                if alias_value == '':
                     # Default value
                     self.aliases_dict[field_names[i]] = field_names[i].capitalize()
                 else:
