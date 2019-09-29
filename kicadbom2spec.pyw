@@ -1840,6 +1840,8 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 self.stamp_dict['developer'] = sch.descr.comment2
                 self.stamp_dict['verifier'] = sch.descr.comment3
                 self.stamp_dict['approver'] = sch.descr.comment4
+                if sch.version >= 5:
+                    self.stamp_dict['inspector'] = sch.descr.comment6
                 self.stamp_dict['comp'] = sch.descr.comp
                 self.stamp_dict['title'] = sch.descr.title
 
@@ -1902,6 +1904,8 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 schematic.descr.comment2 = self.stamp_dict['developer']
                 schematic.descr.comment3 = self.stamp_dict['verifier']
                 schematic.descr.comment4 = self.stamp_dict['approver']
+                if schematic.version >= 5:
+                    schematic.descr.comment6 = self.stamp_dict['inspector']
                 schematic.descr.comp = self.stamp_dict['comp']
                 schematic.descr.title = self.stamp_dict['title']
 
@@ -1964,6 +1968,8 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 schematic.descr.comment2 = self.stamp_dict['developer']
                 schematic.descr.comment3 = self.stamp_dict['verifier']
                 schematic.descr.comment4 = self.stamp_dict['approver']
+                if schematic.version >= 5:
+                    schematic.descr.comment6 = self.stamp_dict['inspector']
                 schematic.descr.comp = self.stamp_dict['comp']
                 schematic.descr.title = self.stamp_dict['title']
                 # New name for root sheet only
@@ -2354,8 +2360,9 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 complist.add_units = self.settings.getboolean('complist', 'units')
             if self.settings.has_option('complist', 'space_before_units'):
                 complist.space_before_units = self.settings.getboolean('complist', 'space_before_units')
-            if self.settings.has_option('complist', 'inspector'):
-                self.stamp_dict['inspector'] = self.settings.get('complist', 'inspector')
+            if self.schematics[0].version < 5:
+                if self.settings.has_option('complist', 'inspector'):
+                    self.stamp_dict['inspector'] = self.settings.get('complist', 'inspector')
             if self.settings.has_option('complist', 'file_format'):
                 complist.file_format = self.settings.get('complist', 'file_format')
             if self.settings.has_option('complist', 'empty_row_after_name'):
@@ -2504,7 +2511,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 value = value.replace('"', '\\"')
                 if self.stamp_dict[field] != value:
                     self.stamp_dict[field] = value
-                    if field != 'inspector':
+                    if field != 'inspector' or self.schematics[0].version >= 5:
                         self.saved = False
 
             # Save settings
@@ -2534,7 +2541,8 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
             self.settings.set('complist', 'extremal_width_factor', str(complist.extremal_width_factor))
 
             self.settings.set('complist', 'open', str(open_complist))
-            self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
+            if self.schematics[0].version < 5:
+                self.settings.set('complist', 'inspector', self.stamp_dict['inspector'])
 
             try:
                 # Save entire schematic with current changes to temporary directory

@@ -270,6 +270,11 @@ class Schematic(object):
             comment2 (unicode) - comment #2 (GOST - developer);
             comment3 (unicode) - comment #3 (GOST - verfier);
             comment4 (unicode) - comment #4 (GOST - approver);
+            comment5 (unicode) - comment #5 (GOST - tech. inspector);
+            comment6 (unicode) - comment #6 (GOST - norm. inspector);
+            comment7 (unicode) - comment #7
+            comment8 (unicode) - comment #8
+            comment9 (unicode) - comment #9
 
         """
 
@@ -315,6 +320,16 @@ class Schematic(object):
                     self.comment3 = parts[1]
                 elif parts[0] == u'Comment4':
                     self.comment4 = parts[1]
+                elif parts[0] == u'Comment5':
+                    self.comment5 = parts[1]
+                elif parts[0] == u'Comment6':
+                    self.comment6 = parts[1]
+                elif parts[0] == u'Comment7':
+                    self.comment7 = parts[1]
+                elif parts[0] == u'Comment8':
+                    self.comment8 = parts[1]
+                elif parts[0] == u'Comment9':
+                    self.comment9 = parts[1]
 
         def save(self, sch_file):
             """
@@ -336,6 +351,11 @@ class Schematic(object):
                     u'Comment2 "{comment2}"\n' \
                     u'Comment3 "{comment3}"\n' \
                     u'Comment4 "{comment4}"\n' \
+                    u'Comment5 "{comment5}"\n' \
+                    u'Comment6 "{comment6}"\n' \
+                    u'Comment7 "{comment7}"\n' \
+                    u'Comment8 "{comment8}"\n' \
+                    u'Comment9 "{comment9}"\n' \
                     u'$EndDescr\n'.format(
                         paper=self.sheet_format,
                         width=self.sheet_size_x,
@@ -351,7 +371,12 @@ class Schematic(object):
                         comment1=self.comment1,
                         comment2=self.comment2,
                         comment3=self.comment3,
-                        comment4=self.comment4
+                        comment4=self.comment4,
+                        comment5=self.comment5,
+                        comment6=self.comment6,
+                        comment7=self.comment7,
+                        comment8=self.comment8,
+                        comment9=self.comment9
                         )
             sch_file.write(descr)
 
