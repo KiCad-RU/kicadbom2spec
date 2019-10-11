@@ -270,6 +270,7 @@ class Schematic(object):
             comment2 (unicode) - comment #2 (GOST - developer);
             comment3 (unicode) - comment #3 (GOST - verfier);
             comment4 (unicode) - comment #4 (GOST - approver);
+
             comment5 (unicode) - comment #5 (GOST - tech. inspector);
             comment6 (unicode) - comment #6 (GOST - norm. inspector);
             comment7 (unicode) - comment #7
@@ -350,13 +351,7 @@ class Schematic(object):
                     u'Comment1 "{comment1}"\n' \
                     u'Comment2 "{comment2}"\n' \
                     u'Comment3 "{comment3}"\n' \
-                    u'Comment4 "{comment4}"\n' \
-                    u'Comment5 "{comment5}"\n' \
-                    u'Comment6 "{comment6}"\n' \
-                    u'Comment7 "{comment7}"\n' \
-                    u'Comment8 "{comment8}"\n' \
-                    u'Comment9 "{comment9}"\n' \
-                    u'$EndDescr\n'.format(
+                    u'Comment4 "{comment4}"\n'.format(
                         paper=self.sheet_format,
                         width=self.sheet_size_x,
                         height=self.sheet_size_y,
@@ -371,13 +366,21 @@ class Schematic(object):
                         comment1=self.comment1,
                         comment2=self.comment2,
                         comment3=self.comment3,
-                        comment4=self.comment4,
-                        comment5=self.comment5,
-                        comment6=self.comment6,
-                        comment7=self.comment7,
-                        comment8=self.comment8,
-                        comment9=self.comment9
+                        comment4=self.comment4
                         )
+            if hasattr(self, u'Comment5'):
+                descr += u'Comment5 "{comment5}"\n' \
+                         u'Comment6 "{comment6}"\n' \
+                         u'Comment7 "{comment7}"\n' \
+                         u'Comment8 "{comment8}"\n' \
+                         u'Comment9 "{comment9}"\n'.format(
+                             comment5=self.comment5,
+                             comment6=self.comment6,
+                             comment7=self.comment7,
+                             comment8=self.comment8,
+                             comment9=self.comment9
+                             )
+            descr += u'$EndDescr\n'
             sch_file.write(descr)
 
 
