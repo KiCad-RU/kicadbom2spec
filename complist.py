@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*-    Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4    -*-
 ### BEGIN LICENSE
 # Copyright (C) 2018 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
@@ -38,8 +38,8 @@ from odf import meta
 
 from kicadsch import Schematic
 
-REF_REGEXP = re.compile(ur'([^0-9]+)([0-9]+)', re.U)
-NUM_REGEXP = re.compile(ur'([А-ЯA-Z0-9]+(?:[^А-ЯA-Z0-9][0-9\.\-\s]+)?)(Э[1-7])?', re.U)
+REF_REGEXP = re.compile(r'([^0-9]+)([0-9]+)', re.U)
+NUM_REGEXP = re.compile(r'([А-ЯA-Z0-9]+(?:[^А-ЯA-Z0-9][0-9\.\-\s]+)?)(Э[1-7])?', re.U)
 CHAR_WIDTH_MM = {
     u" ":{12:1.58565153734, 14:1.84992679356},
     u"!":{12:0.792825768668, 14:0.792825768668},
@@ -380,10 +380,10 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
 
         """
         # Decoding internal escapes
-        pure_text = text.decode('string_escape')
+        pure_text = codecs.escape_decode(text)[0].decode('utf8')
         # Decoding escapes from KiCad
-        pure_text = pure_text.decode('string_escape')
-        return unicode(pure_text)
+        pure_text = codecs.escape_decode(pure_text)[0].decode('utf8')
+        return pure_text
 
     def _get_value_with_units(self, ref, value):
         """
@@ -399,20 +399,20 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
             multipliers = list(set(multipliers))
             # 2u7, 2н7, 4m7, 5k1 etc.
             regexp_1 = re.compile(
-                ur'^(\d+)({})(\d+)$'.format(u'|'.join(multipliers)),
+                r'^(\d+)({})(\d+)$'.format(u'|'.join(multipliers)),
                 re.U
                 )
             # 2.7 u, 2700p, 4.7 m, 470u, 5.1 k, 510 etc.
             regexp_2 = re.compile(
-                ur'^(\d+(?:[\.,]\d+)?)\s*({})?$'.format(u'|'.join(multipliers)),
+                r'^(\d+(?:[\.,]\d+)?)\s*({})?$'.format(u'|'.join(multipliers)),
                 re.U
                 )
             if ref.startswith(u'C') and not value.endswith(u'Ф'):
                 units = u'Ф'
-                if re.match(ur'^\d+$', value):
+                if re.match(r'^\d+$', value):
                     num_value = value
                     multiplier = u'п'
-                elif re.match(ur'^\d+[\.,]\d+$', value):
+                elif re.match(r'^\d+[\.,]\d+$', value):
                     num_value = value
                     multiplier = u'мк'
                 else:
@@ -451,9 +451,9 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
                 if num_value.endswith(u'Ohm') or num_value.endswith(u'ohm'):
                     num_value = num_value[:-3]
                 num_value = num_value.strip()
-                if re.match(ur'R\d+', num_value):
+                if re.match(r'R\d+', num_value):
                     num_value = num_value.replace(u'R', u'0,')
-                elif re.match(ur'\d+R\d+', num_value):
+                elif re.match(r'\d+R\d+', num_value):
                     num_value = num_value.replace(u'R', u',')
                 elif re.match(regexp_1, num_value):
                     search_res = re.search(regexp_1, num_value).groups()
@@ -616,7 +616,7 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
                 for paragraph in cell.getElementsByType(P):
                     for p_data in paragraph.childNodes:
                         if p_data.tagName == u'Text':
-                            if re.search(ur'#\d+:\d+', p_data.data) is not None:
+                            if re.search(r'#\d+:\d+', p_data.data) is not None:
                                 p_data.data = u''
 
     def _next_row(self):
@@ -802,7 +802,7 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
             mark_parts = []
             # First part without prefix
             res = re.search(
-                ur'[^A-Za-zА-Яа-я0-9]*([A-Za-zА-Яа-я0-9]+)($|[^A-Za-zА-Яа-я0-9].*)',
+                r'[^A-Za-zА-Яа-я0-9]*([A-Za-zА-Яа-я0-9]+)($|[^A-Za-zА-Яа-я0-9].*)',
                 mark_string
                 )
             if res is None:
@@ -813,7 +813,7 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
             # Other parts with delimiters as prefix
             while True:
                 res = re.search(
-                    ur'([^A-Za-zА-Яа-я0-9]+[A-Za-zА-Яа-я0-9_\.,]+)($|[^A-Za-zА-Яа-я0-9].*)',
+                    r'([^A-Za-zА-Яа-я0-9]+[A-Za-zА-Яа-я0-9_\.,]+)($|[^A-Za-zА-Яа-я0-9].*)',
                     mark_string
                     )
                 if res is not None:
@@ -1023,7 +1023,7 @@ class CompList(object):  # pylint: disable=too-many-instance-attributes
             Replace ${field_name} with value from field with name "field_name".
 
             """
-            match = re.search(ur'\$\{([^{}]*)\}', field_value)
+            match = re.search(r'\$\{([^{}]*)\}', field_value)
             if match is None:
                 return field_value
             else:

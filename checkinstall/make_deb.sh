@@ -13,7 +13,7 @@ sudo checkinstall -D \
     --pkgsource=http://launchpad.net/kicadbom2spec \
     --pakdir=../.. \
     --maintainer='"Baranovskiy Konstantin <baranovskiykonstantin@gmail.com>"' \
-    --requires="python2.7","python-wxgtk3.0","python-odf" \
+    --requires="python3","python3-wxgtk4.0","python3-odf" \
     --nodoc \
     --backup=no \
     ./install.sh

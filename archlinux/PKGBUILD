@@ -1,13 +1,13 @@
 # Maintainer: Baranovskiy Konstantin <baranovskiykonstantin@gmail.com>
 pkgname=kicadbom2spec
-pkgver=$(python2 ../kicadbom2spec.pyw -v 2> /dev/null)
+pkgver=$(python3 ../kicadbom2spec.pyw -v 2> /dev/null)
 pkgrel=1
 pkgdesc='Create lists of the components for KiCad schematics.'
 arch=('any')
 url='http://launchpad.net/kicadbom2spec/'
 license=('GPL3')
-depends=('python2>2.7.0' 'wxpython' 'python2-odfpy>=0.9.6')
-makedepends=('python2>2.7.0')
+depends=('python3>3.8.0' 'wxpython' 'python2-odfpy>=0.9.6')
+makedepends=('python3>3.8.0')
 optdepends=('kicad: create schematics' 'libreoffice-fresh: *.ods spreadsheets viewing' 'opengostfont: GOST font')
 
 package() {

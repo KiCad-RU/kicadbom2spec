@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*-    Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4    -*-
 ### BEGIN LICENSE
 # Copyright (C) 2018 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
@@ -27,7 +27,8 @@ import sys
 import tempfile
 import webbrowser
 from operator import itemgetter
-from ConfigParser import SafeConfigParser
+from configparser import ConfigParser
+from importlib import reload
 
 import wx
 import wx.grid
@@ -45,7 +46,6 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Set default encoding
 reload(sys)
-sys.setdefaultencoding('utf-8')
 
 # Global
 VERSION = ''
@@ -204,8 +204,8 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         if os.path.isfile(settings_file_name):
             if not select:
                 # Load settings from file
-                self.settings = SafeConfigParser()
-                self.settings.readfp(
+                self.settings = ConfigParser()
+                self.settings.read_file(
                     codecs.open(
                         settings_file_name,
                         'r',
@@ -313,7 +313,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                     'recent_lib':False
                     }
                 # Load settings from file
-                temp_settings = SafeConfigParser()
+                temp_settings = ConfigParser()
                 temp_settings.readfp(codecs.open(
                     settings_file_name,
                     'r',
@@ -582,7 +582,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 self.settings.set(
                     'recent sch',
                     str(index),
-                    menuitem.GetItemLabel()
+                    menuitem.GetItemLabelText()
                     )
 
         self.settings.remove_section('recent lib')
@@ -592,7 +592,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 self.settings.set(
                     'recent lib',
                     str(index),
-                    menuitem.GetItemLabel()
+                    menuitem.GetItemLabelText()
                     )
 
         self.settings.write(codecs.open(settings_file_name, 'w', encoding='utf-8'))
@@ -630,7 +630,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
             self.on_select
             )
         self.grid.Bind(
-            wx.grid.EVT_GRID_CELL_CHANGE,
+            wx.grid.EVT_GRID_CELL_CHANGED,
             self.on_grid_change
             )
         self.grid.Bind(
@@ -795,10 +795,10 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
                 wx.TheClipboard.Close()
 
         menu = wx.Menu()
-        menu.copy_id = wx.NewId()
+        menu.copy_id = wx.NewIdRef()
         item = wx.MenuItem(menu, menu.copy_id, u'Копировать')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy_small.png', wx.BITMAP_TYPE_PNG))
-        menu.AppendItem(item)
+        menu.Append(item)
         menu.Bind(wx.EVT_MENU, on_copy, item)
         self.comp_fields_panel_grid.PopupMenu(menu, event.GetPosition())
 
@@ -939,7 +939,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
 
         recent_files = []
         for recent_menuitem in menu.GetMenuItems():
-            recent_files.append(recent_menuitem.GetLabel())
+            recent_files.append(recent_menuitem.GetItemLabelText())
         if file_name in recent_files:
             recent_files.remove(file_name)
         recent_files.insert(0, file_name)
@@ -959,7 +959,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
 
         recent_files = []
         for recent_menuitem in menu.GetMenuItems():
-            recent_files.append(recent_menuitem.GetLabel())
+            recent_files.append(recent_menuitem.GetItemLabelText())
         if file_name in recent_files:
             recent_files.remove(file_name)
         self.build_recent_menu(recent_files, file_type)
@@ -985,7 +985,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
             menu.Delete(menuitem.GetId())
         if file_names:
             for index, file_name in enumerate(file_names):
-                menu.AppendItem(
+                menu.Append(
                     wx.MenuItem(
                         menu,
                         ID_RECENT + id_offset + index,
@@ -1467,51 +1467,51 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
 
         menu = wx.Menu()
 
-        menu.copy_id = wx.NewId()
-        menu.cut_id = wx.NewId()
-        menu.paste_id = wx.NewId()
-        menu.edit_id = wx.NewId()
-        menu.clear_id = wx.NewId()
-        menu.adjust_id = wx.NewId()
+        menu.copy_id = wx.NewIdRef()
+        menu.cut_id = wx.NewIdRef()
+        menu.paste_id = wx.NewIdRef()
+        menu.edit_id = wx.NewIdRef()
+        menu.clear_id = wx.NewIdRef()
+        menu.adjust_id = wx.NewIdRef()
 
-        item = wx.MenuItem(menu, menu.copy_id, u'Копировать поля')
+        item = wx.MenuItem(menu, menu.copy_id.GetId(), u'Копировать поля')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy.png', wx.BITMAP_TYPE_PNG))
-        menu.AppendItem(item)
+        menu.Append(item)
         menu.Bind(wx.EVT_MENU, self.on_copy, item)
-        menu.Enable(menu.copy_id, self.menuitem_copy.IsEnabled())
+        menu.Enable(menu.copy_id.GetId(), self.menuitem_copy.IsEnabled())
 
-        item = wx.MenuItem(menu, menu.cut_id, u'Вырезать поля…')
+        item = wx.MenuItem(menu, menu.cut_id.GetId(), u'Вырезать поля…')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-cut.png', wx.BITMAP_TYPE_PNG))
-        menu.AppendItem(item)
+        menu.Append(item)
         menu.Bind(wx.EVT_MENU, self.on_cut, item)
-        menu.Enable(menu.cut_id, self.menuitem_cut.IsEnabled())
+        menu.Enable(menu.cut_id.GetId(), self.menuitem_cut.IsEnabled())
 
-        item = wx.MenuItem(menu, menu.paste_id, u'Вставить поля…')
+        item = wx.MenuItem(menu, menu.paste_id.GetId(), u'Вставить поля…')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-paste.png', wx.BITMAP_TYPE_PNG))
-        menu.AppendItem(item)
+        menu.Append(item)
         menu.Bind(wx.EVT_MENU, self.on_paste, item)
-        menu.Enable(menu.paste_id, self.menuitem_paste.IsEnabled())
+        menu.Enable(menu.paste_id.GetId(), self.menuitem_paste.IsEnabled())
 
         menu.Append(wx.ID_SEPARATOR)
 
-        item = wx.MenuItem(menu, menu.edit_id, u'Редактировать поля…')
+        item = wx.MenuItem(menu, menu.edit_id.GetId(), u'Редактировать поля…')
         item.SetBitmap(wx.Bitmap(u'bitmaps/gtk-edit.png', wx.BITMAP_TYPE_PNG))
-        menu.AppendItem(item)
+        menu.Append(item)
         menu.Bind(wx.EVT_MENU, self.on_edit_fields, item)
-        menu.Enable(menu.edit_id, self.menuitem_edit.IsEnabled())
+        menu.Enable(menu.edit_id.GetId(), self.menuitem_edit.IsEnabled())
 
-        item = wx.MenuItem(menu, menu.clear_id, u'Очистить поля…')
+        item = wx.MenuItem(menu, menu.clear_id.GetId(), u'Очистить поля…')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-clear.png', wx.BITMAP_TYPE_PNG))
-        menu.AppendItem(item)
+        menu.Append(item)
         menu.Bind(wx.EVT_MENU, self.on_clear_fields, item)
-        menu.Enable(menu.clear_id, self.menuitem_clear.IsEnabled())
+        menu.Enable(menu.clear_id.GetId(), self.menuitem_clear.IsEnabled())
 
         menu.Append(wx.ID_SEPARATOR)
 
-        item = wx.MenuItem(menu, menu.adjust_id, u'Подбирают при регулировании', kind=wx.ITEM_CHECK)
-        menu.AppendItem(item)
+        item = wx.MenuItem(menu, menu.adjust_id.GetId(), u'Подбирают при регулировании', kind=wx.ITEM_CHECK)
+        menu.Append(item)
         menu.Bind(wx.EVT_MENU, self.on_adjust_flag_switch, item)
-        menu.Enable(menu.adjust_id, self.menuitem_edit.IsEnabled())
+        menu.Enable(menu.adjust_id.GetId(), self.menuitem_edit.IsEnabled())
         rows = self.grid.GetSelectedRows()
         if rows:
             for row in rows:
@@ -2182,7 +2182,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         """
         Get name of the group in singular.
         """
-        if self.group_names_dict.has_key(group_name):
+        if group_name in self.group_names_dict:
             return self.group_names_dict[group_name]
         request_dialog = gui.SingularGroupNameDialog(self)
         request_dialog.Bind(wx.EVT_CHAR_HOOK, self.on_esc_key)
@@ -2588,7 +2588,7 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
 
             if os.path.exists(self.complist_file):
                 if open_complist:
-                    if sys.platform == 'linux2':
+                    if sys.platform == 'linux2' or sys.platform == 'linux':
                         subprocess.Popen(["xdg-open", self.complist_file])
                     else:
                         os.startfile(self.complist_file)  # pylint: disable=no-member
@@ -2998,8 +2998,8 @@ class Window(gui.MainFrame):  # pylint: disable=too-many-instance-attributes, to
         settings_editor.group_names_listctrl.InsertColumn(0, u'В множественном числе')
         settings_editor.group_names_listctrl.InsertColumn(1, u'В единственном числе')
         listctrl_width = settings_editor.group_names_listctrl.GetSize().GetWidth()
-        settings_editor.group_names_listctrl.SetColumnWidth(0, listctrl_width / 2)
-        settings_editor.group_names_listctrl.SetColumnWidth(1, listctrl_width / 2)
+        settings_editor.group_names_listctrl.SetColumnWidth(0, listctrl_width // 2)
+        settings_editor.group_names_listctrl.SetColumnWidth(1, listctrl_width // 2)
         for plural in self.group_names_dict:
             singular = self.group_names_dict[plural]
             settings_editor.group_names_listctrl.Append((plural, singular))
@@ -3463,7 +3463,7 @@ def main():
     version_file.close()
 
     if args.version:
-        print VERSION
+        print(VERSION)
         exit()
 
     app = wx.App(False)

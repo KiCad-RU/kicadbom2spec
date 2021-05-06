@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*-    Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4    -*-
 ### BEGIN LICENSE
 # Copyright (C) 2018 Baranovskiy Konstantin (baranovskiykonstantin@gmail.com)
@@ -359,18 +359,18 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
         self.default_value = None
 
         # Context menu ID
-        self.copy_id = wx.NewId()
-        self.cut_id = wx.NewId()
-        self.paste_id = wx.NewId()
-        self.delete_id = wx.NewId()
-        self.select_all_id = wx.NewId()
-        self.add_std_value_id = wx.NewId()
-        self.remove_std_value_id = wx.NewId()
-        self.ref_id = wx.NewId()
-        self.value_id = wx.NewId()
-        self.footprint_id = wx.NewId()
-        self.datasheet_id = wx.NewId()
-        self.another_id = wx.NewId()
+        self.copy_id = wx.NewIdRef()
+        self.cut_id = wx.NewIdRef()
+        self.paste_id = wx.NewIdRef()
+        self.delete_id = wx.NewIdRef()
+        self.select_all_id = wx.NewIdRef()
+        self.add_std_value_id = wx.NewIdRef()
+        self.remove_std_value_id = wx.NewIdRef()
+        self.ref_id = wx.NewIdRef()
+        self.value_id = wx.NewIdRef()
+        self.footprint_id = wx.NewIdRef()
+        self.datasheet_id = wx.NewIdRef()
+        self.another_id = wx.NewIdRef()
 
         # Layout
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -548,22 +548,22 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
         menu = wx.Menu()
         item = wx.MenuItem(menu, self.copy_id, u'Копировать')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-copy_small.png', wx.BITMAP_TYPE_PNG))
-        menu.AppendItem(item)
+        menu.Append(item)
         self.Bind(wx.EVT_MENU, self.on_copy, item)
 
         item = wx.MenuItem(menu, self.cut_id, u'Вырезать')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-cut_small.png', wx.BITMAP_TYPE_PNG))
-        menu.AppendItem(item)
+        menu.Append(item)
         self.Bind(wx.EVT_MENU, self.on_cut, item)
 
         item = wx.MenuItem(menu, self.paste_id, u'Вставить')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-paste_small.png', wx.BITMAP_TYPE_PNG))
-        menu.AppendItem(item)
+        menu.Append(item)
         self.Bind(wx.EVT_MENU, self.on_paste, item)
 
         item = wx.MenuItem(menu, self.delete_id, u'Удалить')
         item.SetBitmap(wx.Bitmap(u'bitmaps/edit-delete_small.png', wx.BITMAP_TYPE_PNG))
-        menu.AppendItem(item)
+        menu.Append(item)
         self.Bind(wx.EVT_MENU, self.on_delete, item)
 
         menu.Append(wx.ID_SEPARATOR)
@@ -575,7 +575,7 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
                 wx.BITMAP_TYPE_PNG
                 )
             )
-        menu.AppendItem(item)
+        menu.Append(item)
         self.Bind(wx.EVT_MENU, self.on_select_all, item)
 
         cur_value = self.get_value()
@@ -595,7 +595,7 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
                         wx.BITMAP_TYPE_PNG
                         )
                     )
-                menu.AppendItem(item)
+                menu.Append(item)
                 self.Bind(wx.EVT_MENU, self.on_remove_std_value, item)
             else:
                 if len(cur_value) > 15:
@@ -608,7 +608,7 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
                 item.SetBitmap(
                     wx.Bitmap(u'bitmaps/list-add_small.png', wx.BITMAP_TYPE_PNG)
                     )
-                menu.AppendItem(item)
+                menu.Append(item)
                 self.Bind(wx.EVT_MENU, self.on_add_std_value, item)
 
         menu.Append(wx.ID_SEPARATOR)
@@ -616,28 +616,28 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
         submenu = wx.Menu()
 
         item = wx.MenuItem(menu, self.ref_id, u'${Обозначение}')
-        submenu.AppendItem(item)
+        submenu.Append(item)
         self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         item = wx.MenuItem(menu, self.value_id, u'${Значение}')
-        submenu.AppendItem(item)
+        submenu.Append(item)
         self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         item = wx.MenuItem(menu, self.footprint_id, u'${Посад.место}')
-        submenu.AppendItem(item)
+        submenu.Append(item)
         self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         item = wx.MenuItem(menu, self.datasheet_id, u'${Документация}')
-        submenu.AppendItem(item)
+        submenu.Append(item)
         self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         item = wx.MenuItem(menu, self.another_id, u'Другую…')
-        submenu.AppendItem(item)
+        submenu.Append(item)
         self.Bind(wx.EVT_MENU, self.on_insert, item)
 
         submenu_item = wx.MenuItem(
             menu,
-            wx.NewId(),
+            wx.NewIdRef(),
             u'Вставить подстановку…',
             u'',
             wx.ITEM_NORMAL,
@@ -646,7 +646,7 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
         submenu_item.SetBitmap(
             wx.Bitmap(u'bitmaps/insert-text_small.png', wx.BITMAP_TYPE_PNG)
             )
-        submenu_item = menu.AppendItem(submenu_item)
+        submenu_item = menu.Append(submenu_item)
 
         # Enable/disable items
         if not self.text_ctrl.CanCopy():
@@ -728,14 +728,14 @@ class EditorCtrl(wx.Control):  # pylint: disable=too-many-instance-attributes
         self.popup.Show()
 
 
-class CellEditor(wx.grid.PyGridCellEditor):
+class CellEditor(wx.grid.GridCellEditor):
     """
     Custom cell editor for the grid based on EditorCtrl.
 
     """
 
     def __init__(self):
-        wx.grid.PyGridCellEditor.__init__(self)
+        wx.grid.GridCellEditor.__init__(self)
         self.control = None
         self.start_value = u''
 
@@ -744,7 +744,7 @@ class CellEditor(wx.grid.PyGridCellEditor):
         self.SetControl(self.control)
 
     def SetSize(self, rect):  # pylint: disable=arguments-differ
-        self.control.SetDimensions(
+        self.control.SetSize(
             rect.x,
             rect.y,
             rect.width+2,
@@ -792,14 +792,14 @@ class CellEditor(wx.grid.PyGridCellEditor):
             default_value
             )
 
-class CellRenderer(wx.grid.PyGridCellRenderer):
+class CellRenderer(wx.grid.GridCellRenderer):
     """
     Custom cell renderer that allows to show white spaces as dots.
 
     """
 
     def __init__(self):
-        wx.grid.PyGridCellRenderer.__init__(self)
+        wx.grid.GridCellRenderer.__init__(self)
 
     def Draw(self, grid, attr, dc, rect, row, col, isSelected):  # pylint: disable=too-many-arguments, arguments-differ
         # Draw background
@@ -814,7 +814,7 @@ class CellRenderer(wx.grid.PyGridCellRenderer):
         else:
             dc.SetBrush(wx.Brush(attr.GetBackgroundColour(), wx.BRUSHSTYLE_SOLID))
         dc.SetPen(wx.TRANSPARENT_PEN)
-        dc.DrawRectangleRect(rect)
+        dc.DrawRectangle(rect)
         # Draw text
         dc.SetBackgroundMode(wx.TRANSPARENT)
         dc.SetFont(attr.GetFont())
@@ -1150,7 +1150,7 @@ class Grid(wx.grid.Grid):  # pylint: disable=too-many-ancestors
         # Copies of the component (like "(R321)R123") is read only
         ref = self.GetCellValue(event.GetRow(), 2)
         if self.comp_is_copy(ref):
-            matches = re.search(ur'\((.+)\)(.+)\*?', ref)
+            matches = re.search(r'\((.+)\)(.+)\*?', ref)
             ref_orig = matches.groups()[0]
             ref_copy = matches.groups()[1]
             if wx.MessageBox(

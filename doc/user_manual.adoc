@@ -1313,7 +1313,7 @@ image::dialog_select_params_for_import.png[]
 редактору схем **Eeschema** в качестве плагина.
 
 .Формат вызова программы из командной строки:
-`python kicadbom2spec.pyw [-h] [-v] [schematic] [complist]`
+`python3 kicadbom2spec.pyw [-h] [-v] [schematic] [complist]`
 
 
 === Первый позиционный аргумент __**schematic**__
