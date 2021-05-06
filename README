@@ -63,8 +63,8 @@ windows           - каталог с файлами для генерации �
 * python 3      >= 3.8  http://www.python.org/
 * wxPython      >= 4.0  http://www.wxpython.org/
 * odfpy         >=0.9.6 https://pypi.python.org/pypi/odfpy
-· opengostfont          https://bitbucket.org/fat_angel/opengostfont
 · LibreOffice           http://www.libreoffice.org/
+· opengostfont          OpenGostTypeB-Regular.ttf (скачать из интернета)
 
 Примечание: * - обязательные компоненты; · - рекомендуемые компоненты.
 
